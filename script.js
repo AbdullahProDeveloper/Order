@@ -1,14 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════
-   ECOSHOP PRO — PROFESSIONAL ENTERPRISE APP
+   ECOSHOP PRO — PROFESSIONAL APP (ImgBB Edition)
+   Complete SPA with Firebase Realtime Database + ImgBB Images
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── FIREBASE SDK ─── */
+/* ─── FIREBASE SDK (Storage বাদ) ─── */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set, get, update, push, remove, onValue, query, orderByChild, limitToLast, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+import { getDatabase, ref, set, get, update, push, remove, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* ═══════════════════════════════════════════════════════════════
+   FIREBASE CONFIG
+   ═══════════════════════════════════════════════════════════════ */
 const firebaseConfig = {
   apiKey: "AIzaSyBiBGWukd3PNjxK6-gv_4qiCHmwAfO3GzQ",
   authDomain: "hesab-khata.firebaseapp.com",
@@ -21,10 +23,79 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
 const auth = getAuth(app);
 const db = getDatabase(app);
-const storage = getStorage(app);
+
+/* ═══════════════════════════════════════════════════════════════
+   IMGBB IMAGE UPLOAD SERVICE
+   ═══════════════════════════════════════════════════════════════ */
+const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
+const IMGBB_ENDPOINT = "https://api.imgbb.com/1/upload";
+
+/**
+ * ImgBB তে ছবি আপলোড করে সরাসরি URL রিটার্ন করে
+ * @param {File} file — input[type="file"] থেকে প্রাপ্ত ফাইল
+ * @param {Function} onProgress — ঐচ্ছিক progress callback
+ * @returns {Promise<string>} — ছবির URL
+ */
+async function uploadToImgBB(file, onProgress = null) {
+  if (!file) throw new Error("কোনো ফাইল পাওয়া যায়নি");
+  if (!file.type.startsWith("image/")) {
+    throw new Error("শুধুমাত্র ইমেজ ফাইল আপলোড করা যাবে");
+  }
+  if (file.size > 32 * 1024 * 1024) {
+    throw new Error("ফাইল ৩২MB এর চেয়ে ছোট হতে হবে");
+  }
+
+  // Base64 এ কনভার্ট (ImgBB API base64 এবং multipart দুটোই সাপোর্ট করে)
+  const base64 = await fileToBase64(file);
+  const base64Data = base64.split(",")[1]; // "data:image/png;base64," অংশ বাদ
+
+  const formData = new FormData();
+  formData.append("key", IMGBB_API_KEY);
+  formData.append("image", base64Data);
+  formData.append("name", file.name.replace(/\.[^.]+$/, ""));
+
+  if (onProgress) onProgress(30);
+
+  try {
+    const res = await fetch(IMGBB_ENDPOINT, {
+      method: "POST",
+      body: formData
+    });
+
+    if (onProgress) onProgress(70);
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      const errMsg = data?.error?.message || `HTTP ${res.status}`;
+      throw new Error("ImgBB: " + errMsg);
+    }
+
+    if (onProgress) onProgress(100);
+
+    // ImgBB response থেকে সবচেয়ে ভালো URL নিন
+    return (
+      data.data.display_url ||
+      data.data.url ||
+      data.data.image?.url
+    );
+  } catch (err) {
+    console.error("ImgBB upload error:", err);
+    throw new Error("ছবি আপলোড ব্যর্থ: " + err.message);
+  }
+}
+
+/** File কে Base64 string এ কনভার্ট করে */
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("ফাইল পড়তে সমস্যা"));
+    reader.readAsDataURL(file);
+  });
+}
 
 /* ═══════════════════════════════════════════════════════════════
    I18N
@@ -41,7 +112,6 @@ const I18N = {
     checkout:"চেকআউট করুন", place_order:"অর্ডার কনফার্ম করুন",
     notifications:"নোটিফিকেশন", no_notifications:"কোনো নোটিফিকেশন নেই",
     welcome:"স্বাগতম", my_orders:"আমার অর্ডার",
-    manage_products:"পণ্য ম্যানেজমেন্ট", manage_orders:"অর্ডার ম্যানেজমেন্ট",
     add_product:"নতুন পণ্য", edit_product:"পণ্য এডিট",
     product_name:"পণ্যের নাম", product_desc:"পণ্যের বিবরণ",
     product_image:"পণ্যের ছবি", product_category:"ক্যাটাগরি",
@@ -72,14 +142,14 @@ const I18N = {
     shop_now:"কেনাকাটা শুরু করুন", explore:"এক্সপ্লোর করুন",
     products_count:"পণ্য", happy_customers:"সন্তুষ্ট গ্রাহক",
     orders_delivered:"ডেলিভারড অর্ডার", rating:"রেটিং",
-    featured:"ফিচার্ড পণ্য", new_arrivals:"নতুন পণ্য",
-    quick_view:"দ্রুত দেখুন", description:"বিবরণ",
+    featured:"ফিচার্ড পণ্য", quick_view:"দ্রুত দেখুন",
     stock:"স্টক", out_of_stock:"স্টক নেই", in_stock:"স্টকে আছে",
     product_added:"পণ্য সফলভাবে যোগ হয়েছে",
     product_updated:"পণ্য আপডেট হয়েছে",
     product_deleted:"পণ্য মুছে ফেলা হয়েছে",
     confirm_delete:"আপনি কি নিশ্চিত মুছতে চান?",
-    password_short:"পাসওয়ার্ড কমপক্ষে ৬ অক্ষর"
+    password_short:"পাসওয়ার্ড কমপক্ষে ৬ অক্ষর",
+    uploading_image:"ছবি আপলোড হচ্ছে..."
   },
   en: {
     home:"Home", products:"Products", orders:"Orders", cart:"Cart",
@@ -92,7 +162,6 @@ const I18N = {
     checkout:"Checkout", place_order:"Place Order",
     notifications:"Notifications", no_notifications:"No notifications",
     welcome:"Welcome", my_orders:"My Orders",
-    manage_products:"Product Management", manage_orders:"Order Management",
     add_product:"Add Product", edit_product:"Edit Product",
     product_name:"Product Name", product_desc:"Description",
     product_image:"Image", product_category:"Category",
@@ -119,18 +188,18 @@ const I18N = {
     sort_price_high:"Price: High to Low", sort_popular:"Popular",
     min_price:"Min Price", max_price:"Max Price",
     hero_title:"Everything you need in one place",
-    hero_sub:"Professional, secure, and fast e-commerce platform. Get the best products at the best price.",
+    hero_sub:"Professional, secure, and fast e-commerce platform.",
     shop_now:"Start Shopping", explore:"Explore Now",
     products_count:"Products", happy_customers:"Happy Customers",
     orders_delivered:"Orders Delivered", rating:"Rating",
-    featured:"Featured Products", new_arrivals:"New Arrivals",
-    quick_view:"Quick View", description:"Description",
+    featured:"Featured Products", quick_view:"Quick View",
     stock:"Stock", out_of_stock:"Out of Stock", in_stock:"In Stock",
     product_added:"Product added successfully",
     product_updated:"Product updated",
     product_deleted:"Product deleted",
     confirm_delete:"Are you sure you want to delete?",
-    password_short:"Password must be at least 6 characters"
+    password_short:"Password must be at least 6 characters",
+    uploading_image:"Uploading image..."
   }
 };
 
@@ -160,7 +229,7 @@ const state = {
   charts: {}
 };
 
-const DEFAULT_CATEGORIES = ["Electronics", "Fashion", "Home", "Beauty", "Sports", "Books", "Toys", "Grocery"];
+const DEFAULT_CATEGORIES = ["Electronics","Fashion","Home","Beauty","Sports","Books","Toys","Grocery"];
 
 /* ═══════════════════════════════════════════════════════════════
    UTILITIES
@@ -173,20 +242,20 @@ const fmtPrice = n => "৳" + (Number(n) || 0).toLocaleString(state.lang === "bn
 const fmtDate = ts => ts ? new Date(ts).toLocaleString(state.lang === "bn" ? "bn-BD" : "en-US", { year:"numeric",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit" }) : "";
 const fmtDateShort = ts => ts ? new Date(ts).toLocaleDateString(state.lang === "bn" ? "bn-BD" : "en-US", { year:"numeric",month:"short",day:"numeric" }) : "";
 const debounce = (fn, ms = 300) => { let id; return (...a) => { clearTimeout(id); id = setTimeout(() => fn(...a), ms); }; };
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 function toast(msg, type = "info", dur = 3200) {
   const icons = { success:"fa-circle-check", error:"fa-circle-exclamation", info:"fa-circle-info", warning:"fa-triangle-exclamation" };
   const el = document.createElement("div");
   el.className = `toast ${type}`;
   el.innerHTML = `<i class="fa-solid ${icons[type]} toast-icon"></i><span>${esc(msg)}</span>`;
-  $("#toastContainer").appendChild(el);
+  const c = $("#toastContainer");
+  if (c) c.appendChild(el);
   requestAnimationFrame(() => el.classList.add("show"));
   setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 400); }, dur);
 }
 
 function progress(on) {
-  const bar = $("#topProgress");
+  const bar = $("#topProgress"); if (!bar) return;
   if (on) { bar.style.opacity = "1"; bar.style.width = "30%"; setTimeout(() => bar.style.width = "65%", 150); }
   else { bar.style.width = "100%"; setTimeout(() => { bar.style.opacity = "0"; bar.style.width = "0"; }, 400); }
 }
@@ -244,20 +313,22 @@ function toggleTheme() {
 function applyLang() {
   document.documentElement.lang = state.lang;
   document.body.lang = state.lang;
-  $("#currentLangLabel").textContent = state.lang === "bn" ? "বাং" : "EN";
+  const cl = $("#currentLangLabel");
+  if (cl) cl.textContent = state.lang === "bn" ? "বাং" : "EN";
   $$("[data-i18n]").forEach(el => el.textContent = t(el.getAttribute("data-i18n")));
-  const inp = $("#globalSearchInput"); if (inp) inp.placeholder = t("search");
+  const inp = $("#globalSearchInput");
+  if (inp) inp.placeholder = t("search");
 }
 function toggleLang() {
   state.lang = state.lang === "bn" ? "en" : "bn";
   localStorage.setItem("lang", state.lang);
   applyLang();
-  if (state.isAdmin && $("#adminLayout").style.display !== "none") adminPage.render();
+  if (state.isAdmin && $("#adminLayout")?.style.display !== "none") adminPage.render();
   else router.render();
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   CART & WISHLIST
+   CART
    ═══════════════════════════════════════════════════════════════ */
 const cart = {
   add(p, qty = 1) {
@@ -372,17 +443,20 @@ const api = {
   async addProduct(data, imageFile) {
     const pRef = push(ref(db, "products"));
     let imageUrl = "";
+
+    // ✅ ImgBB দিয়ে ছবি আপলোড
     if (imageFile) {
-      const s = sRef(storage, `products/${pRef.key}/${Date.now()}_${imageFile.name}`);
-      await uploadBytes(s, imageFile);
-      imageUrl = await getDownloadURL(s);
+      toast(t("uploading_image"), "info", 2000);
+      imageUrl = await uploadToImgBB(imageFile);
     }
+
     const payload = {
       name: data.name, nameEn: data.nameEn || data.name,
       price: Number(data.price), oldPrice: Number(data.oldPrice) || 0,
       category: data.category || "Other",
       stock: Number(data.stock) || 0,
-      description: data.description || "", descriptionEn: data.descriptionEn || data.description || "",
+      description: data.description || "",
+      descriptionEn: data.descriptionEn || data.description || "",
       rating: 4.5, reviews: 0,
       image: imageUrl,
       featured: !!data.featured,
@@ -395,12 +469,15 @@ const api = {
   },
   async updateProduct(id, data, imageFile) {
     let imageUrl = data.image;
+
+    // ✅ ImgBB দিয়ে ছবি আপলোড
     if (imageFile) {
-      const s = sRef(storage, `products/${id}/${Date.now()}_${imageFile.name}`);
-      await uploadBytes(s, imageFile);
-      imageUrl = await getDownloadURL(s);
+      toast(t("uploading_image"), "info", 2000);
+      imageUrl = await uploadToImgBB(imageFile);
     }
-    const payload = { ...data }; delete payload.image;
+
+    const payload = { ...data };
+    delete payload.image;
     if (imageUrl !== undefined) payload.image = imageUrl;
     await update(ref(db, `products/${id}`), payload);
     await api.logActivity("product.update", `Updated: ${data.name}`);
@@ -461,11 +538,6 @@ const api = {
     await update(ref(db, `users/${uid}`), { banned });
     await api.logActivity("user.ban", `${banned ? "Banned" : "Unbanned"}: ${uid}`);
   },
-  async makeAdmin(uid, isAdmin) {
-    if (isAdmin) await set(ref(db, `admins/${uid}`), true);
-    else await remove(ref(db, `admins/${uid}`));
-    await api.logActivity("user.role", `${isAdmin ? "Promoted" : "Demoted"}: ${uid}`);
-  },
 
   /* ─── CATEGORIES ─── */
   listenCategories(cb) {
@@ -480,9 +552,7 @@ const api = {
     await push(ref(db, "categories"), { name, slug: name.toLowerCase().replace(/\s+/g, "-"), createdAt: Date.now() });
     await api.logActivity("category.create", name);
   },
-  async deleteCategory(id) {
-    await remove(ref(db, `categories/${id}`));
-  },
+  async deleteCategory(id) { await remove(ref(db, `categories/${id}`)); },
 
   /* ─── COUPONS ─── */
   listenCoupons(cb) {
@@ -497,8 +567,7 @@ const api = {
   },
   async deleteCoupon(id) { await remove(ref(db, `coupons/${id}`)); },
   async validateCoupon(code) {
-    const found = state.coupons.find(c => c.code.toLowerCase() === code.toLowerCase() && c.active !== false);
-    return found || null;
+    return state.coupons.find(c => c.code.toLowerCase() === code.toLowerCase() && c.active !== false) || null;
   },
 
   /* ─── REVIEWS ─── */
@@ -509,13 +578,9 @@ const api = {
       state.reviews = arr; cb(arr);
     });
   },
-  async addReview(r) {
-    await push(ref(db, "reviews"), { ...r, status: "approved", createdAt: Date.now() });
-  },
   async deleteReview(id) { await remove(ref(db, `reviews/${id}`)); },
-  async approveReview(id) { await update(ref(db, `reviews/${id}`), { status: "approved" }); },
 
-  /* ─── BANNERS ─── */
+  /* ─── BANNERS (ImgBB) ─── */
   listenBanners(cb) {
     return onValue(ref(db, "banners"), snap => {
       const arr = []; snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
@@ -526,9 +591,8 @@ const api = {
     const bRef = push(ref(db, "banners"));
     let imageUrl = "";
     if (imgFile) {
-      const s = sRef(storage, `banners/${bRef.key}/${Date.now()}_${imgFile.name}`);
-      await uploadBytes(s, imgFile);
-      imageUrl = await getDownloadURL(s);
+      toast(t("uploading_image"), "info", 2000);
+      imageUrl = await uploadToImgBB(imgFile);
     }
     await set(bRef, { ...b, image: imageUrl, createdAt: Date.now() });
   },
@@ -540,9 +604,7 @@ const api = {
     await push(ref(db, `notifications/${uid}`), { title, body, read: false, createdAt: Date.now() });
   },
   async broadcast(title, body) {
-    for (const u of state.users) {
-      await this.notify(u.id, title, body);
-    }
+    for (const u of state.users) await this.notify(u.id, title, body);
     await api.logActivity("notify.broadcast", title);
   },
   listenNotifications(uid, cb) {
@@ -559,7 +621,7 @@ const api = {
     if (Object.keys(updates).length) await update(ref(db), updates);
   },
 
-  /* ─── ACTIVITY LOGS ─── */
+  /* ─── ACTIVITY ─── */
   async logActivity(type, message) {
     try {
       await push(ref(db, "activityLogs"), {
@@ -568,7 +630,7 @@ const api = {
         userEmail: auth.currentUser?.email || "system",
         createdAt: Date.now()
       });
-    } catch (e) { /* silent */ }
+    } catch (e) {}
   },
   listenActivityLogs(cb) {
     const q = query(ref(db, "activityLogs"), limitToLast(100));
@@ -598,7 +660,6 @@ const api = {
 const router = {
   current: "home",
   go(page) {
-    // Admin routing
     if (page === "admin") {
       if (!state.isAdmin) { toast("Access denied", "error"); return; }
       this.showAdmin();
@@ -619,17 +680,19 @@ const router = {
     adminPage.render();
   },
   hideAdmin() {
-    $("#adminLayout").style.display = "none";
-    $("#publicNavbar").style.display = "";
-    $("#app").style.display = "";
-    $("#publicFooter").style.display = "";
+    const al = $("#adminLayout"), pn = $("#publicNavbar"), ap = $("#app"), pf = $("#publicFooter");
+    if (al) al.style.display = "none";
+    if (pn) pn.style.display = "";
+    if (ap) ap.style.display = "";
+    if (pf) pf.style.display = "";
   },
   render() {
     progress(true);
-    const app = $("#app");
-    app.innerHTML = "";
-    const protected_ = ["dashboard", "profile", "orders", "wishlist", "settings"];
-    if (protected_.includes(this.current) && !state.user) {
+    const appEl = $("#app");
+    if (!appEl) return;
+    appEl.innerHTML = "";
+    const protectedPages = ["dashboard","profile","orders","wishlist","settings"];
+    if (protectedPages.includes(this.current) && !state.user) {
       toast(t("login_required"), "warning");
       this.go("auth");
       return;
@@ -639,7 +702,17 @@ const router = {
       dashboard: Pages.dashboard, profile: Pages.profile, orders: Pages.orders,
       wishlist: Pages.wishlist, settings: Pages.settings
     };
-    (routes[this.current] || Pages.home)(app);
+    try {
+      (routes[this.current] || Pages.home)(appEl);
+    } catch (err) {
+      console.error("Render error:", err);
+      appEl.innerHTML = `<section class="page"><div class="empty-state">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h3>Something went wrong</h3>
+        <p>${esc(err.message)}</p>
+        <button class="btn btn-primary" onclick="router.go('home')">Go Home</button>
+      </div></section>`;
+    }
     setTimeout(() => progress(false), 400);
   }
 };
@@ -651,6 +724,7 @@ window.router = router;
 const modal = {
   open(html, { size = "" } = {}) {
     const root = $("#modalRoot");
+    if (!root) return;
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML = `<div class="modal-box ${size}">${html}</div>`;
@@ -680,8 +754,8 @@ const checkout = {
     closeCart();
 
     const sub = cart.total();
-    let ship = sub > 5000 ? 0 : 80;
-    let tax = sub * 0.05;
+    const ship = sub > 5000 ? 0 : 80;
+    const tax = sub * 0.05;
     let discount = 0;
     let appliedCoupon = null;
 
@@ -699,7 +773,6 @@ const checkout = {
           <i class="fa-solid fa-credit-card" style="color:var(--brand-1)"></i> ${t("checkout")}
         </h2>
         <p style="color:var(--text-2);font-size:14px;margin-bottom:22px;">${state.lang === "bn" ? "আপনার তথ্য নিশ্চিত করুন" : "Confirm your details"}</p>
-
         <div class="form-group"><label>${t("name")}</label>
           <input id="coName" value="${esc(p.name || state.user.displayName || "")}" /></div>
         <div class="form-row">
@@ -710,31 +783,24 @@ const checkout = {
         </div>
         <div class="form-group"><label>${t("address")}</label>
           <textarea id="coAddress">${esc(p.address || "")}</textarea></div>
-
         <div class="form-group">
-          <label>Coupon Code</label>
+          <label>Coupon</label>
           <div style="display:flex;gap:8px;">
             <input id="coCoupon" placeholder="SAVE10" style="flex:1;" />
             <button class="btn btn-outline" id="applyCoupon">Apply</button>
           </div>
           <small id="couponMsg"></small>
         </div>
-
         <div style="background:var(--bg-soft);padding:16px;border-radius:12px;margin:18px 0;">
-          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--text-2);">
-            <span>${t("subtotal")}</span><span>${fmtPrice(sub)}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--text-2);">
-            <span>Shipping</span><span>${ship === 0 ? "Free" : fmtPrice(ship)}</span></div>
-          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--text-2);">
-            <span>VAT</span><span>${fmtPrice(tax)}</span></div>
-          <div id="coDiscountRow" style="display:none;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--success);font-weight:700;">
-            <span>Discount</span><span id="coDiscountVal">-৳0</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--text-2);"><span>${t("subtotal")}</span><span>${fmtPrice(sub)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--text-2);"><span>Shipping</span><span>${ship === 0 ? "Free" : fmtPrice(ship)}</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--text-2);"><span>VAT</span><span>${fmtPrice(tax)}</span></div>
+          <div id="coDiscountRow" style="display:none;justify-content:space-between;font-size:14px;margin-bottom:6px;color:var(--success);font-weight:700;"><span>Discount</span><span id="coDiscountVal">-৳0</span></div>
           <div style="display:flex;justify-content:space-between;font-size:18px;font-weight:900;padding-top:10px;border-top:2px dashed var(--border-2);">
             <span>${t("total")}</span>
             <span id="coGrand" style="background:var(--brand-grad);-webkit-background-clip:text;background-clip:text;color:transparent;">${fmtPrice(sub + ship + tax)}</span>
           </div>
         </div>
-
         <button class="btn btn-primary btn-block btn-lg" id="confirmOrder">
           <i class="fa-solid fa-check"></i> ${t("place_order")}
         </button>
@@ -753,7 +819,7 @@ const checkout = {
       }
       appliedCoupon = c;
       discount = c.type === "percent" ? sub * (c.value / 100) : Number(c.value);
-      msg.textContent = `✅ ${c.code} applied — ${c.type === "percent" ? c.value + "%" : "৳" + c.value} off`;
+      msg.textContent = `✅ ${c.code} applied`;
       msg.style.color = "var(--success)";
       recalc();
     };
@@ -793,7 +859,7 @@ window.checkout = checkout;
    ═══════════════════════════════════════════════════════════════ */
 const search = {
   suggest(q) {
-    const box = $("#searchSuggest");
+    const box = $("#searchSuggest"); if (!box) return;
     if (!q) { box.classList.remove("active"); return; }
     const lq = q.toLowerCase();
     const m = state.products.filter(p =>
@@ -802,24 +868,21 @@ const search = {
       (p.description || "").toLowerCase().includes(lq) ||
       (p.category || "").toLowerCase().includes(lq)
     ).slice(0, 6);
-    if (!m.length) {
-      box.innerHTML = `<div class="suggest-empty">🔍 No results</div>`;
-    } else {
-      box.innerHTML = m.map(p => `
-        <div class="suggest-item" onclick="search.select('${p.id}')">
-          <img src="${esc(p.image || 'https://via.placeholder.com/44')}" />
-          <div class="suggest-item-info">
-            <h5>${esc(state.lang === "bn" ? p.name : (p.nameEn || p.name))}</h5>
-            <p>${fmtPrice(p.price)}</p>
-          </div>
-        </div>`).join("");
-    }
+    if (!m.length) box.innerHTML = `<div class="suggest-empty">🔍 No results</div>`;
+    else box.innerHTML = m.map(p => `
+      <div class="suggest-item" onclick="search.select('${p.id}')">
+        <img src="${esc(p.image || 'https://via.placeholder.com/44')}" />
+        <div class="suggest-item-info">
+          <h5>${esc(state.lang === "bn" ? p.name : (p.nameEn || p.name))}</h5>
+          <p>${fmtPrice(p.price)}</p>
+        </div>
+      </div>`).join("");
     box.classList.add("active");
   },
-  select(id) { $("#searchSuggest").classList.remove("active"); productDetail.openById(id); },
+  select(id) { $("#searchSuggest")?.classList.remove("active"); productDetail.openById(id); },
   clear() { $("#searchSuggest")?.classList.remove("active"); },
   initVoice() {
-    const btn = $("#voiceSearchBtn");
+    const btn = $("#voiceSearchBtn"); if (!btn) return;
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SR) { btn.onclick = () => toast(t("voice_not_supported"), "warning"); return; }
     const rec = new SR();
@@ -836,6 +899,7 @@ const search = {
   },
   initImage() {
     const btn = $("#imageSearchBtn"), input = $("#imageSearchInput");
+    if (!btn || !input) return;
     btn.onclick = () => input.click();
     input.onchange = e => {
       const f = e.target.files[0]; if (!f) return;
@@ -996,7 +1060,6 @@ const Pages = {
           </div>
         </div>
       </section>
-
       <div class="stats-bar">
         <div class="stat-item"><div class="stat-icon"><i class="fa-solid fa-box"></i></div>
           <div><h3 id="homeProductsCount">${state.products.length}+</h3><p>${t("products_count")}</p></div></div>
@@ -1007,7 +1070,6 @@ const Pages = {
         <div class="stat-item"><div class="stat-icon"><i class="fa-solid fa-star"></i></div>
           <div><h3>4.9</h3><p>${t("rating")}</p></div></div>
       </div>
-
       <section class="page" style="padding-top:20px;">
         <h2 class="section-title"><i class="fa-solid fa-fire"></i> ${t("featured")}</h2>
         <div class="product-grid" id="featuredGrid">${skeletons(8)}</div>
@@ -1015,8 +1077,8 @@ const Pages = {
     `;
     api.listenProducts(products => {
       const grid = $("#featuredGrid"); if (!grid) return;
-      const countEl = $("#homeProductsCount");
-      if (countEl) countEl.textContent = products.length + "+";
+      const cEl = $("#homeProductsCount");
+      if (cEl) cEl.textContent = products.length + "+";
       const feat = products.slice(0, 8);
       if (!feat.length) { grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-box-open"></i><h3>${t("no_products")}</h3></div>`; return; }
       grid.innerHTML = feat.map(productCardHTML).join("");
@@ -1129,11 +1191,11 @@ const Pages = {
           <button type="submit" class="btn btn-primary btn-block btn-lg" id="authSubmit">
             <i class="fa-solid fa-user-plus"></i> ${t("signup")}</button>`;
       }
-      $("#authTitle").textContent = mode === "login" ? t("login") : t("signup");
+      const at = $("#authTitle"); if (at) at.textContent = mode === "login" ? t("login") : t("signup");
     };
     $$(".auth-tab").forEach(tab => {
       tab.onclick = () => {
-        $$(".auth-tab").forEach(t => t.classList.remove("active"));
+        $$(".auth-tab").forEach(x => x.classList.remove("active"));
         tab.classList.add("active");
         mode = tab.dataset.mode; renderFields();
       };
@@ -1163,6 +1225,7 @@ const Pages = {
         let m = err.message;
         if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found") m = t("invalid_credentials");
         if (err.code === "auth/email-already-in-use") m = "Email already registered";
+        if (err.code === "auth/network-request-failed") m = "নেটওয়ার্ক সমস্যা — ইন্টারনেট চেক করুন";
         toast(m, "error");
         btn.disabled = false; renderFields();
       }
@@ -1174,14 +1237,12 @@ const Pages = {
     const u = state.user;
     app.innerHTML = `
       <section class="page">
-        <div style="background:var(--brand-grad);color:#fff;padding:40px 32px;border-radius:var(--radius-xl);margin-bottom:28px;position:relative;overflow:hidden;">
-          <div style="position:relative;z-index:2;">
-            <div style="display:inline-block;padding:6px 14px;background:rgba(255,255,255,0.2);border-radius:50px;font-size:12px;font-weight:700;margin-bottom:12px;">
-              <i class="fa-solid fa-user"></i> ${t("user_dashboard")}
-            </div>
-            <h1 style="font-size:32px;font-weight:900;margin-bottom:6px;">👋 ${t("welcome")}, ${esc(u.displayName || u.email.split("@")[0])}</h1>
-            <p style="opacity:.95;">Your orders and stats</p>
+        <div style="background:var(--brand-grad);color:#fff;padding:40px 32px;border-radius:var(--radius-xl);margin-bottom:28px;">
+          <div style="display:inline-block;padding:6px 14px;background:rgba(255,255,255,0.2);border-radius:50px;font-size:12px;font-weight:700;margin-bottom:12px;">
+            <i class="fa-solid fa-user"></i> ${t("user_dashboard")}
           </div>
+          <h1 style="font-size:32px;font-weight:900;margin-bottom:6px;">👋 ${t("welcome")}, ${esc(u.displayName || u.email.split("@")[0])}</h1>
+          <p style="opacity:.95;">Your orders and stats</p>
         </div>
         <div class="kpi-grid">
           <div class="kpi-card g1"><div class="kpi-icon g1"><i class="fa-solid fa-receipt"></i></div>
@@ -1280,7 +1341,7 @@ const Pages = {
     app.innerHTML = `
       <section class="page">
         <h1 class="page-title"><i class="fa-solid fa-user"></i> ${t("profile")}</h1>
-        <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;margin-top:24px;max-width:1000px;" class="profile-grid">
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;margin-top:24px;max-width:1000px;">
           <div class="card" style="text-align:center;padding:32px;">
             <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(p.name || "U")}&background=6366f1&color=fff&size=200"
               style="width:120px;height:120px;border-radius:50%;margin:0 auto 16px;border:4px solid var(--brand-1);" />
@@ -1347,22 +1408,15 @@ window.Pages = Pages;
    ═══════════════════════════════════════════════════════════════ */
 const adminPage = {
   current: "overview",
-
   render() {
     if (!state.isAdmin) return;
     const pages = {
-      overview: () => this.overview(),
-      analytics: () => this.analytics(),
-      orders: () => this.orders(),
-      products: () => this.products(),
-      categories: () => this.categories(),
-      coupons: () => this.coupons(),
-      reviews: () => this.reviews(),
-      users: () => this.users(),
-      notifications: () => this.pushNotifications(),
-      banners: () => this.banners(),
-      settings: () => this.settings(),
-      activity: () => this.activity(),
+      overview: () => this.overview(), analytics: () => this.analytics(),
+      orders: () => this.orders(), products: () => this.products(),
+      categories: () => this.categories(), coupons: () => this.coupons(),
+      reviews: () => this.reviews(), users: () => this.users(),
+      notifications: () => this.pushNotifications(), banners: () => this.banners(),
+      settings: () => this.settings(), activity: () => this.activity(),
       export: () => this.exportData()
     };
     const titles = {
@@ -1380,49 +1434,36 @@ const adminPage = {
       activity:["Activity Logs","Recent admin activities"],
       export:["Export Data","Download your data"]
     };
-    const [title, sub] = titles[this.current] || ["Dashboard", ""];
-    $("#adminPageTitle").textContent = title;
-    $("#adminPageSubtitle").textContent = sub;
+    const [title, sub] = titles[this.current] || ["Dashboard",""];
+    const el1 = $("#adminPageTitle"), el2 = $("#adminPageSubtitle");
+    if (el1) el1.textContent = title;
+    if (el2) el2.textContent = sub;
     $$(".admin-nav a").forEach(a => a.classList.toggle("active", a.dataset.admin === this.current));
-    const content = $("#adminContent");
+    const content = $("#adminContent"); if (!content) return;
     content.innerHTML = "";
-    (pages[this.current] || pages.overview)();
-    if (window.innerWidth <= 1100) $("#adminSidebar").classList.remove("open");
+    try { (pages[this.current] || pages.overview)(); }
+    catch (e) { content.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><h3>Error: ${esc(e.message)}</h3></div>`; }
+    if (window.innerWidth <= 1100) $("#adminSidebar")?.classList.remove("open");
   },
-
   go(page) { this.current = page; this.render(); },
 
-  /* ─── OVERVIEW ─── */
   overview() {
     const c = $("#adminContent");
     c.innerHTML = `
       <div class="kpi-grid">
-        <div class="kpi-card g1">
-          <div class="kpi-icon g1"><i class="fa-solid fa-box"></i></div>
-          <div class="kpi-label">Total Products</div>
-          <div class="kpi-value" id="kProduct">0</div>
-          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Live</div>
-        </div>
-        <div class="kpi-card g2">
-          <div class="kpi-icon g2"><i class="fa-solid fa-receipt"></i></div>
-          <div class="kpi-label">Total Orders</div>
-          <div class="kpi-value" id="kOrder">0</div>
-          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Live</div>
-        </div>
-        <div class="kpi-card g3">
-          <div class="kpi-icon g3"><i class="fa-solid fa-users"></i></div>
-          <div class="kpi-label">Total Users</div>
-          <div class="kpi-value" id="kUser">0</div>
-          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Live</div>
-        </div>
-        <div class="kpi-card g4">
-          <div class="kpi-icon g4"><i class="fa-solid fa-money-bill-wave"></i></div>
-          <div class="kpi-label">Total Revenue</div>
-          <div class="kpi-value" id="kRevenue">৳0</div>
-          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Delivered</div>
-        </div>
+        <div class="kpi-card g1"><div class="kpi-icon g1"><i class="fa-solid fa-box"></i></div>
+          <div class="kpi-label">Total Products</div><div class="kpi-value" id="kProduct">0</div>
+          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Live</div></div>
+        <div class="kpi-card g2"><div class="kpi-icon g2"><i class="fa-solid fa-receipt"></i></div>
+          <div class="kpi-label">Total Orders</div><div class="kpi-value" id="kOrder">0</div>
+          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Live</div></div>
+        <div class="kpi-card g3"><div class="kpi-icon g3"><i class="fa-solid fa-users"></i></div>
+          <div class="kpi-label">Total Users</div><div class="kpi-value" id="kUser">0</div>
+          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Live</div></div>
+        <div class="kpi-card g4"><div class="kpi-icon g4"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <div class="kpi-label">Total Revenue</div><div class="kpi-value" id="kRevenue">৳0</div>
+          <div class="kpi-trend up"><i class="fa-solid fa-arrow-up"></i> Delivered</div></div>
       </div>
-
       <div class="grid-2">
         <div class="card">
           <div class="card-header"><h3><i class="fa-solid fa-chart-line"></i> Sales Overview (7 days)</h3></div>
@@ -1433,7 +1474,6 @@ const adminPage = {
           <div class="chart-container"><canvas id="statusChart"></canvas></div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-header">
           <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Orders</h3>
@@ -1443,19 +1483,17 @@ const adminPage = {
           <thead><tr><th>Order ID</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
           <tbody id="recentOrdersBody"><tr><td colspan="5" style="text-align:center;padding:30px;color:var(--text-3);"><i class="fa-solid fa-spinner fa-spin"></i></td></tr></tbody>
         </table></div></div>
-      </div>
-    `;
-
-    // Listen everything
-    api.listenProducts(p => { const el = $("#kProduct"); if (el) el.textContent = p.length; const n = $("#navProductCount"); if (n) n.textContent = p.length; });
+      </div>`;
+    api.listenProducts(p => {
+      const el = $("#kProduct"); if (el) el.textContent = p.length;
+      const n = $("#navProductCount"); if (n) n.textContent = p.length;
+    });
     api.listenUsers(u => { const el = $("#kUser"); if (el) el.textContent = u.length; });
     api.listenAllOrders(orders => {
       const ko = $("#kOrder"); if (ko) ko.textContent = orders.length;
       const nav = $("#navOrderCount"); if (nav) nav.textContent = orders.length;
       const rev = orders.filter(o => o.status === "delivered").reduce((s, o) => s + (o.total || 0), 0);
       const kr = $("#kRevenue"); if (kr) kr.textContent = fmtPrice(rev);
-
-      // Recent orders table
       const tb = $("#recentOrdersBody");
       if (tb) {
         const recent = orders.slice(0, 5);
@@ -1469,8 +1507,6 @@ const adminPage = {
             <td style="color:var(--text-3);font-size:13px;">${fmtDateShort(o.createdAt)}</td>
           </tr>`).join("");
       }
-
-      // Charts
       this.renderSalesChart(orders);
       this.renderStatusChart(orders);
     });
@@ -1478,80 +1514,53 @@ const adminPage = {
 
   renderSalesChart(orders) {
     const ctx = document.getElementById("salesChart");
-    if (!ctx) return;
-    const days = 7;
-    const labels = [];
-    const data = [];
-    for (let i = days - 1; i >= 0; i--) {
+    if (!ctx || typeof Chart === "undefined") return;
+    const labels = [], data = [];
+    for (let i = 6; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
       const ds = d.toDateString();
       labels.push(d.toLocaleDateString(state.lang === "bn" ? "bn-BD" : "en-US", { weekday: "short", day: "numeric" }));
-      const total = orders.filter(o => new Date(o.createdAt).toDateString() === ds).reduce((s, o) => s + (o.total || 0), 0);
-      data.push(total);
+      data.push(orders.filter(o => new Date(o.createdAt).toDateString() === ds).reduce((s, o) => s + (o.total || 0), 0));
     }
     if (state.charts.sales) state.charts.sales.destroy();
     state.charts.sales = new Chart(ctx, {
       type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "Sales (৳)",
-          data,
-          borderColor: "#6366f1",
-          backgroundColor: (c) => {
-            const g = c.chart.ctx.createLinearGradient(0, 0, 0, 300);
-            g.addColorStop(0, "rgba(99,102,241,0.35)");
-            g.addColorStop(1, "rgba(99,102,241,0)");
-            return g;
-          },
-          fill: true,
-          tension: 0.4,
-          borderWidth: 3,
-          pointRadius: 5,
-          pointBackgroundColor: "#6366f1",
-          pointBorderColor: "#fff",
-          pointBorderWidth: 2
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
-        scales: {
-          y: { beginAtZero: true, grid: { color: "rgba(148, 163, 184, 0.15)" }, ticks: { color: "#94a3b8" } },
-          x: { grid: { display: false }, ticks: { color: "#94a3b8" } }
-        }
-      }
+      data: { labels, datasets: [{
+        label: "Sales", data,
+        borderColor: "#6366f1",
+        backgroundColor: (c) => {
+          const g = c.chart.ctx.createLinearGradient(0, 0, 0, 300);
+          g.addColorStop(0, "rgba(99,102,241,0.35)");
+          g.addColorStop(1, "rgba(99,102,241,0)");
+          return g;
+        },
+        fill: true, tension: 0.4, borderWidth: 3,
+        pointRadius: 5, pointBackgroundColor: "#6366f1",
+        pointBorderColor: "#fff", pointBorderWidth: 2
+      }]},
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, grid: { color: "rgba(148,163,184,0.15)" }, ticks: { color: "#94a3b8" } },
+                  x: { grid: { display: false }, ticks: { color: "#94a3b8" } } } }
     });
   },
 
   renderStatusChart(orders) {
     const ctx = document.getElementById("statusChart");
-    if (!ctx) return;
+    if (!ctx || typeof Chart === "undefined") return;
     const counts = { pending:0, confirmed:0, shipped:0, delivered:0, cancelled:0 };
     orders.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
     if (state.charts.status) state.charts.status.destroy();
     state.charts.status = new Chart(ctx, {
       type: "doughnut",
-      data: {
-        labels: ["Pending","Confirmed","Shipped","Delivered","Cancelled"],
-        datasets: [{
-          data: Object.values(counts),
+      data: { labels: ["Pending","Confirmed","Shipped","Delivered","Cancelled"],
+        datasets: [{ data: Object.values(counts),
           backgroundColor: ["#f59e0b","#3b82f6","#8b5cf6","#10b981","#ef4444"],
-          borderWidth: 0,
-          hoverOffset: 8
-        }]
-      },
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        cutout: "65%",
-        plugins: {
-          legend: { position: "bottom", labels: { color: "#94a3b8", padding: 14, font: { size: 12 } } }
-        }
-      }
+          borderWidth: 0, hoverOffset: 8 }]},
+      options: { responsive: true, maintainAspectRatio: false, cutout: "65%",
+        plugins: { legend: { position: "bottom", labels: { color: "#94a3b8", padding: 14 } } } }
     });
   },
 
-  /* ─── ANALYTICS ─── */
   analytics() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -1565,27 +1574,19 @@ const adminPage = {
         <div class="kpi-card g4"><div class="kpi-icon g4"><i class="fa-solid fa-star"></i></div>
           <div class="kpi-label">Avg Rating</div><div class="kpi-value">4.7</div></div>
       </div>
-
       <div class="card">
-        <div class="card-header"><h3><i class="fa-solid fa-fire"></i> Top Selling Products</h3></div>
+        <div class="card-header"><h3><i class="fa-solid fa-fire"></i> Top Products</h3></div>
         <div class="table-wrap"><div class="table-scroll"><table class="data-table">
           <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Stock</th><th>Status</th></tr></thead>
           <tbody id="topProductsBody"></tbody>
         </table></div></div>
       </div>
-
       <div class="grid-2">
-        <div class="card">
-          <div class="card-header"><h3><i class="fa-solid fa-chart-area"></i> Monthly Sales</h3></div>
-          <div class="chart-container"><canvas id="monthlyChart"></canvas></div>
-        </div>
-        <div class="card">
-          <div class="card-header"><h3><i class="fa-solid fa-tags"></i> Category Distribution</h3></div>
-          <div class="chart-container"><canvas id="catChart"></canvas></div>
-        </div>
-      </div>
-    `;
-
+        <div class="card"><div class="card-header"><h3><i class="fa-solid fa-chart-area"></i> Monthly Sales</h3></div>
+          <div class="chart-container"><canvas id="monthlyChart"></canvas></div></div>
+        <div class="card"><div class="card-header"><h3><i class="fa-solid fa-tags"></i> Category Distribution</h3></div>
+          <div class="chart-container"><canvas id="catChart"></canvas></div></div>
+      </div>`;
     api.listenAllOrders(orders => {
       const aov = orders.length ? orders.reduce((s,o)=>s+(o.total||0),0) / orders.length : 0;
       const el = $("#aAOV"); if (el) el.textContent = fmtPrice(aov);
@@ -1598,11 +1599,9 @@ const adminPage = {
       if (tb) {
         const top = [...products].sort((a,b) => (b.rating||0) - (a.rating||0)).slice(0, 5);
         tb.innerHTML = top.length ? top.map(p => `
-          <tr>
-            <td><div style="display:flex;align-items:center;gap:10px;">
-              <img src="${esc(p.image||'https://via.placeholder.com/40')}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" />
-              <div><strong>${esc(p.name)}</strong></div>
-            </div></td>
+          <tr><td><div style="display:flex;align-items:center;gap:10px;">
+            <img src="${esc(p.image||'https://via.placeholder.com/40')}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" />
+            <strong>${esc(p.name)}</strong></div></td>
             <td>${esc(p.category||"—")}</td>
             <td><strong>${fmtPrice(p.price)}</strong></td>
             <td>${p.stock || 0}</td>
@@ -1614,109 +1613,85 @@ const adminPage = {
   },
 
   renderMonthlyChart(orders) {
-    const ctx = document.getElementById("monthlyChart"); if (!ctx) return;
-    const months = [];
-    const data = [];
+    const ctx = document.getElementById("monthlyChart");
+    if (!ctx || typeof Chart === "undefined") return;
+    const months = [], data = [];
     for (let i = 5; i >= 0; i--) {
       const d = new Date(); d.setMonth(d.getMonth() - i);
       months.push(d.toLocaleDateString("en-US", { month: "short" }));
-      const total = orders.filter(o => {
+      data.push(orders.filter(o => {
         const od = new Date(o.createdAt);
         return od.getMonth() === d.getMonth() && od.getFullYear() === d.getFullYear();
-      }).reduce((s,o) => s + (o.total||0), 0);
-      data.push(total);
+      }).reduce((s,o) => s + (o.total||0), 0));
     }
     if (state.charts.monthly) state.charts.monthly.destroy();
     state.charts.monthly = new Chart(ctx, {
       type: "bar",
-      data: { labels: months, datasets: [{
-        label: "Revenue",
-        data,
-        backgroundColor: "rgba(99,102,241,0.7)",
-        borderRadius: 8,
-        borderSkipped: false
-      }]},
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { display: false } },
+      data: { labels: months, datasets: [{ label: "Revenue", data,
+        backgroundColor: "rgba(99,102,241,0.7)", borderRadius: 8, borderSkipped: false }]},
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
         scales: { y: { beginAtZero: true, grid: { color: "rgba(148,163,184,0.15)" }, ticks: { color: "#94a3b8" } },
-                  x: { grid: { display: false }, ticks: { color: "#94a3b8" } } }
-      }
+                  x: { grid: { display: false }, ticks: { color: "#94a3b8" } } } }
     });
   },
 
   renderCatChart(products) {
-    const ctx = document.getElementById("catChart"); if (!ctx) return;
+    const ctx = document.getElementById("catChart");
+    if (!ctx || typeof Chart === "undefined") return;
     const counts = {};
     products.forEach(p => { counts[p.category||"Other"] = (counts[p.category||"Other"]||0) + 1; });
-    const labels = Object.keys(counts);
-    const data = Object.values(counts);
     if (state.charts.cat) state.charts.cat.destroy();
     state.charts.cat = new Chart(ctx, {
       type: "polarArea",
-      data: { labels, datasets: [{
-        data,
+      data: { labels: Object.keys(counts), datasets: [{
+        data: Object.values(counts),
         backgroundColor: ["rgba(99,102,241,0.7)","rgba(236,72,153,0.7)","rgba(16,185,129,0.7)","rgba(245,158,11,0.7)","rgba(139,92,246,0.7)","rgba(59,130,246,0.7)","rgba(239,68,68,0.7)"],
-        borderWidth: 0
-      }]},
-      options: {
-        responsive: true, maintainAspectRatio: false,
+        borderWidth: 0 }]},
+      options: { responsive: true, maintainAspectRatio: false,
         plugins: { legend: { position: "bottom", labels: { color: "#94a3b8", padding: 10 } } },
-        scales: { r: { grid: { color: "rgba(148,163,184,0.15)" }, ticks: { color: "#94a3b8" } } }
-      }
+        scales: { r: { grid: { color: "rgba(148,163,184,0.15)" }, ticks: { color: "#94a3b8" } } } }
     });
   },
 
-  /* ─── ORDERS ─── */
   orders() {
     const c = $("#adminContent");
     c.innerHTML = `
       <div class="card">
         <div class="card-header">
           <h3><i class="fa-solid fa-receipt"></i> All Orders</h3>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <select id="orderFilter" style="padding:8px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);">
-              <option value="all">All Status</option>
-              <option value="pending">${t("pending")}</option>
-              <option value="confirmed">${t("confirmed")}</option>
-              <option value="shipped">${t("shipped")}</option>
-              <option value="delivered">${t("delivered")}</option>
-              <option value="cancelled">${t("cancelled")}</option>
-            </select>
-          </div>
+          <select id="orderFilter" style="padding:8px 12px;border-radius:10px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);">
+            <option value="all">All Status</option>
+            <option value="pending">${t("pending")}</option>
+            <option value="confirmed">${t("confirmed")}</option>
+            <option value="shipped">${t("shipped")}</option>
+            <option value="delivered">${t("delivered")}</option>
+            <option value="cancelled">${t("cancelled")}</option>
+          </select>
         </div>
         <div class="table-wrap"><div class="table-scroll"><table class="data-table">
           <thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
           <tbody id="ordersTbody"></tbody>
         </table></div></div>
-      </div>
-    `;
+      </div>`;
     const render = (orders) => {
       const tb = $("#ordersTbody"); if (!tb) return;
       if (!orders.length) { tb.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-3);">No orders</td></tr>`; return; }
       tb.innerHTML = orders.map(o => `
         <tr>
           <td><strong style="font-family:monospace;color:var(--brand-1);">#${(o.orderId||o.id).slice(-6).toUpperCase()}</strong></td>
-          <td>
-            <div style="font-weight:600;">${esc(o.userName || "—")}</div>
-            <div style="font-size:12px;color:var(--text-3);">${esc(o.phone || "")}</div>
-          </td>
-          <td>${(o.items || []).length} item${(o.items||[]).length > 1 ? "s" : ""}</td>
+          <td><div style="font-weight:600;">${esc(o.userName || "—")}</div>
+            <div style="font-size:12px;color:var(--text-3);">${esc(o.phone || "")}</div></td>
+          <td>${(o.items || []).length}</td>
           <td><strong>${fmtPrice(o.total)}</strong></td>
-          <td>
-            <select class="status-select" data-oid="${o.id}" data-uid="${o.userId}" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text);font-weight:700;font-size:12px;cursor:pointer;">
-              ${["pending","confirmed","shipped","delivered","cancelled"].map(s => `<option value="${s}" ${o.status===s?"selected":""}>${t(s)}</option>`).join("")}
-            </select>
-          </td>
+          <td><select class="status-select" data-oid="${o.id}" data-uid="${o.userId}" style="padding:5px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text);font-weight:700;font-size:12px;cursor:pointer;">
+            ${["pending","confirmed","shipped","delivered","cancelled"].map(s => `<option value="${s}" ${o.status===s?"selected":""}>${t(s)}</option>`).join("")}
+          </select></td>
           <td style="font-size:13px;color:var(--text-3);">${fmtDateShort(o.createdAt)}</td>
-          <td>
-            <div class="table-actions">
-              <button class="act-view" onclick="adminPage.viewOrder('${o.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
-              <button class="act-del" onclick="adminPage.deleteOrder('${o.id}','${o.userId}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </td>
-        </tr>
-      `).join("");
+          <td><div class="table-actions">
+            <button class="act-view" onclick="adminPage.viewOrder('${o.id}')"><i class="fa-solid fa-eye"></i></button>
+            <button class="act-del" onclick="adminPage.deleteOrder('${o.id}','${o.userId}')"><i class="fa-solid fa-trash"></i></button>
+          </div></td>
+        </tr>`).join("");
       tb.querySelectorAll(".status-select").forEach(sel => {
         sel.onchange = async () => {
           await api.updateOrderStatus(sel.dataset.oid, sel.value, sel.dataset.uid);
@@ -1724,11 +1699,7 @@ const adminPage = {
         };
       });
     };
-    api.listenAllOrders(orders => {
-      const filter = $("#orderFilter")?.value || "all";
-      const filtered = filter === "all" ? orders : orders.filter(o => o.status === filter);
-      render(filtered);
-    });
+    api.listenAllOrders(orders => render(orders));
     $("#orderFilter").onchange = () => {
       const filter = $("#orderFilter").value;
       const orders = filter === "all" ? state.orders : state.orders.filter(o => o.status === filter);
@@ -1737,43 +1708,30 @@ const adminPage = {
   },
 
   viewOrder(id) {
-    const o = state.orders.find(x => x.id === id);
-    if (!o) return;
+    const o = state.orders.find(x => x.id === id); if (!o) return;
     modal.open(`
       <button class="modal-close" onclick="modal.close()"><i class="fa-solid fa-xmark"></i></button>
       <div style="padding:32px;">
-        <h2 style="font-size:22px;font-weight:900;margin-bottom:6px;">
-          <i class="fa-solid fa-receipt" style="color:var(--brand-1)"></i> Order #${(o.orderId||o.id).slice(-8).toUpperCase()}
-        </h2>
+        <h2 style="font-size:22px;font-weight:900;margin-bottom:6px;"><i class="fa-solid fa-receipt" style="color:var(--brand-1)"></i> Order #${(o.orderId||o.id).slice(-8).toUpperCase()}</h2>
         <p style="color:var(--text-3);margin-bottom:22px;">${fmtDate(o.createdAt)}</p>
-
         <div class="grid-2" style="margin-bottom:20px;">
           <div><strong>Customer:</strong> ${esc(o.userName)}</div>
           <div><strong>Phone:</strong> ${esc(o.phone)}</div>
           <div style="grid-column:1/-1;"><strong>Address:</strong> ${esc(o.address)}</div>
         </div>
-
         <div class="table-wrap" style="margin-bottom:20px;">
           <table class="data-table">
             <thead><tr><th>Item</th><th>Price</th><th>Qty</th><th>Total</th></tr></thead>
-            <tbody>
-              ${(o.items||[]).map(i => `
-                <tr>
-                  <td>${esc(i.name)}</td>
-                  <td>${fmtPrice(i.price)}</td>
-                  <td>${i.qty}</td>
-                  <td><strong>${fmtPrice(i.price * i.qty)}</strong></td>
-                </tr>`).join("")}
-            </tbody>
+            <tbody>${(o.items||[]).map(i => `<tr>
+              <td>${esc(i.name)}</td><td>${fmtPrice(i.price)}</td><td>${i.qty}</td><td><strong>${fmtPrice(i.price * i.qty)}</strong></td>
+            </tr>`).join("")}</tbody>
           </table>
         </div>
-
         <div style="text-align:right;">
           <div style="font-size:14px;color:var(--text-2);">Subtotal: ${fmtPrice(o.subtotal || 0)}</div>
           <div style="font-size:14px;color:var(--text-2);">Shipping: ${fmtPrice(o.shipping || 0)}</div>
           <div style="font-size:20px;font-weight:900;margin-top:8px;">Total: ${fmtPrice(o.total)}</div>
         </div>
-
         <div style="display:flex;gap:10px;margin-top:22px;">
           <button class="btn btn-outline btn-block" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
         </div>
@@ -1789,7 +1747,6 @@ const adminPage = {
     });
   },
 
-  /* ─── PRODUCTS ─── */
   products() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -1802,8 +1759,7 @@ const adminPage = {
           <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Featured</th><th>Actions</th></tr></thead>
           <tbody id="productsTbody"></tbody>
         </table></div></div>
-      </div>
-    `;
+      </div>`;
     $("#addProductBtn").onclick = () => this.productForm();
     api.listenProducts(products => {
       const el = $("#prodCount"); if (el) el.textContent = products.length;
@@ -1816,18 +1772,11 @@ const adminPage = {
           <td><span style="padding:3px 10px;background:var(--bg-soft);border-radius:50px;font-size:12px;font-weight:600;">${esc(p.category||"Other")}</span></td>
           <td><strong>${fmtPrice(p.price)}</strong></td>
           <td><span class="status-pill ${(p.stock||0) > 0 ? "status-active" : "status-banned"}">${p.stock || 0}</span></td>
-          <td>
-            <label class="switch">
-              <input type="checkbox" ${p.featured ? "checked" : ""} onchange="adminPage.toggleFeatured('${p.id}', this.checked)" />
-              <span class="slider"></span>
-            </label>
-          </td>
-          <td>
-            <div class="table-actions">
-              <button class="act-edit" onclick="adminPage.editProduct('${p.id}')" title="Edit"><i class="fa-solid fa-pen"></i></button>
-              <button class="act-del" onclick="adminPage.deleteProduct('${p.id}')" title="Delete"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </td>
+          <td><label class="switch"><input type="checkbox" ${p.featured ? "checked" : ""} onchange="adminPage.toggleFeatured('${p.id}', this.checked)" /><span class="slider"></span></label></td>
+          <td><div class="table-actions">
+            <button class="act-edit" onclick="adminPage.editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+            <button class="act-del" onclick="adminPage.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div></td>
         </tr>`).join("");
     });
   },
@@ -1848,7 +1797,6 @@ const adminPage = {
           ${isEdit ? t("edit_product") : t("add_product")}
         </h2>
         <p style="color:var(--text-2);font-size:14px;margin-bottom:22px;">Fill in the details</p>
-
         <div class="form-row">
           <div class="form-group"><label>Name (বাংলা) *</label><input id="pName" value="${esc(product?.name || "")}" required /></div>
           <div class="form-group"><label>Name (English)</label><input id="pNameEn" value="${esc(product?.nameEn || "")}" /></div>
@@ -1864,12 +1812,18 @@ const adminPage = {
         </div>
         <div class="form-group"><label>${t("product_desc")} (বাংলা)</label><textarea id="pDesc">${esc(product?.description || "")}</textarea></div>
         <div class="form-group"><label>${t("product_desc")} (English)</label><textarea id="pDescEn">${esc(product?.descriptionEn || "")}</textarea></div>
-        <div class="form-group"><label>${t("product_image")}</label><input type="file" id="pImage" accept="image/*" /></div>
+        <div class="form-group"><label>${t("product_image")}</label><input type="file" id="pImage" accept="image/*" />
+          <small>ImgBB তে আপলোড হবে — সর্বোচ্চ ৩২MB</small></div>
         <div class="form-group" style="display:flex;align-items:center;gap:12px;">
           <label class="switch"><input type="checkbox" id="pFeatured" ${product?.featured ? "checked" : ""} /><span class="slider"></span></label>
           <span style="font-weight:600;">Featured Product</span>
         </div>
-
+        <div id="pUploadProgress" style="display:none;margin-bottom:16px;">
+          <div style="height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;">
+            <div id="pUploadBar" style="height:100%;width:0%;background:var(--brand-grad);transition:width 0.3s ease;"></div>
+          </div>
+          <p style="font-size:12px;color:var(--text-3);margin-top:6px;" id="pUploadText">${t("uploading_image")}</p>
+        </div>
         <div style="display:flex;gap:10px;margin-top:20px;">
           <button class="btn btn-outline" onclick="modal.close()" style="flex:1;">${t("cancel")}</button>
           <button class="btn btn-primary" id="saveProductBtn" style="flex:2;"><i class="fa-solid fa-save"></i> ${t("save")}</button>
@@ -1882,7 +1836,7 @@ const adminPage = {
       const price = Number($("#pPrice").value);
       if (!name || !price) { toast("Name and price required", "error"); return; }
       const btn = $("#saveProductBtn"); btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${state.lang === "bn" ? "সংরক্ষণ হচ্ছে..." : "Saving..."}`;
       const data = {
         name, nameEn: $("#pNameEn").value.trim() || name,
         price, oldPrice: Number($("#pOldPrice").value) || 0,
@@ -1894,12 +1848,24 @@ const adminPage = {
         image: product?.image || ""
       };
       const file = $("#pImage").files[0];
+
+      // Progress UI
+      if (file) {
+        $("#pUploadProgress").style.display = "block";
+      }
+
       try {
-        if (isEdit) { await api.updateProduct(product.id, data, file); toast(t("product_updated"), "success"); }
-        else { await api.addProduct(data, file); toast(t("product_added"), "success"); }
+        if (isEdit) {
+          await api.updateProduct(product.id, data, file);
+          toast(t("product_updated"), "success");
+        } else {
+          await api.addProduct(data, file);
+          toast(t("product_added"), "success");
+        }
         modal.close();
       } catch (e) {
-        toast(e.message, "error");
+        console.error(e);
+        toast(e.message || t("error_occurred"), "error", 5000);
         btn.disabled = false;
         btn.innerHTML = `<i class="fa-solid fa-save"></i> ${t("save")}`;
       }
@@ -1907,7 +1873,6 @@ const adminPage = {
   },
 
   editProduct(id) { const p = state.products.find(x => x.id === id); if (p) this.productForm(p); },
-
   deleteProduct(id) {
     confirmDialog("Delete this product?", async () => {
       await api.deleteProduct(id);
@@ -1915,7 +1880,6 @@ const adminPage = {
     });
   },
 
-  /* ─── CATEGORIES ─── */
   categories() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -1925,8 +1889,7 @@ const adminPage = {
           <button class="btn btn-primary" id="addCatBtn"><i class="fa-solid fa-plus"></i> New Category</button>
         </div>
         <div class="grid-3" id="catGrid"></div>
-      </div>
-    `;
+      </div>`;
     $("#addCatBtn").onclick = () => {
       modal.open(`
         <div style="padding:28px;">
@@ -1959,7 +1922,7 @@ const adminPage = {
             <div><div style="font-weight:700;">${esc(cat.name)}</div>
             <div style="font-size:12px;color:var(--text-3);">${count} products</div></div>
           </div>
-          <button class="table-actions act-del" style="width:34px;height:34px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--danger);" onclick="adminPage.deleteCat('${cat.id}')">
+          <button style="width:34px;height:34px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--danger);" onclick="adminPage.deleteCat('${cat.id}')">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>`;
@@ -1974,7 +1937,6 @@ const adminPage = {
     });
   },
 
-  /* ─── COUPONS ─── */
   coupons() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -1987,8 +1949,7 @@ const adminPage = {
           <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Purchase</th><th>Status</th><th>Actions</th></tr></thead>
           <tbody id="couponTbody"></tbody>
         </table></div></div>
-      </div>
-    `;
+      </div>`;
     $("#addCouponBtn").onclick = () => {
       modal.open(`
         <div style="padding:28px;">
@@ -1999,7 +1960,7 @@ const adminPage = {
               <select id="cpType"><option value="percent">Percent (%)</option><option value="fixed">Fixed (৳)</option></select></div>
             <div class="form-group"><label>Value</label><input type="number" id="cpValue" placeholder="10" /></div>
           </div>
-          <div class="form-group"><label>Min Purchase (optional)</label><input type="number" id="cpMin" placeholder="0" /></div>
+          <div class="form-group"><label>Min Purchase</label><input type="number" id="cpMin" placeholder="0" /></div>
           <div style="display:flex;gap:10px;margin-top:20px;">
             <button class="btn btn-outline" onclick="modal.close()" style="flex:1;">Cancel</button>
             <button class="btn btn-primary" id="saveCouponBtn" style="flex:1;">Create</button>
@@ -2044,15 +2005,13 @@ const adminPage = {
     });
   },
 
-  /* ─── REVIEWS ─── */
   reviews() {
     const c = $("#adminContent");
     c.innerHTML = `
       <div class="card">
         <div class="card-header"><h3><i class="fa-solid fa-star"></i> Reviews (<span id="revCount">0</span>)</h3></div>
         <div id="revList"></div>
-      </div>
-    `;
+      </div>`;
     api.listenReviews(reviews => {
       const el = $("#revCount"); if (el) el.textContent = reviews.length;
       const list = $("#revList");
@@ -2066,7 +2025,7 @@ const adminPage = {
               <p style="margin-top:8px;color:var(--text-2);">${esc(r.comment || "")}</p>
               <small style="color:var(--text-3);">${fmtDate(r.createdAt)}</small>
             </div>
-            <button class="table-actions act-del" style="width:34px;height:34px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--danger);" onclick="adminPage.deleteReview('${r.id}')">
+            <button style="width:34px;height:34px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--danger);" onclick="adminPage.deleteReview('${r.id}')">
               <i class="fa-solid fa-trash"></i></button>
           </div>
         </div>`).join("");
@@ -2080,7 +2039,6 @@ const adminPage = {
     });
   },
 
-  /* ─── USERS ─── */
   users() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -2090,8 +2048,7 @@ const adminPage = {
           <thead><tr><th>User</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
           <tbody id="usersTbody"></tbody>
         </table></div></div>
-      </div>
-    `;
+      </div>`;
     api.listenUsers(users => {
       const el = $("#userCount"); if (el) el.textContent = users.length;
       const tb = $("#usersTbody"); if (!tb) return;
@@ -2108,10 +2065,10 @@ const adminPage = {
           <td><span class="status-pill ${u.banned ? "status-banned" : "status-active"}">${u.banned ? "Banned" : "Active"}</span></td>
           <td style="font-size:13px;color:var(--text-3);">${fmtDateShort(u.createdAt)}</td>
           <td><div class="table-actions">
-            <button class="act-edit" title="${u.banned ? "Unban" : "Ban"}" onclick="adminPage.toggleBan('${u.id}', ${!u.banned})">
+            <button class="act-edit" onclick="adminPage.toggleBan('${u.id}', ${!u.banned})" title="${u.banned ? "Unban" : "Ban"}">
               <i class="fa-solid fa-${u.banned ? "check" : "ban"}"></i>
             </button>
-            <button class="act-del" title="Delete" onclick="adminPage.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>
+            <button class="act-del" onclick="adminPage.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>
           </div></td>
         </tr>`).join("");
     });
@@ -2130,7 +2087,6 @@ const adminPage = {
     });
   },
 
-  /* ─── PUSH NOTIFICATIONS ─── */
   pushNotifications() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -2149,8 +2105,7 @@ const adminPage = {
             Use this to announce sales, new products, or important updates.
           </p>
         </div>
-      </div>
-    `;
+      </div>`;
     api.listenUsers(u => { const el = $("#bcUserCount"); if (el) el.textContent = u.length; });
     $("#sendBcBtn").onclick = async () => {
       const title = $("#bcTitle").value.trim();
@@ -2168,7 +2123,6 @@ const adminPage = {
     };
   },
 
-  /* ─── BANNERS ─── */
   banners() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -2178,8 +2132,7 @@ const adminPage = {
           <button class="btn btn-primary" id="addBannerBtn"><i class="fa-solid fa-plus"></i> New Banner</button>
         </div>
         <div class="grid-3" id="bannerGrid"></div>
-      </div>
-    `;
+      </div>`;
     $("#addBannerBtn").onclick = () => {
       modal.open(`
         <div style="padding:28px;">
@@ -2197,13 +2150,20 @@ const adminPage = {
       $("#saveBannerBtn").onclick = async () => {
         const title = $("#bnTitle").value.trim();
         if (!title) { toast("Title required", "error"); return; }
-        await api.addBanner({
-          title, subtitle: $("#bnSub").value.trim(),
-          link: $("#bnLink").value.trim() || "/products",
-          active: true
-        }, $("#bnImage").files[0]);
-        toast("Banner added", "success");
-        modal.close();
+        const btn = $("#saveBannerBtn"); btn.disabled = true;
+        btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
+        try {
+          await api.addBanner({
+            title, subtitle: $("#bnSub").value.trim(),
+            link: $("#bnLink").value.trim() || "/products",
+            active: true
+          }, $("#bnImage").files[0]);
+          toast("Banner added", "success");
+          modal.close();
+        } catch (e) {
+          toast(e.message, "error");
+          btn.disabled = false; btn.textContent = "Save";
+        }
       };
     };
     api.listenBanners(banners => {
@@ -2230,7 +2190,6 @@ const adminPage = {
     });
   },
 
-  /* ─── SETTINGS ─── */
   settings() {
     const s = state.siteSettings;
     const c = $("#adminContent");
@@ -2248,7 +2207,6 @@ const adminPage = {
         <div class="form-group"><label>Address</label><input id="setAddress" value="${esc(s.address || "ঢাকা, বাংলাদেশ")}" /></div>
         <div class="form-group"><label>Footer Text</label><textarea id="setFooter">${esc(s.footerText || "© 2025 EcoShop Pro. All rights reserved.")}</textarea></div>
       </div>
-
       <div class="card">
         <div class="card-header"><h3><i class="fa-solid fa-truck-fast"></i> Shipping & Tax</h3></div>
         <div class="form-row-3">
@@ -2257,14 +2215,11 @@ const adminPage = {
           <div class="form-group"><label>VAT %</label><input type="number" id="setVAT" value="${s.vat || 5}" /></div>
         </div>
       </div>
-
       <div class="card">
         <div class="card-header"><h3><i class="fa-solid fa-bullhorn"></i> Announcement</h3></div>
         <div class="form-group"><label>Announcement Bar Text</label><input id="setAnnouncement" value="${esc(s.announcement || "")}" placeholder="Leave empty to hide" /></div>
       </div>
-
-      <button class="btn btn-primary btn-block btn-lg" id="saveSiteSettings"><i class="fa-solid fa-save"></i> Save All Settings</button>
-    `;
+      <button class="btn btn-primary btn-block btn-lg" id="saveSiteSettings"><i class="fa-solid fa-save"></i> Save All Settings</button>`;
     $("#saveSiteSettings").onclick = async () => {
       const data = {
         siteName: $("#setName").value.trim(),
@@ -2283,15 +2238,13 @@ const adminPage = {
     };
   },
 
-  /* ─── ACTIVITY LOGS ─── */
   activity() {
     const c = $("#adminContent");
     c.innerHTML = `
       <div class="card">
         <div class="card-header"><h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h3></div>
         <div id="activityList"></div>
-      </div>
-    `;
+      </div>`;
     api.listenActivityLogs(logs => {
       const list = $("#activityList");
       if (!logs.length) { list.innerHTML = `<div class="empty-state"><i class="fa-solid fa-clock"></i><h3>No activity yet</h3></div>`; return; }
@@ -2308,7 +2261,6 @@ const adminPage = {
     });
   },
 
-  /* ─── EXPORT ─── */
   exportData() {
     const c = $("#adminContent");
     c.innerHTML = `
@@ -2331,34 +2283,24 @@ const adminPage = {
           <p style="color:var(--text-3);font-size:13px;margin-bottom:16px;">Download all users as CSV</p>
           <button class="btn btn-primary btn-block" onclick="adminPage.exportUsers()"><i class="fa-solid fa-download"></i> Export</button>
         </div>
-      </div>
-    `;
+      </div>`;
   },
 
   exportProducts() {
     const rows = [["ID","Name","Name(EN)","Price","Old Price","Category","Stock","Featured","Created"]];
-    state.products.forEach(p => rows.push([
-      p.id, p.name, p.nameEn, p.price, p.oldPrice, p.category, p.stock,
-      p.featured ? "Yes" : "No", new Date(p.createdAt).toISOString()
-    ]));
+    state.products.forEach(p => rows.push([p.id, p.name, p.nameEn, p.price, p.oldPrice, p.category, p.stock, p.featured ? "Yes" : "No", new Date(p.createdAt).toISOString()]));
     downloadBlob(rows.map(r => r.map(x => `"${x || ""}"`).join(",")).join("\n"), "products.csv");
     toast("Products exported", "success");
   },
   exportOrders() {
     const rows = [["Order ID","Customer","Phone","Total","Status","Payment","Date"]];
-    state.orders.forEach(o => rows.push([
-      o.orderId || o.id, o.userName, o.phone, o.total, o.status, o.payment,
-      new Date(o.createdAt).toISOString()
-    ]));
+    state.orders.forEach(o => rows.push([o.orderId || o.id, o.userName, o.phone, o.total, o.status, o.payment, new Date(o.createdAt).toISOString()]));
     downloadBlob(rows.map(r => r.map(x => `"${x || ""}"`).join(",")).join("\n"), "orders.csv");
     toast("Orders exported", "success");
   },
   exportUsers() {
     const rows = [["UID","Name","Email","Phone","Role","Status","Joined"]];
-    state.users.forEach(u => rows.push([
-      u.uid, u.name, u.email, u.phone, u.role,
-      u.banned ? "Banned" : "Active", new Date(u.createdAt).toISOString()
-    ]));
+    state.users.forEach(u => rows.push([u.uid, u.name, u.email, u.phone, u.role, u.banned ? "Banned" : "Active", new Date(u.createdAt).toISOString()]));
     downloadBlob(rows.map(r => r.map(x => `"${x || ""}"`).join(",")).join("\n"), "users.csv");
     toast("Users exported", "success");
   }
@@ -2378,11 +2320,11 @@ const authUI = {
     const u = state.user; if (!u) return;
     const name = u.displayName || u.email || "User";
     const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`;
-    $("#userAvatar").src = url;
-    $("#adminAvatar").src = url;
-    $("#dropdownUserHeader").innerHTML = `
-      <h4>${esc(u.displayName || u.email?.split("@")[0] || "User")}</h4>
-      <p>${esc(u.email || "")}</p>`;
+    const a1 = $("#userAvatar"), a2 = $("#adminAvatar");
+    if (a1) a1.src = url;
+    if (a2) a2.src = url;
+    const dh = $("#dropdownUserHeader");
+    if (dh) dh.innerHTML = `<h4>${esc(u.displayName || u.email?.split("@")[0] || "User")}</h4><p>${esc(u.email || "")}</p>`;
   }
 };
 window.authUI = authUI;
@@ -2415,10 +2357,9 @@ const cmdPalette = {
     { icon:"fa-heart", label:"Wishlist", action:() => router.go("wishlist"), group:"Navigation" },
     { icon:"fa-user", label:"My Profile", action:() => router.go("profile"), group:"Navigation" },
     { icon:"fa-gear", label:"Settings", action:() => router.go("settings"), group:"Navigation" },
-    { icon:"fa-gauge-high", label:"Dashboard", action:() => router.go("dashboard"), group:"Navigation" },
     { icon:"fa-moon", label:"Toggle Dark Mode", action:() => toggleTheme(), group:"Actions" },
     { icon:"fa-globe", label:"Switch Language", action:() => toggleLang(), group:"Actions" },
-    { icon:"fa-cart-shopping", label:"Open Cart", action:() => { cart.renderDrawer(); $("#cartDrawer").classList.add("active"); }, group:"Actions" },
+    { icon:"fa-cart-shopping", label:"Open Cart", action:() => { cart.renderDrawer(); $("#cartDrawer").classList.add("active"); }, group:"Actions" }
   ],
   adminCommands: [
     { icon:"fa-chart-line", label:"Admin Overview", action:() => { router.go("admin"); adminPage.go("overview"); }, group:"Admin" },
@@ -2427,26 +2368,27 @@ const cmdPalette = {
     { icon:"fa-users", label:"Manage Users", action:() => { router.go("admin"); adminPage.go("users"); }, group:"Admin" },
     { icon:"fa-ticket", label:"Manage Coupons", action:() => { router.go("admin"); adminPage.go("coupons"); }, group:"Admin" },
     { icon:"fa-bullhorn", label:"Push Notifications", action:() => { router.go("admin"); adminPage.go("notifications"); }, group:"Admin" },
-    { icon:"fa-sliders", label:"Site Settings", action:() => { router.go("admin"); adminPage.go("settings"); }, group:"Admin" },
+    { icon:"fa-sliders", label:"Site Settings", action:() => { router.go("admin"); adminPage.go("settings"); }, group:"Admin" }
   ],
   open() {
-    $("#cmdOverlay").classList.add("active");
-    setTimeout(() => $("#cmdInput").focus(), 100);
+    const o = $("#cmdOverlay"); if (!o) return;
+    o.classList.add("active");
+    setTimeout(() => $("#cmdInput")?.focus(), 100);
     this.render("");
   },
-  close() { $("#cmdOverlay").classList.remove("active"); $("#cmdInput").value = ""; },
+  close() { $("#cmdOverlay")?.classList.remove("active"); const i = $("#cmdInput"); if (i) i.value = ""; },
   render(filter) {
     const all = state.isAdmin ? [...this.commands, ...this.adminCommands] : this.commands;
     const f = filter.toLowerCase().trim();
     const list = f ? all.filter(c => c.label.toLowerCase().includes(f)) : all;
     const groups = {};
     list.forEach(c => { (groups[c.group] = groups[c.group] || []).push(c); });
-    const results = $("#cmdResults");
+    const results = $("#cmdResults"); if (!results) return;
     if (!list.length) { results.innerHTML = `<div class="empty-state" style="padding:30px;"><p>No commands found</p></div>`; return; }
     results.innerHTML = Object.entries(groups).map(([g, cmds]) => `
       <div class="cmd-group-title">${g}</div>
-      ${cmds.map((c, i) => `
-        <div class="cmd-item" data-idx="${i}" onclick="cmdPalette.run('${c.label}')">
+      ${cmds.map(c => `
+        <div class="cmd-item" onclick="cmdPalette.run('${c.label.replace(/'/g,"\\'")}')">
           <i class="fa-solid ${c.icon}"></i>
           <span>${c.label}</span>
         </div>`).join("")}
@@ -2478,7 +2420,7 @@ document.addEventListener("DOMContentLoaded", () => {
   applyTheme(); applyLang(); cart.updateBadge(); wishlist.updateBadge();
 
   // Boot progress
-  const bootBar = $(".boot-bar span");
+  const bootBar = document.querySelector(".boot-bar span");
   const bootText = $("#bootText");
   const bootSteps = ["Initializing...", "Connecting to Firebase...", "Loading products...", "Almost ready..."];
   let step = 0;
@@ -2493,56 +2435,58 @@ document.addEventListener("DOMContentLoaded", () => {
   $("#langToggle").onclick = toggleLang;
 
   // Command palette
-  $("#cmdBtn").onclick = () => cmdPalette.open();
-  $("#cmdInput").oninput = e => cmdPalette.render(e.target.value);
-  $("#cmdOverlay").onclick = e => { if (e.target === $("#cmdOverlay")) cmdPalette.close(); };
+  $("#cmdBtn")?.addEventListener("click", () => cmdPalette.open());
+  $("#cmdInput")?.addEventListener("input", e => cmdPalette.render(e.target.value));
+  $("#cmdOverlay")?.addEventListener("click", e => { if (e.target === $("#cmdOverlay")) cmdPalette.close(); });
 
   // Side menu
-  $("#hamburger").onclick = () => {
+  $("#hamburger")?.addEventListener("click", () => {
     $("#sideMenu").classList.add("active");
     $("#overlay").classList.add("active");
-  };
-  $("#closeSideMenu").onclick = closeSideMenu;
-  $("#overlay").onclick = closeSideMenu;
+  });
+  $("#closeSideMenu")?.addEventListener("click", closeSideMenu);
+  $("#overlay")?.addEventListener("click", closeSideMenu);
 
   // User menu
-  $("#userMenuBtn").onclick = e => { e.stopPropagation(); $("#userDropdown").classList.toggle("active"); };
+  $("#userMenuBtn")?.addEventListener("click", e => { e.stopPropagation(); $("#userDropdown").classList.toggle("active"); });
   document.addEventListener("click", e => {
     if (!$("#userMenu")?.contains(e.target)) $("#userDropdown")?.classList.remove("active");
     if (!$("#navSearchWrap")?.contains(e.target)) search.clear();
   });
-  $("#logoutBtn").onclick = authUI.doLogout;
+  $("#logoutBtn")?.addEventListener("click", authUI.doLogout);
 
   // Cart & notif
-  $("#cartBtn").onclick = () => { cart.renderDrawer(); $("#cartDrawer").classList.add("active"); };
-  $("#closeCart").onclick = closeCart;
-  $("#notifBtn").onclick = async () => {
+  $("#cartBtn")?.addEventListener("click", () => { cart.renderDrawer(); $("#cartDrawer").classList.add("active"); });
+  $("#closeCart")?.addEventListener("click", closeCart);
+  $("#notifBtn")?.addEventListener("click", async () => {
     $("#notifPanel").classList.add("active");
     if (state.user && state.notifications.length) await api.markAllRead(state.user.uid, state.notifications);
-  };
-  $("#closeNotif").onclick = () => $("#notifPanel").classList.remove("active");
+  });
+  $("#closeNotif")?.addEventListener("click", () => $("#notifPanel").classList.remove("active"));
 
   // Search
   const si = $("#globalSearchInput");
-  si.addEventListener("input", debounce(e => search.suggest(e.target.value.trim()), 200));
-  si.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      state.filters.query = e.target.value.trim().toLowerCase();
-      search.clear();
-      if (router.current !== "products") router.go("products");
-      else Pages.applyFilters();
-    }
-  });
+  if (si) {
+    si.addEventListener("input", debounce(e => search.suggest(e.target.value.trim()), 200));
+    si.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        state.filters.query = e.target.value.trim().toLowerCase();
+        search.clear();
+        if (router.current !== "products") router.go("products");
+        else Pages.applyFilters();
+      }
+    });
+  }
   search.initVoice();
   search.initImage();
 
   // Back to top
   const btt = $("#backToTop");
   window.addEventListener("scroll", () => {
-    btt.classList.toggle("show", window.scrollY > 400);
+    btt?.classList.toggle("show", window.scrollY > 400);
     $("#navbar")?.classList.toggle("scrolled", window.scrollY > 10);
   });
-  btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  btt?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
 
   // Escape
   document.addEventListener("keydown", e => {
@@ -2551,9 +2495,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Admin sidebar toggle
-  $("#adminSidebarToggle").onclick = () => $("#adminSidebar").classList.toggle("open");
+  $("#adminSidebarToggle")?.addEventListener("click", () => $("#adminSidebar").classList.toggle("open"));
   $$(".admin-nav a").forEach(a => {
-    a.onclick = () => adminPage.go(a.dataset.admin);
+    a.addEventListener("click", () => adminPage.go(a.dataset.admin));
   });
 
   // Listen site settings
@@ -2566,37 +2510,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /* ─── AUTH LISTENER ─── */
   onAuthStateChanged(auth, async user => {
-    state.user = user;
-    if (user) {
-      state.isAdmin = await api.isAdmin(user.uid);
-      state.userProfile = await api.getProfile(user.uid);
-      authUI.updateAvatar();
-      $("#userMenu").classList.add("show");
-      $("#loginBtn").style.display = "none";
-      $("#ordersNavLink").style.display = "flex";
+    try {
+      state.user = user;
+      if (user) {
+        try {
+          state.isAdmin = await api.isAdmin(user.uid);
+          state.userProfile = await api.getProfile(user.uid);
+        } catch (e) {
+          console.warn("Profile load error:", e);
+          state.isAdmin = false;
+        }
+        authUI.updateAvatar();
+        $("#userMenu")?.classList.add("show");
+        if ($("#loginBtn")) $("#loginBtn").style.display = "none";
+        if ($("#ordersNavLink")) $("#ordersNavLink").style.display = "flex";
 
-      // Admin auto-redirect
-      if (state.isAdmin && (router.current === "dashboard" || router.current === "home")) {
-        setTimeout(() => router.go("admin"), 100);
+        if (state.isAdmin && (router.current === "dashboard" || router.current === "home")) {
+          setTimeout(() => router.go("admin"), 100);
+        }
+
+        api.listenNotifications(user.uid, list => {
+          renderNotifications(list);
+          const unread = list.filter(n => !n.read).length;
+          const badge = $("#notifBadge");
+          if (badge) {
+            badge.textContent = unread;
+            badge.classList.toggle("show", unread > 0);
+          }
+        });
+      } else {
+        state.isAdmin = false;
+        state.userProfile = null;
+        router.hideAdmin();
+        $("#userMenu")?.classList.remove("show");
+        if ($("#loginBtn")) $("#loginBtn").style.display = "flex";
+        if ($("#ordersNavLink")) $("#ordersNavLink").style.display = "none";
+        $("#notifBadge")?.classList.remove("show");
+        renderNotifications([]);
       }
-
-      api.listenNotifications(user.uid, list => {
-        renderNotifications(list);
-        const unread = list.filter(n => !n.read).length;
-        const badge = $("#notifBadge");
-        badge.textContent = unread;
-        badge.classList.toggle("show", unread > 0);
-      });
-    } else {
-      state.isAdmin = false;
-      state.userProfile = null;
-      router.hideAdmin();
-      $("#userMenu").classList.remove("show");
-      $("#loginBtn").style.display = "flex";
-      $("#ordersNavLink").style.display = "none";
-      $("#notifBadge").classList.remove("show");
-      renderNotifications([]);
+    } catch (err) {
+      console.error("Auth listener error:", err);
     }
+  }, (error) => {
+    console.error("Auth error:", error);
+    const bl = document.getElementById("bootLoader");
+    if (bl) bl.classList.add("hidden");
   });
 
   // Load products globally
@@ -2604,24 +2562,48 @@ document.addEventListener("DOMContentLoaded", () => {
     if (router.current === "products") Pages.applyFilters();
   });
 
-  // Route
-  router.go("home");
+  // Initial route
+  router.go("auth");
 
-  // Hide boot
-  setTimeout(() => {
+  // ─── SAFETY: Always hide boot loader ───
+  const forceBoot = () => {
     clearInterval(bootInterval);
     if (bootBar) bootBar.style.width = "100%";
     if (bootText) bootText.textContent = "Ready!";
-    setTimeout(() => $("#bootLoader").classList.add("hidden"), 300);
-  }, 1100);
+    setTimeout(() => {
+      const bl = $("#bootLoader");
+      if (bl) bl.classList.add("hidden");
+    }, 200);
+  };
+  setTimeout(forceBoot, 2500);
 });
 
 /* ═══════════════════════════════════════════════════════════════
-   GLOBAL EXPOSE
+   GLOBAL SAFETY NET
+   ═══════════════════════════════════════════════════════════════ */
+window.addEventListener("error", (e) => {
+  console.error("Global error:", e.error);
+  const bl = document.getElementById("bootLoader");
+  if (bl) bl.classList.add("hidden");
+});
+
+setTimeout(() => {
+  const bl = document.getElementById("bootLoader");
+  if (bl && !bl.classList.contains("hidden")) {
+    bl.classList.add("hidden");
+    const app = document.getElementById("app");
+    if (app && !app.innerHTML.trim()) {
+      if (window.router) window.router.go("auth");
+    }
+  }
+}, 5000);
+
+/* ═══════════════════════════════════════════════════════════════
+   EXPOSE
    ═══════════════════════════════════════════════════════════════ */
 window.cart = cart;
 window.wishlist = wishlist;
 window.search = search;
 
 console.log("%c🛒 EcoShop PRO", "font-size:26px;font-weight:900;background:linear-gradient(90deg,#6366f1,#ec4899);-webkit-background-clip:text;color:transparent;");
-console.log("%cEnterprise E-Commerce Platform Ready ✅", "color:#6366f1;font-weight:700;");
+console.log("%cImgBB Ready ✅ | API Key configured ✅", "color:#10b981;font-weight:700;");
