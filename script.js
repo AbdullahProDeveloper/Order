@@ -1,9 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════
-   ECOSHOP PRO — PROFESSIONAL APP (ImgBB Edition)
-   Complete SPA with Firebase Realtime Database + ImgBB Images
+   ECOSHOP PRO — PROFESSIONAL APP (ImgBB Edition + Fixed Routing)
    ═══════════════════════════════════════════════════════════════ */
 
-/* ─── FIREBASE SDK (Storage বাদ) ─── */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set, get, update, push, remove, onValue, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -27,67 +25,32 @@ const auth = getAuth(app);
 const db = getDatabase(app);
 
 /* ═══════════════════════════════════════════════════════════════
-   IMGBB IMAGE UPLOAD SERVICE
+   IMGBB IMAGE UPLOAD
    ═══════════════════════════════════════════════════════════════ */
 const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
 const IMGBB_ENDPOINT = "https://api.imgbb.com/1/upload";
 
-/**
- * ImgBB তে ছবি আপলোড করে সরাসরি URL রিটার্ন করে
- * @param {File} file — input[type="file"] থেকে প্রাপ্ত ফাইল
- * @param {Function} onProgress — ঐচ্ছিক progress callback
- * @returns {Promise<string>} — ছবির URL
- */
-async function uploadToImgBB(file, onProgress = null) {
+async function uploadToImgBB(file) {
   if (!file) throw new Error("কোনো ফাইল পাওয়া যায়নি");
-  if (!file.type.startsWith("image/")) {
-    throw new Error("শুধুমাত্র ইমেজ ফাইল আপলোড করা যাবে");
-  }
-  if (file.size > 32 * 1024 * 1024) {
-    throw new Error("ফাইল ৩২MB এর চেয়ে ছোট হতে হবে");
-  }
+  if (!file.type.startsWith("image/")) throw new Error("শুধুমাত্র ইমেজ ফাইল আপলোড করা যাবে");
+  if (file.size > 32 * 1024 * 1024) throw new Error("ফাইল ৩২MB এর চেয়ে ছোট হতে হবে");
 
-  // Base64 এ কনভার্ট (ImgBB API base64 এবং multipart দুটোই সাপোর্ট করে)
   const base64 = await fileToBase64(file);
-  const base64Data = base64.split(",")[1]; // "data:image/png;base64," অংশ বাদ
+  const base64Data = base64.split(",")[1];
 
   const formData = new FormData();
   formData.append("key", IMGBB_API_KEY);
   formData.append("image", base64Data);
   formData.append("name", file.name.replace(/\.[^.]+$/, ""));
 
-  if (onProgress) onProgress(30);
-
-  try {
-    const res = await fetch(IMGBB_ENDPOINT, {
-      method: "POST",
-      body: formData
-    });
-
-    if (onProgress) onProgress(70);
-
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      const errMsg = data?.error?.message || `HTTP ${res.status}`;
-      throw new Error("ImgBB: " + errMsg);
-    }
-
-    if (onProgress) onProgress(100);
-
-    // ImgBB response থেকে সবচেয়ে ভালো URL নিন
-    return (
-      data.data.display_url ||
-      data.data.url ||
-      data.data.image?.url
-    );
-  } catch (err) {
-    console.error("ImgBB upload error:", err);
-    throw new Error("ছবি আপলোড ব্যর্থ: " + err.message);
+  const res = await fetch(IMGBB_ENDPOINT, { method: "POST", body: formData });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error("ImgBB: " + (data?.error?.message || `HTTP ${res.status}`));
   }
+  return data.data.display_url || data.data.url || data.data.image?.url;
 }
 
-/** File কে Base64 string এ কনভার্ট করে */
 function fileToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -138,7 +101,7 @@ const I18N = {
     sort_price_high:"দাম: বেশি থেকে কম", sort_popular:"জনপ্রিয়",
     min_price:"সর্বনিম্ন দাম", max_price:"সর্বোচ্চ দাম",
     hero_title:"আপনার প্রয়োজনীয় সবকিছু এক জায়গায়",
-    hero_sub:"প্রফেশনাল, নিরাপদ এবং দ্রুত ই-কমার্স প্ল্যাটফর্ম। সেরা দামে সেরা পণ্য পান।",
+    hero_sub:"প্রফেশনাল, নিরাপদ এবং দ্রুত ই-কমার্স প্ল্যাটফর্ম।",
     shop_now:"কেনাকাটা শুরু করুন", explore:"এক্সপ্লোর করুন",
     products_count:"পণ্য", happy_customers:"সন্তুষ্ট গ্রাহক",
     orders_delivered:"ডেলিভারড অর্ডার", rating:"রেটিং",
@@ -212,6 +175,7 @@ const state = {
   user: null,
   userProfile: null,
   isAdmin: false,
+  authReady: false,          // ⭐ নতুন — Firebase auth state resolved?
   products: [],
   users: [],
   orders: [],
@@ -413,7 +377,6 @@ const wishlist = {
    FIREBASE API
    ═══════════════════════════════════════════════════════════════ */
 const api = {
-  /* ─── AUTH ─── */
   async signup({ name, email, password, phone }) {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(cred.user, { displayName: name });
@@ -426,11 +389,26 @@ const api = {
   },
   login(email, password) { return signInWithEmailAndPassword(auth, email, password); },
   logout() { return signOut(auth); },
-  async isAdmin(uid) { const s = await get(ref(db, `admins/${uid}`)); return s.exists() && s.val() === true; },
-  async getProfile(uid) { const s = await get(ref(db, `users/${uid}`)); return s.exists() ? s.val() : null; },
+  async isAdmin(uid) {
+    try {
+      const s = await get(ref(db, `admins/${uid}`));
+      return s.exists() && s.val() === true;
+    } catch (e) {
+      console.warn("isAdmin check failed:", e);
+      return false;
+    }
+  },
+  async getProfile(uid) {
+    try {
+      const s = await get(ref(db, `users/${uid}`));
+      return s.exists() ? s.val() : null;
+    } catch (e) {
+      console.warn("getProfile failed:", e);
+      return null;
+    }
+  },
   async updateProfile(uid, data) { await update(ref(db, `users/${uid}`), data); },
 
-  /* ─── PRODUCTS ─── */
   listenProducts(cb) {
     return onValue(ref(db, "products"), snap => {
       const arr = [];
@@ -443,14 +421,11 @@ const api = {
   async addProduct(data, imageFile) {
     const pRef = push(ref(db, "products"));
     let imageUrl = "";
-
-    // ✅ ImgBB দিয়ে ছবি আপলোড
     if (imageFile) {
       toast(t("uploading_image"), "info", 2000);
       imageUrl = await uploadToImgBB(imageFile);
     }
-
-    const payload = {
+    await set(pRef, {
       name: data.name, nameEn: data.nameEn || data.name,
       price: Number(data.price), oldPrice: Number(data.oldPrice) || 0,
       category: data.category || "Other",
@@ -462,20 +437,16 @@ const api = {
       featured: !!data.featured,
       createdBy: auth.currentUser?.uid || "",
       createdAt: Date.now()
-    };
-    await set(pRef, payload);
+    });
     await api.logActivity("product.create", `Added: ${data.name}`);
     return pRef.key;
   },
   async updateProduct(id, data, imageFile) {
     let imageUrl = data.image;
-
-    // ✅ ImgBB দিয়ে ছবি আপলোড
     if (imageFile) {
       toast(t("uploading_image"), "info", 2000);
       imageUrl = await uploadToImgBB(imageFile);
     }
-
     const payload = { ...data };
     delete payload.image;
     if (imageUrl !== undefined) payload.image = imageUrl;
@@ -491,7 +462,6 @@ const api = {
     await update(ref(db, `products/${id}`), { featured });
   },
 
-  /* ─── ORDERS ─── */
   async placeOrder(order) {
     const oRef = push(ref(db, "orders"));
     const orderId = oRef.key;
@@ -526,7 +496,6 @@ const api = {
     await api.logActivity("order.status", `#${orderId.slice(-6)} → ${status}`);
   },
 
-  /* ─── USERS ─── */
   listenUsers(cb) {
     return onValue(ref(db, "users"), snap => {
       const arr = []; snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
@@ -539,7 +508,6 @@ const api = {
     await api.logActivity("user.ban", `${banned ? "Banned" : "Unbanned"}: ${uid}`);
   },
 
-  /* ─── CATEGORIES ─── */
   listenCategories(cb) {
     return onValue(ref(db, "categories"), snap => {
       let arr = [];
@@ -554,7 +522,6 @@ const api = {
   },
   async deleteCategory(id) { await remove(ref(db, `categories/${id}`)); },
 
-  /* ─── COUPONS ─── */
   listenCoupons(cb) {
     return onValue(ref(db, "coupons"), snap => {
       const arr = []; snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
@@ -570,7 +537,6 @@ const api = {
     return state.coupons.find(c => c.code.toLowerCase() === code.toLowerCase() && c.active !== false) || null;
   },
 
-  /* ─── REVIEWS ─── */
   listenReviews(cb) {
     return onValue(ref(db, "reviews"), snap => {
       const arr = []; snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
@@ -580,7 +546,6 @@ const api = {
   },
   async deleteReview(id) { await remove(ref(db, `reviews/${id}`)); },
 
-  /* ─── BANNERS (ImgBB) ─── */
   listenBanners(cb) {
     return onValue(ref(db, "banners"), snap => {
       const arr = []; snap.forEach(c => arr.push({ id: c.key, ...c.val() }));
@@ -598,10 +563,11 @@ const api = {
   },
   async deleteBanner(id) { await remove(ref(db, `banners/${id}`)); },
 
-  /* ─── NOTIFICATIONS ─── */
   async notify(uid, title, body) {
     if (!uid) return;
-    await push(ref(db, `notifications/${uid}`), { title, body, read: false, createdAt: Date.now() });
+    try {
+      await push(ref(db, `notifications/${uid}`), { title, body, read: false, createdAt: Date.now() });
+    } catch (e) { console.warn("notify failed:", e); }
   },
   async broadcast(title, body) {
     for (const u of state.users) await this.notify(u.id, title, body);
@@ -621,7 +587,6 @@ const api = {
     if (Object.keys(updates).length) await update(ref(db), updates);
   },
 
-  /* ─── ACTIVITY ─── */
   async logActivity(type, message) {
     try {
       await push(ref(db, "activityLogs"), {
@@ -641,7 +606,6 @@ const api = {
     });
   },
 
-  /* ─── SITE SETTINGS ─── */
   listenSiteSettings(cb) {
     return onValue(ref(db, "siteSettings"), snap => {
       state.siteSettings = snap.exists() ? snap.val() : {};
@@ -655,16 +619,43 @@ const api = {
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   ROUTER
+   ROUTER — FIXED VERSION
    ═══════════════════════════════════════════════════════════════ */
 const router = {
   current: "home",
+
   go(page) {
+    // Admin route protection
     if (page === "admin") {
-      if (!state.isAdmin) { toast("Access denied", "error"); return; }
+      if (!state.isAdmin) {
+        toast("Access denied", "error");
+        this.go("auth");
+        return;
+      }
       this.showAdmin();
       return;
     }
+
+    // Auth-protected pages
+    const protectedPages = ["dashboard", "profile", "orders", "wishlist", "settings"];
+    if (protectedPages.includes(page)) {
+      if (!state.authReady) {
+        // Wait for auth to resolve
+        setTimeout(() => this.go(page), 150);
+        return;
+      }
+      if (!state.user) {
+        toast(t("login_required"), "warning");
+        page = "auth";
+      }
+    }
+
+    // If user is logged in and visiting auth page, redirect to dashboard
+    if (page === "auth" && state.user && state.authReady) {
+      this.showAdminOrUserDash();
+      return;
+    }
+
     this.hideAdmin();
     this.current = page;
     this.render();
@@ -672,13 +663,30 @@ const router = {
     closeSideMenu();
     $$(".nav-menu a").forEach(a => a.classList.toggle("active", a.dataset.page === page));
   },
+
+  // ⭐ Redirect to admin OR user dashboard based on role
+  showAdminOrUserDash() {
+    if (state.isAdmin) {
+      this.showAdmin();
+    } else {
+      this.hideAdmin();
+      this.current = "dashboard";
+      this.render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      $$(".nav-menu a").forEach(a => a.classList.toggle("active", a.dataset.page === "dashboard"));
+    }
+  },
+
   showAdmin() {
-    $("#adminLayout").style.display = "grid";
-    $("#publicNavbar").style.display = "none";
-    $("#app").style.display = "none";
-    $("#publicFooter").style.display = "none";
+    const al = $("#adminLayout"), pn = $("#publicNavbar"), ap = $("#app"), pf = $("#publicFooter");
+    if (al) al.style.display = "grid";
+    if (pn) pn.style.display = "none";
+    if (ap) ap.style.display = "none";
+    if (pf) pf.style.display = "none";
+    this.current = "admin";
     adminPage.render();
   },
+
   hideAdmin() {
     const al = $("#adminLayout"), pn = $("#publicNavbar"), ap = $("#app"), pf = $("#publicFooter");
     if (al) al.style.display = "none";
@@ -686,24 +694,29 @@ const router = {
     if (ap) ap.style.display = "";
     if (pf) pf.style.display = "";
   },
+
   render() {
     progress(true);
     const appEl = $("#app");
     if (!appEl) return;
     appEl.innerHTML = "";
-    const protectedPages = ["dashboard","profile","orders","wishlist","settings"];
-    if (protectedPages.includes(this.current) && !state.user) {
-      toast(t("login_required"), "warning");
-      this.go("auth");
-      return;
-    }
+
+    // If we're on admin, don't render public
+    if (this.current === "admin") return;
+
     const routes = {
-      home: Pages.home, products: Pages.products, auth: Pages.auth,
-      dashboard: Pages.dashboard, profile: Pages.profile, orders: Pages.orders,
-      wishlist: Pages.wishlist, settings: Pages.settings
+      home: Pages.home,
+      products: Pages.products,
+      auth: Pages.auth,
+      dashboard: Pages.dashboard,
+      profile: Pages.profile,
+      orders: Pages.orders,
+      wishlist: Pages.wishlist,
+      settings: Pages.settings
     };
     try {
-      (routes[this.current] || Pages.home)(appEl);
+      const fn = routes[this.current] || Pages.home;
+      fn(appEl);
     } catch (err) {
       console.error("Render error:", err);
       appEl.innerHTML = `<section class="page"><div class="empty-state">
@@ -772,7 +785,6 @@ const checkout = {
         <h2 style="font-size:22px;font-weight:900;margin-bottom:6px;">
           <i class="fa-solid fa-credit-card" style="color:var(--brand-1)"></i> ${t("checkout")}
         </h2>
-        <p style="color:var(--text-2);font-size:14px;margin-bottom:22px;">${state.lang === "bn" ? "আপনার তথ্য নিশ্চিত করুন" : "Confirm your details"}</p>
         <div class="form-group"><label>${t("name")}</label>
           <input id="coName" value="${esc(p.name || state.user.displayName || "")}" /></div>
         <div class="form-row">
@@ -865,7 +877,6 @@ const search = {
     const m = state.products.filter(p =>
       (p.name || "").toLowerCase().includes(lq) ||
       (p.nameEn || "").toLowerCase().includes(lq) ||
-      (p.description || "").toLowerCase().includes(lq) ||
       (p.category || "").toLowerCase().includes(lq)
     ).slice(0, 6);
     if (!m.length) box.innerHTML = `<div class="suggest-empty">🔍 No results</div>`;
@@ -1201,29 +1212,58 @@ const Pages = {
       };
     });
     renderFields();
+
     $("#authForm").onsubmit = async e => {
       e.preventDefault();
       const btn = $("#authSubmit"); btn.disabled = true;
       btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
       try {
+        let loggedUser;
         if (mode === "login") {
-          await api.login($("#aEmail").value.trim(), $("#aPassword").value);
+          const cred = await api.login($("#aEmail").value.trim(), $("#aPassword").value);
+          loggedUser = cred.user;
           toast(t("login_success"), "success");
         } else {
           const pw = $("#aPassword").value;
           if (pw.length < 6) { toast(t("password_short"), "error"); btn.disabled = false; renderFields(); return; }
-          await api.signup({
+          const cred = await api.signup({
             name: $("#aName").value.trim(),
             email: $("#aEmail").value.trim(),
             phone: $("#aPhone").value.trim(),
             password: pw
           });
+          loggedUser = cred;
           toast(t("signup_success"), "success");
         }
-        setTimeout(() => router.go(state.isAdmin ? "admin" : "dashboard"), 500);
+
+        // ⭐⭐ CRITICAL FIX: Explicitly set state and redirect
+        if (loggedUser) {
+          state.user = loggedUser;
+          // Await admin check before redirect
+          state.isAdmin = await api.isAdmin(loggedUser.uid);
+          state.authReady = true;
+
+          // Small delay for UX
+          setTimeout(() => {
+            if (state.isAdmin) {
+              router.showAdmin();
+            } else {
+              router.hideAdmin();
+              router.current = "dashboard";
+              router.render();
+              window.scrollTo({ top: 0, behavior: "smooth" });
+              $$(".nav-menu a").forEach(a => a.classList.toggle("active", a.dataset.page === "dashboard"));
+            }
+            // Update navbar UI
+            authUI.updateAvatar();
+            $("#userMenu")?.classList.add("show");
+            if ($("#loginBtn")) $("#loginBtn").style.display = "none";
+            if ($("#ordersNavLink")) $("#ordersNavLink").style.display = "flex";
+          }, 400);
+        }
       } catch (err) {
         let m = err.message;
-        if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found") m = t("invalid_credentials");
+        if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found" || err.code === "auth/wrong-password") m = t("invalid_credentials");
         if (err.code === "auth/email-already-in-use") m = "Email already registered";
         if (err.code === "auth/network-request-failed") m = "নেটওয়ার্ক সমস্যা — ইন্টারনেট চেক করুন";
         toast(m, "error");
@@ -1233,8 +1273,10 @@ const Pages = {
   },
 
   dashboard(app) {
-    if (state.isAdmin) { router.go("admin"); return; }
+    if (state.isAdmin) { router.showAdmin(); return; }
     const u = state.user;
+    if (!u) { router.go("auth"); return; }
+
     app.innerHTML = `
       <section class="page">
         <div style="background:var(--brand-grad);color:#fff;padding:40px 32px;border-radius:var(--radius-xl);margin-bottom:28px;">
@@ -1796,7 +1838,6 @@ const adminPage = {
           <i class="fa-solid ${isEdit ? "fa-pen" : "fa-plus"}" style="color:var(--brand-1)"></i>
           ${isEdit ? t("edit_product") : t("add_product")}
         </h2>
-        <p style="color:var(--text-2);font-size:14px;margin-bottom:22px;">Fill in the details</p>
         <div class="form-row">
           <div class="form-group"><label>Name (বাংলা) *</label><input id="pName" value="${esc(product?.name || "")}" required /></div>
           <div class="form-group"><label>Name (English)</label><input id="pNameEn" value="${esc(product?.nameEn || "")}" /></div>
@@ -1810,19 +1851,12 @@ const adminPage = {
             <select id="pCategory">${cats.map(c => `<option value="${esc(c.name)}" ${product?.category === c.name ? "selected" : ""}>${esc(c.name)}</option>`).join("")}<option value="Other" ${product?.category === "Other" ? "selected" : ""}>Other</option></select></div>
           <div class="form-group"><label>${t("stock")}</label><input type="number" id="pStock" value="${product?.stock || 0}" min="0" /></div>
         </div>
-        <div class="form-group"><label>${t("product_desc")} (বাংলা)</label><textarea id="pDesc">${esc(product?.description || "")}</textarea></div>
-        <div class="form-group"><label>${t("product_desc")} (English)</label><textarea id="pDescEn">${esc(product?.descriptionEn || "")}</textarea></div>
+        <div class="form-group"><label>${t("product_desc")}</label><textarea id="pDesc">${esc(product?.description || "")}</textarea></div>
         <div class="form-group"><label>${t("product_image")}</label><input type="file" id="pImage" accept="image/*" />
-          <small>ImgBB তে আপলোড হবে — সর্বোচ্চ ৩২MB</small></div>
+          <small>ImgBB তে আপলোড হবে</small></div>
         <div class="form-group" style="display:flex;align-items:center;gap:12px;">
           <label class="switch"><input type="checkbox" id="pFeatured" ${product?.featured ? "checked" : ""} /><span class="slider"></span></label>
           <span style="font-weight:600;">Featured Product</span>
-        </div>
-        <div id="pUploadProgress" style="display:none;margin-bottom:16px;">
-          <div style="height:6px;background:var(--bg-soft);border-radius:3px;overflow:hidden;">
-            <div id="pUploadBar" style="height:100%;width:0%;background:var(--brand-grad);transition:width 0.3s ease;"></div>
-          </div>
-          <p style="font-size:12px;color:var(--text-3);margin-top:6px;" id="pUploadText">${t("uploading_image")}</p>
         </div>
         <div style="display:flex;gap:10px;margin-top:20px;">
           <button class="btn btn-outline" onclick="modal.close()" style="flex:1;">${t("cancel")}</button>
@@ -1836,32 +1870,21 @@ const adminPage = {
       const price = Number($("#pPrice").value);
       if (!name || !price) { toast("Name and price required", "error"); return; }
       const btn = $("#saveProductBtn"); btn.disabled = true;
-      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${state.lang === "bn" ? "সংরক্ষণ হচ্ছে..." : "Saving..."}`;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i>`;
       const data = {
         name, nameEn: $("#pNameEn").value.trim() || name,
         price, oldPrice: Number($("#pOldPrice").value) || 0,
         category: $("#pCategory").value,
         stock: Number($("#pStock").value) || 0,
         description: $("#pDesc").value.trim(),
-        descriptionEn: $("#pDescEn").value.trim() || $("#pDesc").value.trim(),
+        descriptionEn: $("#pDesc").value.trim(),
         featured: $("#pFeatured").checked,
         image: product?.image || ""
       };
       const file = $("#pImage").files[0];
-
-      // Progress UI
-      if (file) {
-        $("#pUploadProgress").style.display = "block";
-      }
-
       try {
-        if (isEdit) {
-          await api.updateProduct(product.id, data, file);
-          toast(t("product_updated"), "success");
-        } else {
-          await api.addProduct(data, file);
-          toast(t("product_added"), "success");
-        }
+        if (isEdit) { await api.updateProduct(product.id, data, file); toast(t("product_updated"), "success"); }
+        else { await api.addProduct(data, file); toast(t("product_added"), "success"); }
         modal.close();
       } catch (e) {
         console.error(e);
@@ -2102,7 +2125,6 @@ const adminPage = {
           <div class="card-header"><h3><i class="fa-solid fa-info-circle"></i> Info</h3></div>
           <p style="color:var(--text-2);line-height:1.8;">
             Push notifications appear in the bell icon of every user's navbar.
-            Use this to announce sales, new products, or important updates.
           </p>
         </div>
       </div>`;
@@ -2268,19 +2290,16 @@ const adminPage = {
         <div class="card" style="text-align:center;">
           <i class="fa-solid fa-box" style="font-size:42px;color:var(--brand-1);margin-bottom:14px;"></i>
           <h3 style="font-size:16px;font-weight:800;margin-bottom:8px;">Products</h3>
-          <p style="color:var(--text-3);font-size:13px;margin-bottom:16px;">Download all products as CSV</p>
           <button class="btn btn-primary btn-block" onclick="adminPage.exportProducts()"><i class="fa-solid fa-download"></i> Export</button>
         </div>
         <div class="card" style="text-align:center;">
           <i class="fa-solid fa-receipt" style="font-size:42px;color:var(--success);margin-bottom:14px;"></i>
           <h3 style="font-size:16px;font-weight:800;margin-bottom:8px;">Orders</h3>
-          <p style="color:var(--text-3);font-size:13px;margin-bottom:16px;">Download all orders as CSV</p>
           <button class="btn btn-primary btn-block" onclick="adminPage.exportOrders()"><i class="fa-solid fa-download"></i> Export</button>
         </div>
         <div class="card" style="text-align:center;">
           <i class="fa-solid fa-users" style="font-size:42px;color:var(--warning);margin-bottom:14px;"></i>
           <h3 style="font-size:16px;font-weight:800;margin-bottom:8px;">Users</h3>
-          <p style="color:var(--text-3);font-size:13px;margin-bottom:16px;">Download all users as CSV</p>
           <button class="btn btn-primary btn-block" onclick="adminPage.exportUsers()"><i class="fa-solid fa-download"></i> Export</button>
         </div>
       </div>`;
@@ -2308,11 +2327,19 @@ const adminPage = {
 window.adminPage = adminPage;
 
 /* ═══════════════════════════════════════════════════════════════
-   AUTH UI + NOTIFICATIONS
+   AUTH UI
    ═══════════════════════════════════════════════════════════════ */
 const authUI = {
   doLogout: async () => {
     await api.logout();
+    state.user = null;
+    state.isAdmin = false;
+    state.userProfile = null;
+    // Reset UI
+    router.hideAdmin();
+    $("#userMenu")?.classList.remove("show");
+    if ($("#loginBtn")) $("#loginBtn").style.display = "flex";
+    if ($("#ordersNavLink")) $("#ordersNavLink").style.display = "none";
     toast(t("logged_out"), "success");
     setTimeout(() => router.go("home"), 600);
   },
@@ -2358,8 +2385,7 @@ const cmdPalette = {
     { icon:"fa-user", label:"My Profile", action:() => router.go("profile"), group:"Navigation" },
     { icon:"fa-gear", label:"Settings", action:() => router.go("settings"), group:"Navigation" },
     { icon:"fa-moon", label:"Toggle Dark Mode", action:() => toggleTheme(), group:"Actions" },
-    { icon:"fa-globe", label:"Switch Language", action:() => toggleLang(), group:"Actions" },
-    { icon:"fa-cart-shopping", label:"Open Cart", action:() => { cart.renderDrawer(); $("#cartDrawer").classList.add("active"); }, group:"Actions" }
+    { icon:"fa-globe", label:"Switch Language", action:() => toggleLang(), group:"Actions" }
   ],
   adminCommands: [
     { icon:"fa-chart-line", label:"Admin Overview", action:() => { router.go("admin"); adminPage.go("overview"); }, group:"Admin" },
@@ -2504,8 +2530,6 @@ document.addEventListener("DOMContentLoaded", () => {
   api.listenSiteSettings(s => {
     if (s.siteName) document.title = s.siteName + " — Professional E-Commerce";
   });
-
-  // Listen categories for filters
   api.listenCategories(() => {});
 
   /* ─── AUTH LISTENER ─── */
@@ -2513,20 +2537,26 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       state.user = user;
       if (user) {
-        try {
-          state.isAdmin = await api.isAdmin(user.uid);
-          state.userProfile = await api.getProfile(user.uid);
-        } catch (e) {
-          console.warn("Profile load error:", e);
-          state.isAdmin = false;
-        }
+        state.isAdmin = await api.isAdmin(user.uid);
+        state.userProfile = await api.getProfile(user.uid);
+        state.authReady = true;
+
         authUI.updateAvatar();
         $("#userMenu")?.classList.add("show");
         if ($("#loginBtn")) $("#loginBtn").style.display = "none";
         if ($("#ordersNavLink")) $("#ordersNavLink").style.display = "flex";
 
-        if (state.isAdmin && (router.current === "dashboard" || router.current === "home")) {
-          setTimeout(() => router.go("admin"), 100);
+        // If currently on auth page, redirect
+        if (router.current === "auth") {
+          if (state.isAdmin) router.showAdmin();
+          else {
+            router.current = "dashboard";
+            router.render();
+          }
+        }
+        // If admin logs in and on home, go to admin
+        else if (state.isAdmin && router.current === "home") {
+          setTimeout(() => router.showAdmin(), 150);
         }
 
         api.listenNotifications(user.uid, list => {
@@ -2541,6 +2571,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         state.isAdmin = false;
         state.userProfile = null;
+        state.authReady = true;
         router.hideAdmin();
         $("#userMenu")?.classList.remove("show");
         if ($("#loginBtn")) $("#loginBtn").style.display = "flex";
@@ -2550,22 +2581,34 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (err) {
       console.error("Auth listener error:", err);
+      state.authReady = true;
     }
   }, (error) => {
     console.error("Auth error:", error);
+    state.authReady = true;
     const bl = document.getElementById("bootLoader");
     if (bl) bl.classList.add("hidden");
   });
 
-  // Load products globally
+  // Load products
   api.listenProducts(() => {
     if (router.current === "products") Pages.applyFilters();
   });
 
-  // Initial route
-  router.go("auth");
+  // ⭐ Initial route: if user already logged in, go to dashboard; else auth
+  const initialBoot = () => {
+    if (state.user && state.authReady) {
+      if (state.isAdmin) router.showAdmin();
+      else { router.current = "dashboard"; router.render(); }
+    } else {
+      router.go("auth");
+    }
+  };
 
-  // ─── SAFETY: Always hide boot loader ───
+  // Wait a moment for auth to resolve
+  setTimeout(initialBoot, 800);
+
+  // Force hide boot
   const forceBoot = () => {
     clearInterval(bootInterval);
     if (bootBar) bootBar.style.width = "100%";
@@ -2591,8 +2634,8 @@ setTimeout(() => {
   const bl = document.getElementById("bootLoader");
   if (bl && !bl.classList.contains("hidden")) {
     bl.classList.add("hidden");
-    const app = document.getElementById("app");
-    if (app && !app.innerHTML.trim()) {
+    const appEl = document.getElementById("app");
+    if (appEl && !appEl.innerHTML.trim()) {
       if (window.router) window.router.go("auth");
     }
   }
@@ -2606,4 +2649,4 @@ window.wishlist = wishlist;
 window.search = search;
 
 console.log("%c🛒 EcoShop PRO", "font-size:26px;font-weight:900;background:linear-gradient(90deg,#6366f1,#ec4899);-webkit-background-clip:text;color:transparent;");
-console.log("%cImgBB Ready ✅ | API Key configured ✅", "color:#10b981;font-weight:700;");
+console.log("%c✅ Login redirect FIXED | ImgBB Ready ✅", "color:#10b981;font-weight:700;");
