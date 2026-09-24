@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#6366f1" />
+<title>EcoShop Pro — প্রফেশনাল ই-কমার্স প্ল্যাটফর্ম</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ═══ BOOT LOADER ═══ -->
+<div class="boot-loader" id="bootLoader">
+  <div class="boot-logo">
+    <div class="boot-icon"><i class="fa-solid fa-store"></i></div>
+    <h1>Eco<span>Shop</span> <sup>PRO</sup></h1>
+    <div class="boot-bar"><span></span></div>
+    <p id="bootText">Initializing...</p>
+  </div>
+</div>
+
+<!-- ═══ TOASTS ═══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ═══ PROGRESS ═══ -->
+<div class="top-progress" id="topProgress"></div>
+
+<!-- ═══ PUBLIC NAVBAR ═══ -->
+<header class="navbar" id="publicNavbar">
+  <div class="nav-container">
+    <button class="hamburger" id="hamburger" aria-label="menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <a class="nav-logo" onclick="router.go('home')">
+      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
+      <div class="logo-text"><span>Eco</span><span class="accent">Shop</span><sup>PRO</sup></div>
+    </a>
+
+    <div class="nav-search" id="navSearchWrap">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="globalSearchInput" placeholder="পণ্য খুঁজুন..." autocomplete="off" />
+      <button class="tool-btn voice-btn" id="voiceSearchBtn" title="ভয়েস সার্চ"><i class="fa-solid fa-microphone"></i></button>
+      <button class="tool-btn image-btn" id="imageSearchBtn" title="ছবি থেকে খুঁজুন"><i class="fa-solid fa-camera"></i></button>
+      <input type="file" id="imageSearchInput" accept="image/*" hidden />
+      <div class="search-suggest" id="searchSuggest"></div>
+    </div>
+
+    <nav class="nav-menu">
+      <a onclick="router.go('home')" data-page="home"><i class="fa-solid fa-house"></i> <span data-i18n="home">হোম</span></a>
+      <a onclick="router.go('products')" data-page="products"><i class="fa-solid fa-bag-shopping"></i> <span data-i18n="products">পণ্য</span></a>
+      <a onclick="router.go('orders')" data-page="orders" id="ordersNavLink"><i class="fa-solid fa-receipt"></i> <span data-i18n="orders">অর্ডার</span></a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="cmdBtn" title="Command (Ctrl+K)"><i class="fa-solid fa-terminal"></i></button>
+      <button class="icon-btn" id="themeToggle" title="Theme"><i class="fa-solid fa-moon"></i></button>
+      <button class="icon-btn" id="langToggle" title="Language">
+        <i class="fa-solid fa-globe"></i>
+        <span class="lang-label" id="currentLangLabel">বাং</span>
+      </button>
+      <button class="icon-btn" id="wishlistBtn" title="Wishlist">
+        <i class="fa-solid fa-heart"></i>
+        <span class="badge" id="wishlistBadge">0</span>
+      </button>
+      <button class="icon-btn" id="cartBtn" title="Cart">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span class="badge" id="cartBadge">0</span>
+      </button>
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <i class="fa-solid fa-bell"></i>
+        <span class="badge" id="notifBadge">0</span>
+      </button>
+      <div class="user-menu" id="userMenu">
+        <button class="avatar-btn" id="userMenuBtn">
+          <img id="userAvatar" src="https://ui-avatars.com/api/?name=U&background=6366f1&color=fff" alt="user" />
+        </button>
+        <div class="dropdown" id="userDropdown">
+          <div class="dropdown-header" id="dropdownUserHeader"></div>
+          <a onclick="router.go('profile')"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
+          <a onclick="router.go('dashboard')"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span></a>
+          <a onclick="router.go('wishlist')"><i class="fa-solid fa-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span></a>
+          <a onclick="router.go('settings')"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">সেটিংস</span></a>
+          <div class="dropdown-divider"></div>
+          <a id="logoutBtn" class="danger"><i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">লগআউট</span></a>
+        </div>
+      </div>
+      <button class="btn btn-primary login-btn" id="loginBtn" onclick="router.go('auth')">
+        <i class="fa-solid fa-right-to-bracket"></i>
+        <span data-i18n="login">লগইন</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ═══ ADMIN LAYOUT ═══ -->
+<div class="admin-layout" id="adminLayout" style="display:none;">
+  <aside class="admin-sidebar" id="adminSidebar">
+    <div class="admin-brand">
+      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
+      <div class="logo-text"><span>Eco</span><span class="accent">Shop</span></div>
+      <span class="pro-pill">ADMIN</span>
+    </div>
+
+    <nav class="admin-nav">
+      <div class="nav-section">
+        <div class="nav-section-title">Dashboard</div>
+        <a data-admin="overview" class="active"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a>
+        <a data-admin="analytics"><i class="fa-solid fa-chart-pie"></i> <span>Analytics</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Commerce</div>
+        <a data-admin="orders"><i class="fa-solid fa-receipt"></i> <span>Orders</span> <span class="count-badge" id="navOrderCount">0</span></a>
+        <a data-admin="products"><i class="fa-solid fa-box"></i> <span>Products</span> <span class="count-badge" id="navProductCount">0</span></a>
+        <a data-admin="categories"><i class="fa-solid fa-tags"></i> <span>Categories</span></a>
+        <a data-admin="coupons"><i class="fa-solid fa-ticket"></i> <span>Coupons</span></a>
+        <a data-admin="reviews"><i class="fa-solid fa-star"></i> <span>Reviews</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">Users</div>
+        <a data-admin="users"><i class="fa-solid fa-users"></i> <span>Users</span></a>
+        <a data-admin="notifications"><i class="fa-solid fa-bell"></i> <span>Push Notify</span></a>
+      </div>
+      <div class="nav-section">
+        <div class="nav-section-title">System</div>
+        <a data-admin="banners"><i class="fa-solid fa-images"></i> <span>Banners</span></a>
+        <a data-admin="settings"><i class="fa-solid fa-sliders"></i> <span>Site Settings</span></a>
+        <a data-admin="activity"><i class="fa-solid fa-clock-rotate-left"></i> <span>Activity Logs</span></a>
+        <a data-admin="export"><i class="fa-solid fa-download"></i> <span>Export Data</span></a>
+      </div>
+    </nav>
+
+    <div class="admin-footer">
+      <button class="admin-exit" onclick="router.go('home')">
+        <i class="fa-solid fa-arrow-left"></i> Back to Store
+      </button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+    <header class="admin-header">
+      <button class="admin-sidebar-toggle" id="adminSidebarToggle">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="admin-header-title">
+        <h1 id="adminPageTitle">Dashboard Overview</h1>
+        <p id="adminPageSubtitle">Welcome back, Admin</p>
+      </div>
+      <div class="admin-header-actions">
+        <div class="admin-search">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="adminSearch" placeholder="Quick search..." />
+        </div>
+        <button class="icon-btn" onclick="router.go('home')"><i class="fa-solid fa-store"></i></button>
+        <button class="avatar-btn" onclick="authUI.doLogout()">
+          <img id="adminAvatar" src="https://ui-avatars.com/api/?name=A&background=6366f1&color=fff" />
+        </button>
+      </div>
+    </header>
+    <div class="admin-content" id="adminContent"></div>
+  </main>
+</div>
+
+<!-- ═══ SIDE MENU (Mobile user) ═══ -->
+<aside class="side-menu" id="sideMenu">
+  <div class="side-menu-header">
+    <div class="logo-text"><span>Eco</span><span class="accent">Shop</span></div>
+    <button id="closeSideMenu"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <nav>
+    <a onclick="router.go('home');closeSideMenu()"><i class="fa-solid fa-house"></i> <span data-i18n="home">হোম</span></a>
+    <a onclick="router.go('products');closeSideMenu()"><i class="fa-solid fa-bag-shopping"></i> <span data-i18n="products">পণ্য</span></a>
+    <a onclick="router.go('orders');closeSideMenu()"><i class="fa-solid fa-receipt"></i> <span data-i18n="orders">অর্ডার</span></a>
+    <a onclick="router.go('wishlist');closeSideMenu()"><i class="fa-solid fa-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span></a>
+    <a onclick="router.go('profile');closeSideMenu()"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
+    <a onclick="router.go('dashboard');closeSideMenu()"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span></a>
+    <a onclick="router.go('settings');closeSideMenu()"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">সেটিংস</span></a>
+  </nav>
+</aside>
+<div class="overlay" id="overlay"></div>
+
+<!-- ═══ NOTIFICATION PANEL ═══ -->
+<aside class="notif-panel" id="notifPanel">
+  <div class="panel-header">
+    <h3><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">নোটিফিকেশন</span></h3>
+    <button id="closeNotif"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</aside>
+
+<!-- ═══ CART DRAWER ═══ -->
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="panel-header">
+    <h3><i class="fa-solid fa-cart-shopping"></i> <span data-i18n="cart">কার্ট</span> <span class="cart-count-pill" id="cartDrawerCount">0</span></h3>
+    <button id="closeCart"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-body" id="cartDrawerBody"></div>
+  <div class="cart-foot" id="cartDrawerFoot"></div>
+</aside>
+
+<!-- ═══ MAIN (Public) ═══ -->
+<main id="app"></main>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="footer" id="publicFooter">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="logo-text"><span>Eco</span><span class="accent">Shop</span> <sup>PRO</sup></div>
+      <p data-i18n="footer_about">প্রফেশনাল ইকোনমিক ই-কমার্স প্ল্যাটফর্ম। নিরাপদ, দ্রুত এবং বিশ্বস্ত।</p>
+      <div class="social">
+        <a href="#"><i class="fa-brands fa-facebook"></i></a>
+        <a href="#"><i class="fa-brands fa-twitter"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="quick_links">দ্রুত লিংক</h4>
+      <a onclick="router.go('home')">হোম</a>
+      <a onclick="router.go('products')">পণ্য</a>
+      <a onclick="router.go('orders')">অর্ডার</a>
+      <a onclick="router.go('wishlist')">উইশলিস্ট</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="support">সাপোর্ট</h4>
+      <a href="#">FAQ</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Returns</a>
+    </div>
+    <div class="footer-col">
+      <h4 data-i18n="contact">যোগাযোগ</h4>
+      <p><i class="fa-solid fa-envelope"></i> support@ecoshop.com</p>
+      <p><i class="fa-solid fa-phone"></i> +880 1234-567890</p>
+      <p><i class="fa-solid fa-location-dot"></i> ঢাকা, বাংলাদেশ</p>
+    </div>
+  </div>
+  <div class="footer-bottom"><p>© 2025 EcoShop Pro. <span data-i18n="rights">সকল অধিকার সংরক্ষিত</span>।</p></div>
+</footer>
+
+<!-- ═══ BACK TO TOP ═══ -->
+<button class="back-to-top" id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
+
+<!-- ═══ COMMAND PALETTE ═══ -->
+<div class="cmd-overlay" id="cmdOverlay">
+  <div class="cmd-box">
+    <div class="cmd-input-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="cmdInput" placeholder="Type a command or search..." autocomplete="off" />
+      <kbd>ESC</kbd>
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ROOT ═══ -->
+<div class="modal-root" id="modalRoot"></div>
+
+<!-- ═══ SCRIPTS ═══ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
