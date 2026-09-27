@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>EcoShop Pro MAX — প্রিমিয়াম ই-কমার্স</title>
-<meta name="description" content="বাংলাদেশের সেরা প্রিমিয়াম অনলাইন শপিং প্ল্যাটফর্ম">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -13,7 +12,6 @@
 </head>
 <body>
 
-<!-- ═══ SPLASH ═══ -->
 <div class="splash" id="splash">
   <div class="splash-content">
     <div class="splash-icon-wrap">
@@ -32,7 +30,6 @@
 <div class="toast-container" id="toastContainer"></div>
 <div class="top-progress" id="topProgress"></div>
 
-<!-- ═══ NAVBAR ═══ -->
 <nav class="navbar" id="navbar">
   <div class="nav-container">
     <button class="menu-toggle" id="menuToggle" aria-label="Menu">
@@ -76,7 +73,6 @@
   <a class="danger" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</a>
 </div>
 
-<!-- ═══ POWER MENU ═══ -->
 <aside class="power-menu" id="powerMenu">
   <div class="pm-header">
     <div class="pm-profile">
@@ -127,13 +123,12 @@
     </div>
     <button class="pm-login-btn" id="pmLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> লগইন / রেজিস্টার</button>
     <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
-    <p class="pm-version">EcoShop Pro MAX v3.0 — Firebase</p>
+    <p class="pm-version">EcoShop Pro MAX v3.1</p>
   </div>
 </aside>
 
 <div class="backdrop" id="backdrop"></div>
 
-<!-- ═══ CART DRAWER ═══ -->
 <aside class="cart-drawer" id="cartDrawer">
   <div class="panel-header">
     <div>
@@ -152,7 +147,6 @@
   </div>
 </aside>
 
-<!-- ═══ NOTIFICATION PANEL ═══ -->
 <aside class="notif-panel" id="notifPanel">
   <div class="panel-header">
     <div>
@@ -201,14 +195,11 @@
 </nav>
 
 <button class="back-to-top" id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
-
 <div class="modal-root" id="modalRoot"></div>
 
-<!-- Firebase SDK (Compat version for global use) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
-
 <script src="app.js"></script>
 </body>
 </html>
