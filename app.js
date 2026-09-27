@@ -1,6 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   EcoShop Pro MAX v6.0 — Enterprise Edition
-   Firebase + ImgBB + PWA + 4 Payment Methods + Smart Delivery
+   EcoShop Pro MAX v7.0 — Enterprise + EmailJS OTP Registration
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ───────── Firebase Config ───────── */
@@ -17,6 +16,14 @@ const firebaseConfig = {
 const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
 const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
 
+/* ───────── EmailJS Config ───────── */
+const EmailJSConfig = {
+  publicKey: 'zuPQJsWL-br59MV3t',
+  serviceId: 'service_Abdullah_200',
+  templateId: 'template_edu2aen',
+  initialized: false
+};
+
 let fbApp, db, fbReady = false, fbError = null;
 try {
   fbApp = firebase.initializeApp(firebaseConfig);
@@ -26,7 +33,6 @@ try {
   console.log('✅ Firebase initialized');
 } catch(e){ fbError = e.message; console.error('❌ Firebase init:', e); }
 
-/* ───────── Default Settings ───────── */
 const DEFAULT_SETTINGS = {
   siteName:'EcoShop Pro MAX',
   shippingInsideDhaka: 100,
@@ -36,15 +42,15 @@ const DEFAULT_SETTINGS = {
   bkashNumber: '01700000000',
   nagadNumber: '01700000000',
   rocketNumber: '01700000000',
-  paymentInstructions: 'সেন্ড মানি করার পর ট্রানজেকশন আইডি দিন',
   enableCOD: true,
   enableBkash: true,
   enableNagad: true,
-  enableRocket: true
+  enableRocket: true,
+  requireEmailOTP: true
 };
 
 /* ═══════════════════════════════════════════════════════════
-   i18n — Full বাংলা / English
+   i18n
    ═══════════════════════════════════════════════════════════ */
 const I18N = {
   bn: {
@@ -65,28 +71,23 @@ const I18N = {
     pending:'পেন্ডিং', confirmed:'কনফার্মড', shipped:'শিপড', delivered:'ডেলিভারড', cancelled:'বাতিল',
     loginRequired:'অনুগ্রহ করে লগইন করুন', adminRequired:'শুধুমাত্র অ্যাডমিন',
     fullName:'পূর্ণ নাম', email:'ইমেইল', password:'পাসওয়ার্ড', confirmPassword:'পাসওয়ার্ড নিশ্চিত',
-    phone:'ফোন নম্বর', address:'ঠিকানা', city:'শহর', forgotPassword:'পাসওয়ার্ড ভুলে গেছেন?',
+    phone:'ফোন নম্বর', address:'ঠিকানা', city:'শহর',
     agreeTerms:'আমি শর্তাবলী ও গোপনীয়তা নীতিতে সম্মত',
-    dontHaveAccount:'অ্যাকাউন্ট নেই?', alreadyHaveAccount:'অ্যাকাউন্ট আছে?',
-    welcomeBack:'স্বাগতম', createAccount:'অ্যাকাউন্ট তৈরি করুন',
-    yourProfile:'আপনার প্রোফাইল', editProfile:'প্রোফাইল এডিট', updateProfile:'প্রোফাইল আপডেট',
+    yourProfile:'আপনার প্রোফাইল', editProfile:'প্রোফাইল এডিট',
     newPassword:'নতুন পাসওয়ার্ড (খালি রাখলে পরিবর্তন হবে না)',
     orderId:'অর্ডার ID', orderDate:'অর্ডারের তারিখ', orderStatus:'অর্ডার স্ট্যাটাস', orderTotal:'সর্বমোট',
-    tracking:'ট্র্যাকিং', viewDetails:'বিস্তারিত দেখুন',
     productName:'পণ্যের নাম', productNameEn:'Product Name (English)',
     description:'বিবরণ', descriptionEn:'Description (English)', images:'ছবি',
     oldPrice:'পুরাতন দাম', discountPercent:'ডিসকাউন্ট (%)', tags:'ট্যাগ', featured_product:'ফিচার্ড পণ্য',
-    productDetails:'পণ্যের বিস্তারিত', specifications:'স্পেসিফিকেশন', reviews:'রিভিউ',
-    writeReview:'রিভিউ লিখুন', submitReview:'রিভিউ জমা দিন', yourRating:'আপনার রেটিং',
-    relatedProducts:'সম্পর্কিত পণ্য', addToWishlist:'উইশলিস্টে যোগ', removeFromWishlist:'উইশলিস্ট থেকে সরান',
-    outOfStockMsg:'এই পণ্যটি এই মুহূর্তে স্টকে নেই',
+    reviews:'রিভিউ', writeReview:'রিভিউ লিখুন', submitReview:'রিভিউ জমা দিন', yourRating:'আপনার রেটিং',
+    relatedProducts:'সম্পর্কিত পণ্য',
     minPrice:'সর্বনিম্ন দাম', maxPrice:'সর্বোচ্চ দাম', applyFilter:'ফিল্টার প্রয়োগ',
-    clearFilters:'ফিল্টার মুছুন', sortBy:'সাজান', defaultSort:'ডিফল্ট',
+    clearFilters:'ফিল্টার মুছুন', defaultSort:'ডিফল্ট',
     priceLowHigh:'দাম: কম থেকে বেশি', priceHighLow:'দাম: বেশি থেকে কম', newest:'নতুন আগে',
     popular:'জনপ্রিয়', searchResults:'সার্চ ফলাফল',
     profileUpdated:'প্রোফাইল আপডেট হয়েছে', loginSuccess:'লগইন সফল', registerSuccess:'রেজিস্ট্রেশন সফল',
     logoutSuccess:'লগআউট সফল', saveSuccess:'সেভ হয়েছে', deleteSuccess:'ডিলিট হয়েছে',
-    adminOnly:'শুধুমাত্র অ্যাডমিন', loginFirst:'প্রথমে লগইন করুন',
+    adminOnly:'শুধুমাত্র অ্যাডমিন',
     invalidCredentials:'ভুল ইমেইল বা পাসওয়ার্ড', accountBlocked:'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে',
     emailExists:'এই ইমেইল ইতিমধ্যেই ব্যবহৃত', passwordMismatch:'পাসওয়ার্ড মিলছে না',
     weakPassword:'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে',
@@ -97,46 +98,46 @@ const I18N = {
     totalProducts:'মোট পণ্য', totalOrders:'মোট অর্ডার', totalUsers:'মোট ইউজার', totalSales:'মোট বিক্রয়',
     pendingOrders:'পেন্ডিং অর্ডার', lowStock:'কম স্টক', activeUsers:'সক্রিয় ইউজার',
     recentOrders:'সাম্প্রতিক অর্ডার', products:'পণ্য', users:'ইউজার', ordersTab:'অর্ডার',
-    coupons:'কুপন', categories:'ক্যাটাগরি', analytics:'অ্যানালিটিক্স',
+    coupons:'কুপন', categories:'ক্যাটাগরি',
     addProduct:'নতুন পণ্য যোগ', editProduct:'পণ্য এডিট করুন', productSearch:'পণ্য সার্চ...',
     addUser:'নতুন ইউজার', editUser:'ইউজার এডিট', userSearch:'নাম / ইমেইল সার্চ...',
     orderSearch:'অর্ডার সার্চ...', role:'রোল', customer:'কাস্টমার', adminRole:'অ্যাডমিন',
     blocked:'ব্লকড', active:'সক্রিয়', block:'ব্লক', unblock:'আনব্লক',
-    bulkActions:'বাল্ক অ্যাকশন', selected:'নির্বাচিত', createUser:'ইউজার তৈরি করুন',
-    deleteConfirm:'ডিলিট করতে চান?', categoryName:'ক্যাটাগরির নাম', addCategory:'ক্যাটাগরি যোগ',
+    selected:'নির্বাচিত', deleteConfirm:'ডিলিট করতে চান?', categoryName:'ক্যাটাগরির নাম', addCategory:'ক্যাটাগরি যোগ',
     couponCode:'কুপন কোড', percentOff:'শতাংশ (%)', flatOff:'ফ্ল্যাট (৳)', addCoupon:'কুপন যোগ',
-    siteName:'সাইটের নাম', shippingCharge:'ডেলিভারি চার্জ (৳)', supportPhone:'সাপোর্ট ফোন',
+    siteName:'সাইটের নাম', supportPhone:'সাপোর্ট ফোন',
     exportData:'এক্সপোর্ট JSON', resetAll:'সব ডেটা রিসেট', resetConfirm:'সমস্ত ডেটা মুছে যাবে!',
-    noData:'কোনো ডেটা নেই', showing:'দেখাচ্ছে', of:'এর মধ্যে', items:'আইটেম',
-    search:'সার্চ', filters:'ফিল্টার', allCategories:'সব ক্যাটাগরি',
-    quickView:'দ্রুত দেখুন', share:'শেয়ার', printInvoice:'ইনভয়েস প্রিন্ট',
+    noData:'কোনো ডেটা নেই', items:'আইটেম',
+    quickView:'দ্রুত দেখুন', printInvoice:'ইনভয়েস প্রিন্ট',
     installApp:'অ্যাপ ইনস্টল করুন', installHint:'হোম স্ক্রিনে যোগ করে দ্রুত অ্যাক্সেস করুন', install:'ইনস্টল',
     offlineMode:'অফলাইন — কিছু ফিচার সীমিত',
     pushNotif:'পুশ নোটিফিকেশন', enable:'চালু', pushEnabled:'পুশ চালু হয়েছে',
-    // Payment
     paymentMethod:'পেমেন্ট পদ্ধতি', selectPayment:'পেমেন্ট পদ্ধতি নির্বাচন করুন',
     cod:'ক্যাশ অন ডেলিভারি', codDesc:'পণ্য হাতে পেয়ে পেমেন্ট',
-    bkash:'বিকাশ', nagad:'নগদ', rocket:'রকেট',
-    mobilePayment:'মোবাইল পেমেন্ট', paymentNumber:'পেমেন্ট নাম্বার',
-    copyNumber:'নাম্বার কপি করুন', copied:'কপি হয়েছে', copy:'কপি',
-    howToSendMoney:'কিভাবে সেন্ড মানি করবেন', sendMoneySteps:'সেন্ড মানি করার ধাপ',
-    dialCode:'ডায়াল কোড', useDialCode:'ডায়াল কোড দিয়ে সেন্ড মানি',
-    dialCodeHint:'আপনার ফোনের ডায়াল প্যাডে লিখুন',
-    txnId:'ট্রানজেকশন আইডি', txnIdPlaceholder:'যেমন: 8AB1C2D3E4', txnIdRequired:'ট্রানজেকশন আইডি দিন',
-    screenshot:'স্ক্রিনশট', screenshotOptional:'(ঐচ্ছিক — দিলে দ্রুত প্রসেস হবে)',
-    uploadScreenshot:'স্ক্রিনশট আপলোড করুন', confirmOrder:'অর্ডার কনফার্ম করুন',
+    bkash:'বিকাশ', nagad:'নগদ', rocket:'রকেট', mobilePayment:'মোবাইল পেমেন্ট',
+    paymentNumber:'পেমেন্ট নাম্বার', copy:'কপি', copied:'কপি হয়েছে',
+    sendMoneySteps:'সেন্ড মানি করার ধাপ', useDialCode:'ডায়াল কোড দিয়ে সেন্ড মানি',
+    txnId:'ট্রানজেকশন আইডি', txnIdPlaceholder:'যেমন: 8AB1C2D3E4',
+    screenshot:'স্ক্রিনশট', screenshotOptional:'(ঐচ্ছিক)', uploadScreenshot:'স্ক্রিনশট আপলোড',
+    confirmOrder:'অর্ডার কনফার্ম করুন',
     orderSuccessCOD:'অর্ডার সফল! ক্যাশ অন ডেলিভারিতে পেমেন্ট হবে',
     orderSuccessPaid:'অর্ডার সফল! পেমেন্ট ভেরিফিকেশনের অপেক্ষায়',
-    // Delivery
     deliveryZone:'ডেলিভারি এলাকা', insideDhaka:'ঢাকার ভিতরে', outsideDhaka:'ঢাকার বাইরে',
     deliveryCharge:'ডেলিভারি চার্জ', deliveryChargeEdit:'ডেলিভারি চার্জ পরিবর্তন',
-    // Admin extras
-    adminComment:'অ্যাডমিন কমেন্ট', adminCommentOptional:'(ঐচ্ছিক)', commentPlaceholder:'এখানে কমেন্ট লিখুন...',
-    statusUpdate:'স্ট্যাটাস আপডেট', paymentInfo:'পেমেন্ট তথ্য',
-    paymentNumberConfig:'পেমেন্ট নাম্বার সেটআপ', settingsSaved:'সেটিংস সেভ হয়েছে',
-    // General messages
+    adminComment:'অ্যাডমিন কমেন্ট', adminCommentOptional:'(ঐচ্ছিক)', commentPlaceholder:'কমেন্ট লিখুন...',
+    paymentInfo:'পেমেন্ট তথ্য', paymentNumberConfig:'পেমেন্ট নাম্বার সেটআপ', settingsSaved:'সেটিংস সেভ হয়েছে',
     numberCopied:'নাম্বার কপি হয়েছে', dialCodeCopied:'ডায়াল কোড কপি হয়েছে',
-    invalidTxnId:'সঠিক ট্রানজেকশন আইডি দিন (কমপক্ষে ৬ অক্ষর)'
+    invalidTxnId:'সঠিক ট্রানজেকশন আইডি দিন (কমপক্ষে ৬ অক্ষর)',
+    // OTP
+    sendOTP:'OTP পাঠান', verifyOTP:'যাচাই করুন', resendOTP:'আবার পাঠান', resendIn:'আবার পাঠান',
+    verifyEmail:'ইমেইল যাচাই করুন', weSentCode:'আমরা ৬-ডিজিটের কোড পাঠিয়েছি',
+    otpValidTime:'১০ মিনিট পর্যন্ত বৈধ', changeInfo:'তথ্য পরিবর্তন',
+    otpSent:'✅ OTP পাঠানো হয়েছে, ইমেইল চেক করুন', otpSending:'পাঠানো হচ্ছে...',
+    otpVerifying:'যাচাই হচ্ছে...', emailAvailable:'✓ ইমেইল ব্যবহারযোগ্য',
+    emailTaken:'❌ এই ইমেইল আগেই রেজিস্ট্রেশন করা হয়েছে',
+    invalidEmail:'সঠিক ইমেইল দিন', agreeToTerms:'শর্তাবলীতে সম্মতি দিন',
+    enterFullCode:'৬-ডিজিটের সম্পূর্ণ কোড দিন', registrationSuccess:'🎉 রেজিস্ট্রেশন সফল!',
+    otpFailed:'ইমেইল পাঠানো যায়নি'
   },
   en: {
     home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
@@ -156,74 +157,72 @@ const I18N = {
     pending:'Pending', confirmed:'Confirmed', shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
     loginRequired:'Please login first', adminRequired:'Admin only',
     fullName:'Full Name', email:'Email', password:'Password', confirmPassword:'Confirm Password',
-    phone:'Phone Number', address:'Address', city:'City', forgotPassword:'Forgot password?',
+    phone:'Phone Number', address:'Address', city:'City',
     agreeTerms:'I agree to the Terms & Privacy Policy',
-    dontHaveAccount:"Don't have an account?", alreadyHaveAccount:'Already have an account?',
-    welcomeBack:'Welcome back', createAccount:'Create Account',
-    yourProfile:'Your Profile', editProfile:'Edit Profile', updateProfile:'Update Profile',
+    yourProfile:'Your Profile', editProfile:'Edit Profile',
     newPassword:'New Password (blank = keep current)',
     orderId:'Order ID', orderDate:'Order Date', orderStatus:'Order Status', orderTotal:'Order Total',
-    tracking:'Tracking', viewDetails:'View Details',
     productName:'Product Name', productNameEn:'Product Name (English)',
     description:'Description', descriptionEn:'Description (English)', images:'Images',
     oldPrice:'Old Price', discountPercent:'Discount (%)', tags:'Tags', featured_product:'Featured Product',
-    productDetails:'Product Details', specifications:'Specifications', reviews:'Reviews',
-    writeReview:'Write Review', submitReview:'Submit Review', yourRating:'Your Rating',
-    relatedProducts:'Related Products', addToWishlist:'Add to Wishlist', removeFromWishlist:'Remove from Wishlist',
-    outOfStockMsg:'This product is out of stock',
+    reviews:'Reviews', writeReview:'Write Review', submitReview:'Submit Review', yourRating:'Your Rating',
+    relatedProducts:'Related Products',
     minPrice:'Min Price', maxPrice:'Max Price', applyFilter:'Apply',
-    clearFilters:'Clear Filters', sortBy:'Sort By', defaultSort:'Default',
+    clearFilters:'Clear Filters', defaultSort:'Default',
     priceLowHigh:'Price: Low to High', priceHighLow:'Price: High to Low', newest:'Newest First',
     popular:'Popular', searchResults:'Search Results',
     profileUpdated:'Profile updated', loginSuccess:'Login successful', registerSuccess:'Registration successful',
-    logoutSuccess:'Logged out', saveSuccess:'Saved successfully', deleteSuccess:'Deleted successfully',
-    adminOnly:'Admin only', loginFirst:'Please login first',
-    invalidCredentials:'Invalid email or password', accountBlocked:'Your account is blocked',
+    logoutSuccess:'Logged out', saveSuccess:'Saved', deleteSuccess:'Deleted',
+    adminOnly:'Admin only',
+    invalidCredentials:'Invalid credentials', accountBlocked:'Account is blocked',
     emailExists:'Email already exists', passwordMismatch:'Passwords do not match',
     weakPassword:'Password must be at least 6 characters',
-    fillAllFields:'Please fill all fields', orderPlaced:'Order placed successfully', orderFailed:'Order failed',
-    couponApplied:'Coupon applied', invalidCoupon:'Invalid coupon code',
+    fillAllFields:'Please fill all fields', orderPlaced:'Order placed', orderFailed:'Order failed',
+    couponApplied:'Coupon applied', invalidCoupon:'Invalid coupon',
     emptyCart:'Your cart is empty', cartItems:'items', imageUploadSuccess:'Image uploaded',
     imageUploadFailed:'Upload failed', processing:'Processing...', loadingData:'Loading data...',
     totalProducts:'Total Products', totalOrders:'Total Orders', totalUsers:'Total Users', totalSales:'Total Sales',
     pendingOrders:'Pending Orders', lowStock:'Low Stock', activeUsers:'Active Users',
     recentOrders:'Recent Orders', products:'Products', users:'Users', ordersTab:'Orders',
-    coupons:'Coupons', categories:'Categories', analytics:'Analytics',
+    coupons:'Coupons', categories:'Categories',
     addProduct:'Add Product', editProduct:'Edit Product', productSearch:'Search products...',
     addUser:'Add User', editUser:'Edit User', userSearch:'Search name / email...',
     orderSearch:'Search orders...', role:'Role', customer:'Customer', adminRole:'Admin',
     blocked:'Blocked', active:'Active', block:'Block', unblock:'Unblock',
-    bulkActions:'Bulk Actions', selected:'selected', createUser:'Create User',
-    deleteConfirm:'Delete this item?', categoryName:'Category Name', addCategory:'Add Category',
+    selected:'selected', deleteConfirm:'Delete this item?', categoryName:'Category Name', addCategory:'Add Category',
     couponCode:'Coupon Code', percentOff:'Percent (%)', flatOff:'Flat (৳)', addCoupon:'Add Coupon',
-    siteName:'Site Name', shippingCharge:'Shipping Charge (৳)', supportPhone:'Support Phone',
+    siteName:'Site Name', supportPhone:'Support Phone',
     exportData:'Export JSON', resetAll:'Reset All Data', resetConfirm:'All data will be deleted!',
-    noData:'No data found', showing:'Showing', of:'of', items:'items',
-    search:'Search', filters:'Filters', allCategories:'All Categories',
-    quickView:'Quick View', share:'Share', printInvoice:'Print Invoice',
+    noData:'No data', items:'items',
+    quickView:'Quick View', printInvoice:'Print Invoice',
     installApp:'Install App', installHint:'Add to home screen for quick access', install:'Install',
     offlineMode:'Offline — some features limited',
     pushNotif:'Push Notifications', enable:'Enable', pushEnabled:'Push enabled',
     paymentMethod:'Payment Method', selectPayment:'Select payment method',
     cod:'Cash on Delivery', codDesc:'Pay when you receive',
-    bkash:'bKash', nagad:'Nagad', rocket:'Rocket',
-    mobilePayment:'Mobile Payment', paymentNumber:'Payment Number',
-    copyNumber:'Copy Number', copied:'Copied', copy:'Copy',
-    howToSendMoney:'How to send money', sendMoneySteps:'Steps to send money',
-    dialCode:'Dial Code', useDialCode:'Send via dial code',
-    dialCodeHint:'Enter on your phone dialpad',
-    txnId:'Transaction ID', txnIdPlaceholder:'e.g. 8AB1C2D3E4', txnIdRequired:'Transaction ID required',
-    screenshot:'Screenshot', screenshotOptional:'(optional — faster processing)',
-    uploadScreenshot:'Upload Screenshot', confirmOrder:'Confirm Order',
+    bkash:'bKash', nagad:'Nagad', rocket:'Rocket', mobilePayment:'Mobile Payment',
+    paymentNumber:'Payment Number', copy:'Copy', copied:'Copied',
+    sendMoneySteps:'Steps to send money', useDialCode:'Send via dial code',
+    txnId:'Transaction ID', txnIdPlaceholder:'e.g. 8AB1C2D3E4',
+    screenshot:'Screenshot', screenshotOptional:'(optional)', uploadScreenshot:'Upload Screenshot',
+    confirmOrder:'Confirm Order',
     orderSuccessCOD:'Order placed! Pay on delivery',
-    orderSuccessPaid:'Order placed! Awaiting payment verification',
+    orderSuccessPaid:'Order placed! Awaiting verification',
     deliveryZone:'Delivery Zone', insideDhaka:'Inside Dhaka', outsideDhaka:'Outside Dhaka',
     deliveryCharge:'Delivery Charge', deliveryChargeEdit:'Edit Delivery Charge',
-    adminComment:'Admin Comment', adminCommentOptional:'(optional)', commentPlaceholder:'Write a comment...',
-    statusUpdate:'Status Update', paymentInfo:'Payment Info',
-    paymentNumberConfig:'Payment Number Setup', settingsSaved:'Settings saved',
+    adminComment:'Admin Comment', adminCommentOptional:'(optional)', commentPlaceholder:'Write comment...',
+    paymentInfo:'Payment Info', paymentNumberConfig:'Payment Number Setup', settingsSaved:'Settings saved',
     numberCopied:'Number copied', dialCodeCopied:'Dial code copied',
-    invalidTxnId:'Enter a valid Transaction ID (min 6 chars)'
+    invalidTxnId:'Enter valid Transaction ID (min 6 chars)',
+    sendOTP:'Send OTP', verifyOTP:'Verify', resendOTP:'Resend', resendIn:'Resend',
+    verifyEmail:'Verify Email', weSentCode:'We sent a 6-digit code to',
+    otpValidTime:'Valid for 10 minutes', changeInfo:'Change info',
+    otpSent:'✅ OTP sent, check your email', otpSending:'Sending...',
+    otpVerifying:'Verifying...', emailAvailable:'✓ Email available',
+    emailTaken:'❌ This email is already registered',
+    invalidEmail:'Enter a valid email', agreeToTerms:'Agree to terms',
+    enterFullCode:'Enter complete 6-digit code', registrationSuccess:'🎉 Registration successful!',
+    otpFailed:'Failed to send email'
   }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
@@ -256,7 +255,7 @@ const RecentStore = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   DB Layer
+   DB
    ═══════════════════════════════════════════════════════════ */
 const DB = {
   products: [], users: [], orders: [], categories: [], coupons: [], notifs: [], reviews: [],
@@ -310,22 +309,22 @@ const DB = {
     if(this.seeded) return;
     this.seeded = true;
     if(!this.ready.products || this.products.length > 0) return;
-    console.log('🌱 Seeding initial data...');
+    console.log('🌱 Seeding...');
     const products = {
-      p1:{id:'p1',name:'প্রিমিয়াম ইকো-বোতল',nameEn:'Premium Eco Bottle',cat:'ইলেকট্রনিকস',catEn:'Electronics',price:850,oldPrice:1200,discount:29,stock:45,img:'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80',desc:'পরিবেশ বান্ধব স্টেইনলেস স্টিল বোতল। দীর্ঘস্থায়ী, টেকসই এবং সম্পূর্ণ BPA-মুক্ত।',featured:true,createdAt:Date.now(),tags:['ইকো','বোতল'],rating:4.5,reviewCount:12},
-      p2:{id:'p2',name:'ওয়্যারলেস হেডফোন',nameEn:'Wireless Headphone',cat:'ইলেকট্রনিকস',catEn:'Electronics',price:2500,oldPrice:3500,discount:29,stock:20,img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80',desc:'নয়েজ ক্যানসেলিং ওয়্যারলেস হেডফোন। ৪০ ঘণ্টা ব্যাটারি লাইফ।',featured:true,createdAt:Date.now()+1,tags:['হেডফোন','অডিও'],rating:4.7,reviewCount:34},
-      p3:{id:'p3',name:'স্মার্ট ওয়াচ',nameEn:'Smart Watch',cat:'গ্যাজেট',catEn:'Gadgets',price:3200,oldPrice:4500,discount:29,stock:15,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',desc:'ফিটনেস ট্র্যাকিং, হার্ট রেট মনিটর, স্লিপ ট্র্যাকিং সহ স্মার্ট ওয়াচ।',featured:true,createdAt:Date.now()+2,tags:['স্মার্ট','ওয়াচ'],rating:4.3,reviewCount:18},
-      p4:{id:'p4',name:'মিনিমালিস্ট ব্যাগ',nameEn:'Minimalist Bag',cat:'ফ্যাশন',catEn:'Fashion',price:1200,oldPrice:1800,discount:33,stock:30,img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80',desc:'ওয়াটারপ্রুফ লেদার ব্যাগ, প্রিমিয়াম ফিনিশ।',featured:false,createdAt:Date.now()+3,tags:['ব্যাগ','ফ্যাশন'],rating:4.6,reviewCount:22},
-      p5:{id:'p5',name:'ক্যামেরা লেন্স',nameEn:'Camera Lens',cat:'ফটোগ্রাফি',catEn:'Photography',price:8500,oldPrice:10000,discount:15,stock:8,img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80',desc:'প্রফেশনাল ক্যামেরা লেন্স, তীক্ষ্ণ ইমেজ কোয়ালিটি।',featured:false,createdAt:Date.now()+4,tags:['ক্যামেরা','লেন্স'],rating:4.8,reviewCount:9},
-      p6:{id:'p6',name:'সানগ্লাস প্রিমিয়াম',nameEn:'Premium Sunglass',cat:'ফ্যাশন',catEn:'Fashion',price:950,oldPrice:1400,discount:32,stock:0,img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80',desc:'UV400 প্রোটেকশন সানগ্লাস, স্টাইলিশ ডিজাইন।',featured:false,createdAt:Date.now()+5,tags:['সানগ্লাস'],rating:4.2,reviewCount:15}
+      p1:{id:'p1',name:'প্রিমিয়াম ইকো-বোতল',nameEn:'Premium Eco Bottle',cat:'ইলেকট্রনিকস',catEn:'Electronics',price:850,oldPrice:1200,discount:29,stock:45,img:'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80',desc:'পরিবেশ বান্ধব স্টেইনলেস স্টিল বোতল।',featured:true,createdAt:Date.now(),tags:['ইকো'],rating:4.5,reviewCount:12},
+      p2:{id:'p2',name:'ওয়্যারলেস হেডফোন',nameEn:'Wireless Headphone',cat:'ইলেকট্রনিকস',catEn:'Electronics',price:2500,oldPrice:3500,discount:29,stock:20,img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80',desc:'নয়েজ ক্যানসেলিং হেডফোন।',featured:true,createdAt:Date.now()+1,tags:['অডিও'],rating:4.7,reviewCount:34},
+      p3:{id:'p3',name:'স্মার্ট ওয়াচ',nameEn:'Smart Watch',cat:'গ্যাজেট',catEn:'Gadgets',price:3200,oldPrice:4500,discount:29,stock:15,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',desc:'ফিটনেস ট্র্যাকিং স্মার্ট ওয়াচ।',featured:true,createdAt:Date.now()+2,tags:['স্মার্ট'],rating:4.3,reviewCount:18},
+      p4:{id:'p4',name:'মিনিমালিস্ট ব্যাগ',nameEn:'Minimalist Bag',cat:'ফ্যাশন',catEn:'Fashion',price:1200,oldPrice:1800,discount:33,stock:30,img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80',desc:'ওয়াটারপ্রুফ ব্যাগ।',featured:false,createdAt:Date.now()+3,tags:['ব্যাগ'],rating:4.6,reviewCount:22},
+      p5:{id:'p5',name:'ক্যামেরা লেন্স',nameEn:'Camera Lens',cat:'ফটোগ্রাফি',catEn:'Photography',price:8500,oldPrice:10000,discount:15,stock:8,img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80',desc:'প্রফেশনাল ক্যামেরা লেন্স।',featured:false,createdAt:Date.now()+4,tags:['ক্যামেরা'],rating:4.8,reviewCount:9},
+      p6:{id:'p6',name:'সানগ্লাস প্রিমিয়াম',nameEn:'Premium Sunglass',cat:'ফ্যাশন',catEn:'Fashion',price:950,oldPrice:1400,discount:32,stock:0,img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80',desc:'UV400 সানগ্লাস।',featured:false,createdAt:Date.now()+5,tags:['সানগ্লাস'],rating:4.2,reviewCount:15}
     };
     const users = {
       u_admin:{id:'u_admin',name:'Admin',email:'admin@eco.pro',password:'admin123',role:'admin',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff',phone:'01700000000'},
       u_rahim:{id:'u_rahim',name:'Rahim Uddin',email:'rahim@mail.com',password:'123456',role:'customer',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Rahim&background=10b981&color=fff',phone:'01711111111'}
     };
     const cats = { c1:'ইলেকট্রনিকস', c2:'গ্যাজেট', c3:'ফ্যাশন', c4:'ফটোগ্রাফি', c5:'হোম ও লিভিং', c6:'বিউটি' };
-    const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10}, cp2:{id:'cp2',code:'FLAT100',type:'flat',value:100}, cp3:{id:'cp3',code:'WELCOME5',type:'percent',value:5} };
-    const notifs = { n1:{id:'n1',title:'স্বাগতম!',body:'EcoShop Pro MAX-এ আপনাকে স্বাগতম',time:Date.now(),read:false,type:'info'} };
+    const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10}, cp2:{id:'cp2',code:'FLAT100',type:'flat',value:100} };
+    const notifs = { n1:{id:'n1',title:'স্বাগতম!',body:'EcoShop Pro MAX-এ স্বাগতম',time:Date.now(),read:false,type:'info'} };
     try {
       await Promise.all([
         db.ref('products').set(products),
@@ -335,7 +334,7 @@ const DB = {
         db.ref('notifications').set(notifs),
         db.ref('settings').set(DEFAULT_SETTINGS)
       ]);
-      console.log('✅ Seed complete');
+      console.log('✅ Seed done');
       Toast.show(LANG==='bn'?'প্রাথমিক ডেটা লোড হয়েছে':'Initial data loaded','success');
     } catch(e){
       console.error('Seed failed:', e);
@@ -357,25 +356,17 @@ const DB = {
   deleteCoupon(id){ return db.ref('coupons/'+id).remove(); },
   pushNotif(n){ const id='n_'+Date.now(); n.id=id; n.time=Date.now(); n.read=false; return db.ref('notifications/'+id).set(n); },
   saveReview(r){ const id='r_'+Date.now(); r.id=id; r.date=Date.now(); return db.ref('reviews/'+id).set(r); },
-  deleteReview(id){ return db.ref('reviews/'+id).remove(); },
 
   isReady(){ return this.ready.products && this.ready.users && this.ready.orders; },
   updateStock(productId, newStock){ return db.ref('products/'+productId+'/stock').set(newStock); },
   getProductReviews(productId){ return this.reviews.filter(r=>r.productId===productId); },
-  getProductRating(productId){
-    const revs = this.getProductReviews(productId);
-    if(!revs.length) return 0;
-    return revs.reduce((s,r)=>s+r.rating,0) / revs.length;
-  },
   addReviewToProduct(productId, rating){
-    const p = this.products.find(x=>x.id===productId);
-    if(!p) return;
+    const p = this.products.find(x=>x.id===productId); if(!p) return;
     const count = (p.reviewCount||0) + 1;
     const oldTotal = (p.rating||0) * (p.reviewCount||0);
     const newRating = (oldTotal + rating) / count;
     return db.ref('products/'+productId).update({ rating: parseFloat(newRating.toFixed(2)), reviewCount: count });
   },
-
   async saveSettings(s){ return db.ref('settings').set(s); }
 };
 
@@ -398,15 +389,119 @@ const ImageUpload = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   PWA Install
+   EmailJS OTP Service
+   ═══════════════════════════════════════════════════════════ */
+const OTP = {
+  currentEmail: null,
+  currentCode: null,
+  expiresAt: 0,
+  attempts: 0,
+  cooldownTimer: null,
+  verified: false,
+
+  init(){
+    if(typeof emailjs === 'undefined'){
+      console.warn('⚠️ EmailJS SDK not loaded');
+      return false;
+    }
+    if(!EmailJSConfig.initialized){
+      try {
+        emailjs.init({ publicKey: EmailJSConfig.publicKey });
+        EmailJSConfig.initialized = true;
+        console.log('✅ EmailJS initialized');
+      } catch(e){
+        console.error('❌ EmailJS init failed:', e);
+        return false;
+      }
+    }
+    return true;
+  },
+
+  generate(){ return String(Math.floor(100000 + Math.random() * 900000)); },
+
+  async send(email, name){
+    if(!this.init()){
+      return { ok:false, msg: LANG==='bn'?'EmailJS লোড হয়নি, পেজ রিফ্রেশ করুন':'EmailJS not loaded, refresh' };
+    }
+    if(Auth.isEmailTaken(email)){
+      return { ok:false, msg: LANG==='bn'?'এই ইমেইল দিয়ে আগেই রেজিস্ট্রেশন করা হয়েছে':'Email already registered' };
+    }
+    const code = this.generate();
+    this.currentEmail = email.trim().toLowerCase();
+    this.currentCode = code;
+    this.expiresAt = Date.now() + 10 * 60 * 1000;
+    this.attempts = 0;
+    this.verified = false;
+
+    try {
+      const result = await emailjs.send(
+        EmailJSConfig.serviceId,
+        EmailJSConfig.templateId,
+        {
+          to_email: this.currentEmail,
+          otp_code: code,
+          user_name: name || 'User',
+          site_name: 'EcoShop Pro MAX'
+        }
+      );
+      console.log('✅ OTP sent:', result);
+      return { ok:true };
+    } catch(err){
+      console.error('❌ OTP send failed:', err);
+      const errMsg = err?.text || err?.message || 'Email sending failed';
+      return { ok:false, msg: errMsg };
+    }
+  },
+
+  async verify(inputCode){
+    if(!this.currentCode) return { ok:false, msg: LANG==='bn'?'আগে কোড পাঠান':'Send code first' };
+    if(Date.now() > this.expiresAt) return { ok:false, msg: LANG==='bn'?'কোডের মেয়াদ শেষ, আবার পাঠান':'Code expired' };
+    if(this.attempts >= 5) return { ok:false, msg: LANG==='bn'?'অনেকবার ভুল, আবার কোড পাঠান':'Too many attempts' };
+    if(String(inputCode).trim() !== this.currentCode){
+      this.attempts++;
+      return { ok:false, msg: LANG==='bn'?`ভুল কোড (${5-this.attempts} বার বাকি)`:`Wrong code (${5-this.attempts} left)` };
+    }
+    this.verified = true;
+    return { ok:true };
+  },
+
+  reset(){
+    this.currentEmail = null;
+    this.currentCode = null;
+    this.expiresAt = 0;
+    this.attempts = 0;
+    this.verified = false;
+    if(this.cooldownTimer){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
+  },
+
+  startCooldown(seconds, onTick){
+    if(this.cooldownTimer) clearInterval(this.cooldownTimer);
+    this.cooldownTimer = setInterval(()=>{
+      seconds--;
+      if(onTick) onTick(seconds);
+      if(seconds <= 0){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
+    }, 1000);
+  },
+
+  maskEmail(email){
+    if(!email) return '';
+    const [user, domain] = email.split('@');
+    if(!domain) return email;
+    const visible = user.slice(0, Math.min(3, user.length));
+    return `${visible}${'*'.repeat(Math.max(2, user.length - visible.length))}@${domain}`;
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PWA
    ═══════════════════════════════════════════════════════════ */
 const PWA = {
   deferredPrompt: null,
   registerSW(){
     if('serviceWorker' in navigator){
       navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('✅ SW registered:', reg.scope))
-        .catch(err => console.warn('SW registration failed:', err));
+        .then(reg => console.log('✅ SW:', reg.scope))
+        .catch(err => console.warn('SW failed:', err));
     }
   },
   initInstallPrompt(){
@@ -425,7 +520,7 @@ const PWA = {
         if(!this.deferredPrompt) return;
         this.deferredPrompt.prompt();
         const result = await this.deferredPrompt.userChoice;
-        if(result.outcome === 'accepted') Toast.show(LANG==='bn'?'অ্যাপ ইনস্টল হচ্ছে...':'Installing app...','success');
+        if(result.outcome === 'accepted') Toast.show('Installing...','success');
         this.deferredPrompt = null;
         banner?.classList.remove('show');
       };
@@ -436,50 +531,33 @@ const PWA = {
         localStorage.setItem('eco_install_dismissed', '1');
       };
     }
-    window.addEventListener('appinstalled', ()=> {
-      Toast.show(LANG==='bn'?'✅ অ্যাপ ইনস্টল হয়েছে':'✅ App installed','success');
-      banner?.classList.remove('show');
-    });
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Push Notifications (FCM-ready)
+   PushNotif
    ═══════════════════════════════════════════════════════════ */
 const PushNotif = {
   async requestPermission(){
-    if(!('Notification' in window)){ Toast.show('Notifications not supported','error'); return false; }
+    if(!('Notification' in window)) return false;
     try {
       const perm = await Notification.requestPermission();
       if(perm === 'granted'){
         Toast.show(t('pushEnabled'),'success');
-        // Save a token placeholder to Firebase for admin push
         const u = Auth.user();
-        if(u){
-          try { await db.ref('fcm_tokens/'+u.id).set({ token: 'web-'+Date.now(), time: Date.now(), user: u.email }); } catch(e){}
-        }
+        if(u) try { await db.ref('fcm_tokens/'+u.id).set({ token: 'web-'+Date.now(), time: Date.now(), user: u.email }); } catch(e){}
         return true;
-      } else {
-        Toast.show('Permission denied','warning');
-        return false;
       }
+      return false;
     } catch(e){ return false; }
   },
   init(){
     const btn = document.getElementById('pushNotifBtn');
-    if(btn){
-      btn.onclick = async ()=>{
-        const ok = await this.requestPermission();
-        if(ok) btn.textContent = '✓';
-      };
-    }
+    if(btn) btn.onclick = async ()=>{ if(await this.requestPermission()) btn.textContent = '✓'; };
   },
   async localNotif(title, body){
-    if(!('Notification' in window)) return;
-    if(Notification.permission !== 'granted') return;
-    try {
-      new Notification(title, { body, icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PC9zdmc+' });
-    } catch(e){}
+    if(!('Notification' in window) || Notification.permission !== 'granted') return;
+    try { new Notification(title, { body, icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PC9zdmc+' }); } catch(e){}
   }
 };
 
@@ -542,7 +620,6 @@ function starHTML(rating, size){
   }
   return `<span class="stars" style="${size?`font-size:${size}`:''}">${s}</span>`;
 }
-function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ═══════════════════════════════════════════════════════════
    Auth
@@ -550,6 +627,13 @@ function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, c => ({'&':
 const Auth = {
   user(){ return Session.get(); },
   isAdmin(){ const u=this.user(); return u && u.role==='admin'; },
+
+  isEmailTaken(email){
+    if(!email) return false;
+    const n = email.trim().toLowerCase();
+    return DB.users.some(u => (u.email||'').toLowerCase() === n);
+  },
+
   async login(email, password){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
     const u = DB.users.find(x=>x.email===email && x.password===password);
@@ -558,12 +642,17 @@ const Auth = {
     Session.set(u);
     return { ok:true, user:u };
   },
+
   async register(data){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
-    if(DB.users.find(x=>x.email===data.email)) return { ok:false, msg:t('emailExists') };
+    if(this.isEmailTaken(data.email)) return { ok:false, msg:t('emailExists') };
     const u = {
-      id:'u_'+Date.now(), name:data.name, email:data.email, password:data.password,
-      phone:data.phone||'', role:'customer', blocked:false, joined:Date.now(),
+      id:'u_'+Date.now(),
+      name:data.name,
+      email:data.email.trim().toLowerCase(),
+      password:data.password,
+      phone:data.phone||'',
+      role:'customer', blocked:false, joined:Date.now(), emailVerified:true,
       avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff`
     };
     try { await DB.saveUser(u); Session.set(u); return { ok:true, user:u }; }
@@ -602,8 +691,7 @@ const Cart = {
   discountTotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); if(!p||!p.oldPrice) return s; return s+((p.oldPrice-p.price)*i.qty); },0); },
   shippingCharge(zone){
     if(this.count()<=0) return 0;
-    const inside = zone === 'inside' || zone === undefined;
-    return inside ? (DB.settings.shippingInsideDhaka || 100) : (DB.settings.shippingOutsideDhaka || 120);
+    return (zone==='outside') ? (DB.settings.shippingOutsideDhaka||120) : (DB.settings.shippingInsideDhaka||100);
   },
   total(zone){ return this.subtotal() + this.shippingCharge(zone); },
   refresh(){
@@ -622,7 +710,7 @@ const Cart = {
     const body = document.getElementById('cartBody'); if(!body) return;
     const items = this.items();
     if(!items.length){
-      body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>${t('emptyCart')}</h3><p>${LANG==='bn'?'পণ্য যোগ করে শুরু করুন':'Start by adding products'}</p><button class="btn btn-primary" onclick="Modal.close();App.go('shop')">${t('shop')}</button></div>`;
+      body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>${t('emptyCart')}</h3><button class="btn btn-primary" onclick="Modal.close();App.go('shop')">${t('shop')}</button></div>`;
       return;
     }
     body.innerHTML = items.map(i=>{
@@ -647,7 +735,7 @@ const Cart = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Wishlist
+   Wish / Orders / Notifs
    ═══════════════════════════════════════════════════════════ */
 const Wish = {
   all(){ return WishStore.get(); },
@@ -655,21 +743,17 @@ const Wish = {
   toggle(id){
     const list = this.all();
     const idx = list.indexOf(id);
-    if(idx>-1){ list.splice(idx,1); Toast.show(LANG==='bn'?'উইশলিস্ট থেকে সরানো':'Removed','info'); }
-    else { list.push(id); Toast.show(LANG==='bn'?'উইশলিস্টে যোগ হয়েছে':'Added','success'); }
+    if(idx>-1){ list.splice(idx,1); Toast.show(LANG==='bn'?'সরানো হয়েছে':'Removed','info'); }
+    else { list.push(id); Toast.show(LANG==='bn'?'যোগ হয়েছে':'Added','success'); }
     WishStore.set(list);
     if(['wishlist','shop','home','product'].includes(App.route)) App.render();
     else App.syncUI();
   }
 };
 
-/* ═══════════════════════════════════════════════════════════
-   Orders (with payment + comment support)
-   ═══════════════════════════════════════════════════════════ */
 const Orders = {
   all(){ return DB.orders; },
   mine(){ const u=Auth.user(); if(!u) return []; return DB.orders.filter(o=>o.userId===u.id); },
-
   async create(data){
     const u = Auth.user();
     const order = {
@@ -690,57 +774,38 @@ const Orders = {
       status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending',
       paymentStatus: data.paymentMethod === 'cod' ? 'pending' : 'awaiting_verification',
       date: Date.now(),
-      history: [{
-        status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending',
-        time: Date.now(),
-        comment: data.paymentMethod === 'cod' ? 'COD order — auto confirmed' : 'Awaiting payment verification'
-      }]
+      history: [{ status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending', time: Date.now(), comment: data.paymentMethod === 'cod' ? 'COD order' : 'Awaiting verification' }]
     };
     const saved = await DB.saveOrder(order);
-    // Deduct stock
     data.items.forEach(async i=>{
       const p = DB.products.find(x=>x.id===i.id);
       if(p) try { await DB.updateStock(p.id, Math.max(0, p.stock - i.qty)); } catch(e){}
     });
-    // Notify admin
-    try {
-      await DB.pushNotif({
-        title: LANG==='bn'?'নতুন অর্ডার!':'New Order!',
-        body: `${data.customer.name} — ${money(data.total)} — ${data.paymentMethod.toUpperCase()}`,
-        type: 'order'
-      });
-    } catch(e){}
+    try { await DB.pushNotif({ title:LANG==='bn'?'নতুন অর্ডার!':'New Order!', body:`${data.customer.name} — ${money(data.total)}`, type:'order' }); } catch(e){}
     Cart.save([]);
     return saved;
   },
-
   async updateStatus(id, status, comment){
     const o = DB.orders.find(x=>x.id===id);
     const history = (o?.history || []).concat([{ status, time: Date.now(), comment: comment||'' }]);
     return DB.updateOrder(id, { status, history });
   },
-
   async updateDeliveryCharge(id, newCharge){
-    const o = DB.orders.find(x=>x.id===id);
-    if(!o) return;
+    const o = DB.orders.find(x=>x.id===id); if(!o) return;
     const newTotal = (o.subtotal || 0) + newCharge - (o.discount || 0);
-    const history = (o.history || []).concat([{ status: o.status, time: Date.now(), comment: `Delivery charge updated: ${money(o.deliveryCharge)} → ${money(newCharge)}` }]);
+    const history = (o.history || []).concat([{ status: o.status, time: Date.now(), comment: `Delivery: ${money(o.deliveryCharge)} → ${money(newCharge)}` }]);
     return DB.updateOrder(id, { deliveryCharge: newCharge, total: newTotal, history });
   },
-
   remove(id){ return DB.deleteOrder(id); }
 };
 
-/* ═══════════════════════════════════════════════════════════
-   Notifications
-   ═══════════════════════════════════════════════════════════ */
 const Notifs = {
   all(){ return DB.notifs; },
   unread(){ return this.all().filter(n=>!n.read).length; },
   markAllRead(){ this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true).catch(()=>{}); }); },
   refresh(){
     const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread()||'';
-    const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} ${LANG==='bn'?'অপঠিত':'unread'}`;
+    const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} unread`;
     const list = document.getElementById('notifList'); if(!list) return;
     const arr = this.all();
     list.innerHTML = arr.length ? arr.map(n=>`
@@ -752,14 +817,13 @@ const Notifs = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Quick View / Share / Invoice
+   QuickView / Share / Invoice
    ═══════════════════════════════════════════════════════════ */
 const QuickView = {
   open(productId){
     const p = DB.products.find(x=>x.id===productId); if(!p) return;
     const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
-    const root = document.getElementById('quickViewRoot');
-    root.innerHTML = `
+    document.getElementById('quickViewRoot').innerHTML = `
       <div class="qv-overlay" onclick="if(event.target===this)QuickView.close()">
         <div class="qv-box">
           <button class="modal-close" onclick="QuickView.close()"><i class="fa-solid fa-xmark"></i></button>
@@ -775,16 +839,9 @@ const QuickView = {
                 ${p.discount?`<span class="discount-tag">-${p.discount}%</span>`:''}
               </div>
               <p class="detail-desc">${LANG==='bn'?p.desc:(p.descEn||p.desc||'')}</p>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
-                <span class="chip ${p.stock<=0?'blocked':'active-status'}"><i class="fa-solid fa-box"></i> ${p.stock<=0?t('outOfStock'):t('inStock')}</span>
-              </div>
               <div class="detail-actions" style="margin-top:16px">
-                <button class="btn btn-primary btn-block" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}');QuickView.close()">
-                  <i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}
-                </button>
-                <button class="btn btn-outline" onclick="QuickView.close();App.go('product','${p.id}')" style="min-width:auto;flex:0">
-                  <i class="fa-solid fa-arrow-right"></i>
-                </button>
+                <button class="btn btn-primary btn-block" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}');QuickView.close()"><i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}</button>
+                <button class="btn btn-outline" onclick="QuickView.close();App.go('product','${p.id}')" style="min-width:auto;flex:0"><i class="fa-solid fa-arrow-right"></i></button>
               </div>
             </div>
           </div>
@@ -795,56 +852,27 @@ const QuickView = {
   close(){ document.getElementById('quickViewRoot').innerHTML = ''; document.body.style.overflow=''; }
 };
 
-const Share = {
-  async product(p){
-    const data = { title: p.name, text: `${p.name} — ${money(p.price)}`, url: location.href };
-    try {
-      if(navigator.share){ await navigator.share(data); }
-      else { await navigator.clipboard.writeText(`${data.text} ${data.url}`); Toast.show(LANG==='bn'?'লিংক কপি হয়েছে':'Link copied','success'); }
-    } catch(e){}
-  }
-};
-
 const Invoice = {
   print(orderId){
     const o = DB.orders.find(x=>x.id===orderId); if(!o) return;
     const w = window.open('', '_blank', 'width=800,height=900');
-    w.document.write(`
-      <html><head><title>Invoice ${o.id}</title>
-      <style>
-        body{font-family:'Hind Siliguri',sans-serif;padding:32px;color:#0f1021;max-width:720px;margin:auto;}
-        h1{color:#6366f1;margin-bottom:6px;} .head{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:16px;margin-bottom:20px;}
-        .box{background:#f8f9fd;padding:16px;border-radius:12px;margin-bottom:16px;}
-        table{width:100%;border-collapse:collapse;margin:16px 0;}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e8f0;font-size:13px;}
-        th{background:#f1f3fa;font-size:11px;text-transform:uppercase;}
-        .totals{text-align:right;margin-top:12px;} .totals div{margin:4px 0;font-size:14px;}
-        .grand{font-size:20px;font-weight:800;color:#6366f1;}
-        .foot{text-align:center;color:#64748b;font-size:12px;margin-top:32px;padding-top:20px;border-top:1px solid #e5e8f0;}
-      </style></head><body>
-        <h1>EcoShop Pro MAX</h1>
-        <div class="head"><div><b>Invoice #${o.id}</b><br><small>Date: ${new Date(o.date).toLocaleDateString('en-US')}</small></div>
-        <div style="text-align:right"><b>Status: ${o.status.toUpperCase()}</b><br><small>Payment: ${o.paymentMethod.toUpperCase()}</small></div></div>
-        <div class="box"><b>Customer</b><br>${o.customer.name}<br>${o.customer.phone||''}<br>${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</div>
-        ${o.txnId?`<div class="box"><b>Txn ID:</b> ${o.txnId}</div>`:''}
-        <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-        <tbody>${(o.items||[]).map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>৳${i.price}</td><td>৳${i.price*i.qty}</td></tr>`).join('')}</tbody></table>
-        <div class="totals">
-          <div>Subtotal: ৳${o.subtotal||0}</div>
-          <div>Delivery: ৳${o.deliveryCharge||0}</div>
-          ${o.discount?`<div>Discount: -৳${o.discount}</div>`:''}
-          <div class="grand">Total: ৳${o.total}</div>
-        </div>
-        <div class="foot">Thank you for shopping with EcoShop Pro MAX!</div>
-      </body></html>
-    `);
+    w.document.write(`<html><head><title>Invoice ${o.id}</title>
+      <style>body{font-family:'Hind Siliguri',sans-serif;padding:32px;color:#0f1021;max-width:720px;margin:auto;}h1{color:#6366f1;}.head{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:16px;margin-bottom:20px;}.box{background:#f8f9fd;padding:16px;border-radius:12px;margin-bottom:16px;}table{width:100%;border-collapse:collapse;margin:16px 0;}th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e8f0;font-size:13px;}th{background:#f1f3fa;font-size:11px;}.totals{text-align:right;margin-top:12px;}.grand{font-size:20px;font-weight:800;color:#6366f1;}.foot{text-align:center;color:#64748b;font-size:12px;margin-top:32px;padding-top:20px;border-top:1px solid #e5e8f0;}</style>
+      </head><body><h1>EcoShop Pro MAX</h1>
+      <div class="head"><div><b>Invoice #${o.id}</b><br><small>Date: ${new Date(o.date).toLocaleDateString('en-US')}</small></div><div style="text-align:right"><b>Status: ${o.status.toUpperCase()}</b><br><small>Payment: ${o.paymentMethod.toUpperCase()}</small></div></div>
+      <div class="box"><b>Customer</b><br>${o.customer.name}<br>${o.customer.phone||''}<br>${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</div>
+      ${o.txnId?`<div class="box"><b>Txn ID:</b> ${o.txnId}</div>`:''}
+      <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+      <tbody>${(o.items||[]).map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>৳${i.price}</td><td>৳${i.price*i.qty}</td></tr>`).join('')}</tbody></table>
+      <div class="totals"><div>Subtotal: ৳${o.subtotal||0}</div><div>Delivery: ৳${o.deliveryCharge||0}</div>${o.discount?`<div>Discount: -৳${o.discount}</div>`:''}<div class="grand">Total: ৳${o.total}</div></div>
+      <div class="foot">Thank you!</div></body></html>`);
     w.document.close();
     setTimeout(()=>w.print(), 300);
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Search + Voice
+   Search Suggest
    ═══════════════════════════════════════════════════════════ */
 const SearchSuggest = {
   init(){
@@ -855,16 +883,12 @@ const SearchSuggest = {
       const q = inp.value.trim().toLowerCase();
       if(!q){ box.classList.remove('active'); return; }
       const results = DB.products.filter(p=>(p.name+(p.nameEn||'')+(p.cat||'')).toLowerCase().includes(q)).slice(0, 6);
-      if(!results.length){
-        box.innerHTML = `<div class="suggest-empty">${LANG==='bn'?'কোনো পণ্য পাওয়া যায়নি':'No products found'}</div>`;
-      } else {
-        box.innerHTML = results.map(p=>`
-          <div class="suggest-item" onclick="App.go('product','${p.id}');SearchSuggest.hide()">
-            <img src="${p.img}" onerror="this.src='https://via.placeholder.com/42'">
-            <div class="suggest-info"><h5>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h5><p>${LANG==='bn'?p.cat:(p.catEn||p.cat)}</p></div>
-            <span class="price">${money(p.price)}</span>
-          </div>`).join('');
-      }
+      box.innerHTML = results.length ? results.map(p=>`
+        <div class="suggest-item" onclick="App.go('product','${p.id}');SearchSuggest.hide()">
+          <img src="${p.img}" onerror="this.src='https://via.placeholder.com/42'">
+          <div class="suggest-info"><h5>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h5><p>${LANG==='bn'?p.cat:(p.catEn||p.cat)}</p></div>
+          <span class="price">${money(p.price)}</span>
+        </div>`).join('') : `<div class="suggest-empty">${LANG==='bn'?'পাওয়া যায়নি':'Not found'}</div>`;
       box.classList.add('active');
     });
     inp.addEventListener('blur', ()=> setTimeout(()=>this.hide(), 200));
@@ -873,42 +897,15 @@ const SearchSuggest = {
   hide(){ document.getElementById('searchSuggest')?.classList.remove('active'); }
 };
 
-const VoiceSearch = {
-  init(){
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    const btn = document.getElementById('voiceSearch');
-    if(!btn) return;
-    if(!SR){ btn.style.display = 'none'; return; }
-    btn.style.display = 'flex';
-    let rec = null, listening = false;
-    btn.onclick = ()=>{
-      if(listening){ rec?.stop(); return; }
-      try { rec = new SR(); } catch(e){ return; }
-      rec.lang = LANG === 'bn' ? 'bn-BD' : 'en-US';
-      rec.continuous = false;
-      rec.onstart = ()=>{ listening = true; btn.classList.add('listening'); };
-      rec.onend = ()=>{ listening = false; btn.classList.remove('listening'); };
-      rec.onerror = ()=>{ Toast.show(LANG==='bn'?'ভয়েস শোনা যায়নি':'Voice not recognized','error'); };
-      rec.onresult = (e)=>{
-        const text = e.results[0][0].transcript;
-        const inp = document.getElementById('globalSearch');
-        if(inp){ inp.value = text; inp.dispatchEvent(new Event('input')); }
-        App._shopQ = text; App.go('shop');
-      };
-      try { rec.start(); } catch(e){}
-    };
-  }
-};
-
 /* ═══════════════════════════════════════════════════════════
-   APP Router
+   App Router
    ═══════════════════════════════════════════════════════════ */
 const App = {
   route:'home',
   _shopCat:'all', _shopSort:'default', _shopQ:'', _shopMinPrice:'', _shopMaxPrice:'',
   _adminTab:'dashboard', _pQuery:'', _uQuery:'', _oQuery:'', _selectedUsers:[],
   _authTab:'login', _authRedirect:null, _lastRoute:'home', _param:null,
-  _checkoutState: null,
+  _otpStep:null, _pendingReg:null, _checkoutState:null,
 
   hideSplash(){
     const s = document.getElementById('splash');
@@ -962,7 +959,7 @@ const App = {
       }
     } catch(e){
       console.error('Render error:', e);
-      html = `<div class="page"><div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Render Error</b>${e.message}</div></div></div>`;
+      html = `<div class="page"><div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Error</b>${e.message}</div></div></div>`;
     }
     el.innerHTML = html;
     this.syncUI();
@@ -974,13 +971,11 @@ const App = {
 
   applyI18n(){
     document.querySelectorAll('[data-i18n]').forEach(el=>{
-      const k = el.dataset.i18n;
-      const val = t(k);
+      const k = el.dataset.i18n; const val = t(k);
       if(val && val !== k) el.textContent = val;
     });
     document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
-      const k = el.dataset.i18nPh;
-      const val = t(k);
+      const k = el.dataset.i18nPh; const val = t(k);
       if(val && val !== k) el.placeholder = val;
     });
   },
@@ -1037,23 +1032,22 @@ const App = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   PAGES
+   Pages
    ═══════════════════════════════════════════════════════════ */
 const Pages = {
   home(){
-    if(!DB.isReady()) return loadingHTML(t('loadingData'), 'Firebase...');
+    if(!DB.isReady()) return loadingHTML(t('loadingData'));
     const featured = DB.products.filter(p=>p.featured).slice(0,6);
     const newArr = [...DB.products].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,8);
     const bestDeals = [...DB.products].filter(p=>p.discount>0).sort((a,b)=>b.discount-a.discount).slice(0,4);
-    const recentIds = RecentStore.get();
-    const recent = recentIds.map(id=>DB.products.find(p=>p.id===id)).filter(Boolean).slice(0,6);
+    const recent = RecentStore.get().map(id=>DB.products.find(p=>p.id===id)).filter(Boolean).slice(0,6);
     return `
       <section class="hero">
         <div class="hero-inner">
           <div class="hero-content">
-            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> ${LANG==='bn'?'প্রিমিয়াম কলেকশন ২০২৬':'Premium 2026'}</div>
+            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> ${LANG==='bn'?'প্রিমিয়াম ২০২৬':'Premium 2026'}</div>
             <h1 class="hero-title">${LANG==='bn'?'সেরা <span class="grad">প্রিমিয়াম</span> পণ্য<br>এখন হাতের মুঠোয়':'Best <span class="grad">Premium</span> products<br>at your fingertips'}</h1>
-            <p class="hero-sub">${LANG==='bn'?'সারাদেশে দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট এবং ১০০% অরিজিনাল পণ্যের নিশ্চয়তা।':'Fast delivery, secure payment and 100% original products.'}</p>
+            <p class="hero-sub">${LANG==='bn'?'দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট, ১০০% অরিজিনাল।':'Fast delivery, secure payment, 100% original.'}</p>
             <div class="hero-btns">
               <button class="btn btn-primary btn-lg" onclick="App.go('shop')"><i class="fa-solid fa-store"></i> ${t('shop')}</button>
               <button class="btn btn-outline btn-lg" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff" onclick="App.go('orders')"><i class="fa-solid fa-box"></i> ${t('myOrders')}</button>
@@ -1074,7 +1068,6 @@ const Pages = {
 
   shop(){
     if(!DB.isReady()) return loadingHTML(t('loadingData'));
-    const cats = DB.categories;
     let list = DB.products.slice();
     if(App._shopCat && App._shopCat!=='all') list = list.filter(p=>p.cat===App._shopCat);
     if(App._shopQ){ const s=App._shopQ.toLowerCase(); list = list.filter(p=>(p.name+(p.nameEn||'')+(p.desc||'')).toLowerCase().includes(s)); }
@@ -1088,8 +1081,8 @@ const Pages = {
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-store"></i> ${t('allProducts')}</h2><span class="count-chip">${list.length} ${t('items')}</span></div>
         <div class="filter-chips">
-          <div class="filter-chip ${App._shopCat==='all'?'active':''}" onclick="App._shopCat='all';App.render()">${t('allCategories')}</div>
-          ${cats.map(c=>`<div class="filter-chip ${App._shopCat===c?'active':''}" onclick="App._shopCat='${c}';App.render()">${c}</div>`).join('')}
+          <div class="filter-chip ${App._shopCat==='all'?'active':''}" onclick="App._shopCat='all';App.render()">${LANG==='bn'?'সব':'All'}</div>
+          ${DB.categories.map(c=>`<div class="filter-chip ${App._shopCat===c?'active':''}" onclick="App._shopCat='${c}';App.render()">${c}</div>`).join('')}
         </div>
         <div class="filters-bar">
           <select onchange="App._shopSort=this.value;App.render()">
@@ -1109,12 +1102,11 @@ const Pages = {
   productDetail(id){
     if(!DB.isReady()) return loadingHTML(t('loadingData'));
     const p = DB.products.find(x=>x.id===id);
-    if(!p) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${LANG==='bn'?'পণ্য পাওয়া যায়নি':'Product not found'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
+    if(!p) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${LANG==='bn'?'পাওয়া যায়নি':'Not found'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
     RecentStore.add(p.id);
     const reviews = DB.getProductReviews(p.id);
     const imgs = p.images && p.images.length ? p.images : [p.img];
     const related = DB.products.filter(x=>x.cat===p.cat && x.id!==p.id).slice(0,4);
-    const rating = p.rating || 0;
     const stockCls = p.stock<=0 ? 'out' : (p.stock<10 ? 'low':'');
     return `
       <div class="page">
@@ -1127,7 +1119,7 @@ const Pages = {
           <div class="detail-info">
             <span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span>
             <h1>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h1>
-            <div class="rating">${starHTML(rating)} <span>${rating?rating.toFixed(1):'0'} (${p.reviewCount||0} ${t('reviews')})</span></div>
+            <div class="rating">${starHTML(p.rating||0)} <span>${p.rating?(p.rating).toFixed(1):'0'} (${p.reviewCount||0} ${t('reviews')})</span></div>
             <div class="detail-price">
               <span class="price">${money(p.price)}</span>
               ${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}
@@ -1136,9 +1128,7 @@ const Pages = {
             <p class="detail-desc">${LANG==='bn'?p.desc:(p.descEn||p.desc||'')}</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
               <span class="chip ${stockCls==='out'?'blocked':'active-status'}"><i class="fa-solid fa-box"></i> ${p.stock<=0?t('outOfStock'):`${t('stock')}: ${p.stock}`}</span>
-              <span class="chip"><i class="fa-solid fa-truck"></i> ${money(DB.settings.shippingInsideDhaka)} / ${money(DB.settings.shippingOutsideDhaka)}</span>
             </div>
-            ${p.tags && p.tags.length ? `<div class="chips-wrap" style="margin:12px 0">${p.tags.map(tag=>`<span class="chip">#${tag}</span>`).join('')}</div>` : ''}
             <div class="detail-actions">
               <button class="btn btn-primary btn-lg" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}</button>
               <button class="btn btn-outline btn-lg" onclick="Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart" style="${Wish.has(p.id)?'color:var(--danger)':''}"></i></button>
@@ -1277,7 +1267,7 @@ const Pages = {
             <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
             <div class="admin-header-title">
               <h1>${Admin.titles[tab]||t('dashboard')}</h1>
-              <p>EcoShop Pro MAX v6.0</p>
+              <p>EcoShop Pro MAX v7.0</p>
             </div>
             <div class="admin-header-actions">
               <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i><span> ${t('shop')}</span></button>
@@ -1311,15 +1301,14 @@ const Pages = {
     return `
       <div class="page" style="max-width:760px">
         <div class="section-head"><h2><i class="fa-solid fa-credit-card"></i> ${t('checkout')}</h2></div>
-
         <div class="admin-card">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-location-dot"></i> ${LANG==='bn'?'শিপিং তথ্য':'Shipping Info'}</h3></div>
+          <div class="admin-card-head"><h3><i class="fa-solid fa-location-dot"></i> ${LANG==='bn'?'শিপিং তথ্য':'Shipping'}</h3></div>
           <div class="form-group"><label>${t('fullName')} <span class="req">*</span></label><input id="coName" value="${u.name}"></div>
           <div class="form-row">
             <div class="form-group"><label>${t('phone')} <span class="req">*</span></label><input id="coPhone" value="${u.phone||''}" placeholder="017XXXXXXXX"></div>
-            <div class="form-group"><label>${t('city')}</label><input id="coCity" value="ঢাকা" placeholder="ঢাকা"></div>
+            <div class="form-group"><label>${t('city')}</label><input id="coCity" value="ঢাকা"></div>
           </div>
-          <div class="form-group"><label>${t('address')} <span class="req">*</span></label><textarea id="coAddr" rows="3" placeholder="${LANG==='bn'?'সম্পূর্ণ ঠিকানা...':'Full address...'}"></textarea></div>
+          <div class="form-group"><label>${t('address')} <span class="req">*</span></label><textarea id="coAddr" rows="3"></textarea></div>
         </div>
 
         <div class="admin-card">
@@ -1353,7 +1342,7 @@ const Pages = {
         </div>
 
         <div class="admin-card">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${LANG==='bn'?'অর্ডার সারাংশ':'Order Summary'}</h3></div>
+          <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${LANG==='bn'?'সারাংশ':'Summary'}</h3></div>
           <div class="form-group">
             <label>${t('couponCode')}</label>
             <div style="display:flex;gap:8px"><input id="coCoupon" placeholder="ECO10"><button class="btn btn-outline" onclick="Checkout.applyCoupon()">${t('applyFilter')}</button></div>
@@ -1370,16 +1359,14 @@ const Pages = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   CHECKOUT LOGIC
+   Checkout
    ═══════════════════════════════════════════════════════════ */
 const Checkout = {
   coupon: null,
-
   ensureState(){
     if(!App._checkoutState) App._checkoutState = { zone:'inside', payment:'cod', couponDiscount:0, couponCode:null };
     return App._checkoutState;
   },
-
   setZone(zone){
     const s = this.ensureState();
     s.zone = zone;
@@ -1389,9 +1376,8 @@ const Checkout = {
     const shipEl = document.getElementById('coShip'); if(shipEl) shipEl.textContent = money(shipping);
     const totEl = document.getElementById('coTotal'); if(totEl) totEl.textContent = money(total);
     document.querySelectorAll('.delivery-zone').forEach(el=>el.classList.remove('active'));
-    document.querySelector(`.delivery-zone:nth-child(${zone==='inside'?1:2})`)?.classList.add('active');
+    document.querySelectorAll('.delivery-zone')[zone==='inside'?0:1]?.classList.add('active');
   },
-
   setPayment(method){
     const s = this.ensureState();
     s.payment = method;
@@ -1400,51 +1386,36 @@ const Checkout = {
     document.querySelectorAll('.payment-method')[idx]?.classList.add('active');
     const detail = document.getElementById('paymentDetail');
     if(detail) detail.innerHTML = this.renderPaymentDetail(method);
+    this.bindScreenshotUpload();
   },
-
   renderPaymentDetail(method){
     const s = DB.settings;
     if(method === 'cod'){
-      return `
-        <div class="payment-info" style="background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03));border-color:rgba(16,185,129,.3)">
-          <h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${LANG==='bn'?'ক্যাশ অন ডেলিভারি':'Cash on Delivery'}</h4>
-          <p style="font-size:13.5px;color:var(--text-dim);line-height:1.65">
-            ${LANG==='bn'?'পণ্য হাতে পেয়ে সম্পূর্ণ টাকা পরিশোধ করবেন। অর্ডার এখনই কনফার্ম হয়ে যাবে।':'Pay full amount when you receive the product. Order will be confirmed immediately.'}
-          </p>
-        </div>`;
+      return `<div class="payment-info" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)">
+        <h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${t('cod')}</h4>
+        <p style="font-size:13.5px;color:var(--text-dim);line-height:1.65">${LANG==='bn'?'পণ্য হাতে পেয়ে টাকা পরিশোধ করবেন। অর্ডার এখনই কনফার্ম হবে।':'Pay when you receive. Order confirmed immediately.'}</p>
+      </div>`;
     }
-
     const num = method==='bkash' ? (s.bkashNumber||'01700000000') : method==='nagad' ? (s.nagadNumber||'01700000000') : (s.rocketNumber||'01700000000');
-    const brandCls = method;
     const brandName = method==='bkash' ? 'বিকাশ' : method==='nagad' ? 'নগদ' : 'রকেট';
-    const ussd = method==='bkash' ? `*247#` : method==='nagad' ? `*167#` : `*322#`;
     const dialFull = method==='bkash' ? `*247*${num}*` : method==='nagad' ? `*167*${num}*` : `*322*1*${num}*`;
-
     return `
       <div class="payment-info">
-        <h4>
-          <span class="pm-brand ${brandCls}">${brandName}</span>
-          ${LANG==='bn'?'সেন্ড মানি করুন':'Send Money'}
-        </h4>
-
+        <h4><span class="pm-brand ${method}">${brandName}</span> ${LANG==='bn'?'সেন্ড মানি':'Send Money'}</h4>
         <div class="copy-number-box">
           <div>
-            <small style="font-size:11.5px;color:var(--text-dim);display:block;margin-bottom:2px">${t('paymentNumber')} (${LANG==='bn'?'পার্সোনাল':'Personal'})</small>
+            <small style="font-size:11.5px;color:var(--text-dim);display:block;margin-bottom:2px">${t('paymentNumber')}</small>
             <span class="number" id="payNum">${num}</span>
           </div>
-          <button class="copy-btn" id="copyNumBtn" onclick="Checkout.copyNumber('${num}')">
-            <i class="fa-solid fa-copy"></i> ${t('copy')}
-          </button>
+          <button class="copy-btn" id="copyNumBtn" onclick="Checkout.copyNumber('${num}')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button>
         </div>
-
-        <h5 style="font-size:13px;font-weight:800;margin:12px 0 8px;color:var(--text)">📋 ${t('sendMoneySteps')}:</h5>
+        <h5 style="font-size:13px;font-weight:800;margin:12px 0 8px">📋 ${t('sendMoneySteps')}:</h5>
         <ol class="steps-list">
-          <li>${LANG==='bn'?`আপনার <b>${brandName}</b> অ্যাপ খুলুন বা ডায়াল করুন`:`Open your <b>${brandName}</b> app or dial`}</li>
+          <li>${LANG==='bn'?`<b>${brandName}</b> অ্যাপ খুলুন বা ডায়াল করুন`:`Open <b>${brandName}</b> app or dial`}</li>
           <li>${LANG==='bn'?'<b>Send Money</b> অপশন বেছে নিন':'Choose <b>Send Money</b>'}</li>
-          <li>${LANG==='bn'?`উপরের নাম্বারে <b>৳${money(Cart.total(App._checkoutState?.zone||'inside')).replace('৳','')}</b> সেন্ড করুন`:`Send <b>৳${Cart.total(App._checkoutState?.zone||'inside')}</b> to the number above`}</li>
+          <li>${LANG==='bn'?'উপরের নাম্বারে সম্পূর্ণ টাকা সেন্ড করুন':'Send full amount to the number'}</li>
           <li>${LANG==='bn'?'সফল হলে <b>Transaction ID</b> নিচে লিখুন':'Enter the <b>Transaction ID</b> below'}</li>
         </ol>
-
         <div class="dial-code-box">
           <div style="flex:1">
             <small style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">${t('useDialCode')}</small>
@@ -1452,61 +1423,55 @@ const Checkout = {
           </div>
           <button onclick="Checkout.copyDial('${dialFull}')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button>
         </div>
-
         <div class="txn-input-group">
           <label>${t('txnId')} <span class="req">*</span></label>
           <input id="txnIdInput" placeholder="${t('txnIdPlaceholder')}" autocomplete="off">
         </div>
-
         <div class="txn-input-group">
           <label>${t('screenshot')} <span class="optional">${t('screenshotOptional')}</span></label>
-          <div class="payment-screenshot">
-            <div class="img-preview" id="ssPreview"><i class="fa-solid fa-image"></i></div>
-            <div class="upload-btn-wrap">
-              <button type="button" class="upload-btn" id="ssUploadBtn">
-                <i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}
-              </button>
+          <div class="payment-screenshot" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-top:10px">
+            <div class="img-preview" id="ssPreview" style="width:96px;height:96px;border-radius:14px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface-2);flex-shrink:0;"><i class="fa-solid fa-image" style="font-size:34px;color:var(--text-soft)"></i></div>
+            <div class="upload-btn-wrap" style="flex:1;min-width:180px">
+              <button type="button" class="upload-btn" id="ssUploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}</button>
               <input type="file" id="ssFile" accept="image/*" style="display:none">
               <div class="upload-progress" id="ssProgress"><span></span></div>
             </div>
           </div>
           <input type="hidden" id="ssUrl" value="">
         </div>
-      </div>
-      <script>
-        setTimeout(function(){
-          var btn = document.getElementById('ssUploadBtn');
-          var file = document.getElementById('ssFile');
-          var prev = document.getElementById('ssPreview');
-          var hidden = document.getElementById('ssUrl');
-          var prog = document.getElementById('ssProgress');
-          if(!btn || btn._bound) return; btn._bound = true;
-          btn.onclick = function(){ file.click(); };
-          file.onchange = async function(){
-            var f = file.files[0]; if(!f) return;
-            var reader = new FileReader();
-            reader.onload = function(e){ prev.innerHTML = '<img src="'+e.target.result+'">'; };
-            reader.readAsDataURL(f);
-            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Uploading...';
-            if(prog){ prog.style.display='block'; prog.firstElementChild.style.width='40%'; }
-            try {
-              var res = await ImageUpload.upload(f);
-              hidden.value = res.url;
-              prev.innerHTML = '<img src="'+res.url+'">';
-              if(prog) prog.firstElementChild.style.width='100%';
-              Toast.show('${LANG==='bn'?'স্ক্রিনশট আপলোড হয়েছে':'Screenshot uploaded'}','success');
-            } catch(err){
-              Toast.show('Upload failed: '+err.message,'error');
-              prev.innerHTML = '<i class="fa-solid fa-image"></i>';
-            } finally {
-              btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}';
-              if(prog) setTimeout(function(){ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
-            }
-          };
-        }, 200);
-      <\/script>`;
+      </div>`;
   },
-
+  bindScreenshotUpload(){
+    const btn = document.getElementById('ssUploadBtn');
+    const file = document.getElementById('ssFile');
+    const prev = document.getElementById('ssPreview');
+    const hidden = document.getElementById('ssUrl');
+    const prog = document.getElementById('ssProgress');
+    if(!btn || btn._bound) return;
+    btn._bound = true;
+    btn.onclick = ()=> file.click();
+    file.onchange = async ()=>{
+      const f = file.files[0]; if(!f) return;
+      const reader = new FileReader();
+      reader.onload = e => prev.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
+      reader.readAsDataURL(f);
+      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> Uploading...`;
+      if(prog){ prog.style.display='block'; prog.firstElementChild.style.width='40%'; }
+      try {
+        const res = await ImageUpload.upload(f);
+        hidden.value = res.url;
+        prev.innerHTML = `<img src="${res.url}" style="width:100%;height:100%;object-fit:cover">`;
+        if(prog) prog.firstElementChild.style.width='100%';
+        Toast.show(LANG==='bn'?'স্ক্রিনশট আপলোড হয়েছে':'Screenshot uploaded','success');
+      } catch(err){
+        Toast.show('Upload failed: '+err.message,'error');
+        prev.innerHTML = '<i class="fa-solid fa-image" style="font-size:34px;color:var(--text-soft)"></i>';
+      } finally {
+        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}`;
+        if(prog) setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
+      }
+    };
+  },
   copyNumber(num){
     navigator.clipboard.writeText(num).then(()=>{
       Toast.show(t('numberCopied'),'success');
@@ -1515,40 +1480,32 @@ const Checkout = {
         setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = `<i class="fa-solid fa-copy"></i> ${t('copy')}`; }, 2000); }
     });
   },
-
-  copyDial(code){
-    navigator.clipboard.writeText(code).then(()=> Toast.show(t('dialCodeCopied'),'success'));
-  },
-
+  copyDial(code){ navigator.clipboard.writeText(code).then(()=> Toast.show(t('dialCodeCopied'),'success')); },
   applyCoupon(){
     const code = document.getElementById('coCoupon').value.trim().toUpperCase();
     const c = DB.coupons.find(x=>x.code===code);
     const status = document.getElementById('couponStatus');
-    if(!c){ Toast.show(t('invalidCoupon'),'error'); if(status){ status.textContent=''; } return; }
+    if(!c){ Toast.show(t('invalidCoupon'),'error'); if(status) status.textContent=''; return; }
     this.coupon = c;
     const s = this.ensureState();
     const ship = s.zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
     const subtotal = Cart.subtotal();
-    let off = c.type==='percent' ? Math.round(subtotal * c.value/100) : c.value;
-    s.couponDiscount = off;
-    s.couponCode = c.code;
+    const off = c.type==='percent' ? Math.round(subtotal * c.value/100) : c.value;
+    s.couponDiscount = off; s.couponCode = c.code;
     const total = subtotal + ship - off;
     if(status){ status.textContent = `✓ ${c.code} — ${LANG==='bn'?'ছাড়':'Save'} ${money(off)}`; status.style.color='var(--success)'; }
     const dEl = document.getElementById('coDiscount'); if(dEl) dEl.textContent = '-'+money(off);
     const tEl = document.getElementById('coTotal'); if(tEl) tEl.textContent = money(total);
     Toast.show(t('couponApplied'),'success');
   },
-
   async place(){
     const name = document.getElementById('coName').value.trim();
     const phone = document.getElementById('coPhone').value.trim();
     const city = document.getElementById('coCity').value.trim();
     const address = document.getElementById('coAddr').value.trim();
     if(!name || !phone || !address){ Toast.show(t('fillAllFields'),'error'); return; }
-
     const s = this.ensureState();
     const method = s.payment;
-
     let txnId = null, screenshot = null;
     if(method !== 'cod'){
       const inp = document.getElementById('txnIdInput');
@@ -1557,7 +1514,6 @@ const Checkout = {
       const ss = document.getElementById('ssUrl');
       screenshot = ss ? ss.value.trim() : '';
     }
-
     const ship = s.zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
     const subtotal = Cart.subtotal();
     const total = subtotal + ship - (s.couponDiscount||0);
@@ -1565,10 +1521,8 @@ const Checkout = {
       const p = DB.products.find(x=>x.id===i.id);
       return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty, img:p?.img||'' };
     });
-
     const btn = document.getElementById('coSubmit');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-
     try {
       const order = await Orders.create({
         customer: { name, phone, city, address },
@@ -1576,16 +1530,13 @@ const Checkout = {
         deliveryCharge: ship,
         deliveryZone: s.zone,
         discount: s.couponDiscount||0,
-        total,
-        coupon: s.couponCode,
+        total, coupon: s.couponCode,
         paymentMethod: method,
         paymentNumber: method==='cod' ? null : (DB.settings[method+'Number'] || ''),
         txnId, screenshot
       });
-
       App._checkoutState = null;
       this.coupon = null;
-
       Toast.show(method==='cod' ? t('orderSuccessCOD') : t('orderSuccessPaid'),'success',4000);
       PushNotif.localNotif(LANG==='bn'?'অর্ডার সফল':'Order placed', order.id);
       App.go('orders');
@@ -1597,7 +1548,7 @@ const Checkout = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   COMPONENTS
+   Components
    ═══════════════════════════════════════════════════════════ */
 const Components = {
   productCard(p){
@@ -1628,7 +1579,6 @@ const Components = {
         </div>
       </div>`;
   },
-
   adminSidebar(tab){
     const pendingCount = DB.orders.filter(o=>o.status==='pending').length;
     const items = [
@@ -1661,11 +1611,10 @@ const Components = {
           </div>`).join('')}
       </nav>
       <div class="admin-footer">
-        <button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> ${LANG==='bn'?'স্টোরে ফিরুন':'Back to Store'}</button>
+        <button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> ${LANG==='bn'?'স্টোরে ফিরুন':'Back'}</button>
       </div>
     </aside>`;
   },
-
   openReviewModal(productId){
     if(!Auth.user()){ Toast.show(t('loginRequired'),'warning'); return; }
     let rating = 5;
@@ -1699,7 +1648,6 @@ const Components = {
       });
     }
   },
-
   async submitReview(productId, rating){
     const text = document.getElementById('reviewText').value.trim();
     if(!text){ Toast.show(t('fillAllFields'),'error'); return; }
@@ -1715,23 +1663,19 @@ const Components = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   ADMIN
+   Admin
    ═══════════════════════════════════════════════════════════ */
 const Admin = {
   get titles(){
-    return {
-      dashboard:t('dashboard'), products:t('products'), orders:t('ordersTab'),
-      users:t('users'), categories:t('categories'), coupons:t('coupons'), settings:t('settings')
-    };
+    return { dashboard:t('dashboard'), products:t('products'), orders:t('ordersTab'),
+      users:t('users'), categories:t('categories'), coupons:t('coupons'), settings:t('settings') };
   },
-
   switchTab(tab){
     App._adminTab = tab;
     document.getElementById('backdrop')?.classList.remove('active');
     document.getElementById('adminSidebar')?.classList.remove('active');
     App.render();
   },
-
   render(tab){
     try {
       switch(tab){
@@ -1746,7 +1690,6 @@ const Admin = {
       }
     } catch(e){ return `<div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div>${e.message}</div></div>`; }
   },
-
   dashboard(){
     const orders = DB.orders, users = DB.users, prods = DB.products;
     const totalSales = orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+(o.total||0),0);
@@ -1767,7 +1710,7 @@ const Admin = {
         <div class="stat-card"><div class="stat-icon info"><i class="fa-solid fa-user-check"></i></div><div class="stat-info"><p>${t('activeUsers')}</p><h3>${users.filter(u=>!u.blocked).length}</h3></div></div>
       </div>
       <div class="admin-card">
-        <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${t('recentOrders')}</h3><button class="btn btn-outline btn-sm" onclick="Admin.switchTab('orders')">${LANG==='bn'?'সব দেখুন':'View All'}</button></div>
+        <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${t('recentOrders')}</h3><button class="btn btn-outline btn-sm" onclick="Admin.switchTab('orders')">${LANG==='bn'?'সব':'All'}</button></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th>${t('orderDate')}</th></tr></thead>
@@ -1798,7 +1741,6 @@ const Admin = {
         </div>
       </div>`;
   },
-
   products(){
     const q = App._pQuery||'';
     const list = DB.products.filter(p=> !q || (p.name+(p.nameEn||'')).toLowerCase().includes(q.toLowerCase()));
@@ -1828,7 +1770,6 @@ const Admin = {
         </div>
       </div>`;
   },
-
   openProductModal(id){
     const p = id ? DB.products.find(x=>x.id===id) : {name:'',nameEn:'',cat:'',catEn:'',price:'',oldPrice:'',discount:0,stock:'',img:'',images:[],desc:'',descEn:'',tags:[],featured:false};
     const cats = DB.categories.length ? DB.categories : ['ইলেকট্রনিকস','গ্যাজেট','ফ্যাশন','ফটোগ্রাফি'];
@@ -1851,7 +1792,7 @@ const Admin = {
           </div>
           <div class="form-row">
             <div class="form-group"><label>${t('category')} <span class="req">*</span></label><select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
-            <div class="form-group"><label>Category (English)</label><input id="pCatEn" value="${p.catEn||''}"></div>
+            <div class="form-group"><label>Category (EN)</label><input id="pCatEn" value="${p.catEn||''}"></div>
           </div>
           <div class="form-group"><label>${t('description')}</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
           <div class="form-group"><label>${t('descriptionEn')}</label><textarea id="pDescEn" rows="3">${p.descEn||''}</textarea></div>
@@ -1862,7 +1803,7 @@ const Admin = {
             <div class="img-upload">
               <div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div>
               <div class="upload-btn-wrap">
-                <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি আপলোড':'Upload Main Image'}</button>
+                <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি':'Main Image'}</button>
                 <input type="file" id="imgFile" accept="image/*" style="display:none">
                 <div class="upload-hint">JPG, PNG, WebP — Max 32MB</div>
                 <div class="upload-progress" id="uploadProgress"><span></span></div>
@@ -1871,8 +1812,8 @@ const Admin = {
             <input type="hidden" id="pImg" value="${p.img||''}">
           </div>
           <div class="form-group">
-            <label>${LANG==='bn'?'অতিরিক্ত ছবি (গ্যালারি)':'Additional Images'}</label>
-            <button type="button" class="upload-btn" id="uploadMultiBtn"><i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি আপলোড':'Upload Multiple'}</button>
+            <label>${LANG==='bn'?'অতিরিক্ত ছবি':'Gallery'}</label>
+            <button type="button" class="upload-btn" id="uploadMultiBtn"><i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি':'Multiple Images'}</button>
             <input type="file" id="imgMultiFile" accept="image/*" multiple style="display:none">
             <div class="img-thumbs" id="imgThumbs">
               ${images.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button>${i===0?'<span class="primary-tag">MAIN</span>':''}</div>`).join('')}
@@ -1913,7 +1854,6 @@ const Admin = {
     `, 'lg');
     this.bindProductForm();
   },
-
   bindProductForm(){
     document.querySelectorAll('.form-tabs button').forEach(btn=>{
       btn.onclick = ()=>{
@@ -1945,7 +1885,7 @@ const Admin = {
           Toast.show(t('imageUploadSuccess'),'success');
         } catch(err){ Toast.show(t('imageUploadFailed')+': '+err.message,'error'); }
         finally {
-          btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি আপলোড':'Upload Main'}`;
+          btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি':'Main Image'}`;
           setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
         }
       };
@@ -1971,7 +1911,7 @@ const Admin = {
           } catch(e){}
         }
         mBtn.disabled = false;
-        mBtn.innerHTML = `<i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি আপলোড':'Upload Multiple'}`;
+        mBtn.innerHTML = `<i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি':'Multiple Images'}`;
         if(done) Toast.show(`${done} uploaded`,'success');
       };
     }
@@ -1996,7 +1936,6 @@ const Admin = {
       };
     }
   },
-
   removeImage(index){
     const hidden = document.getElementById('pImages');
     let imgs = JSON.parse(hidden.value || '[]');
@@ -2005,7 +1944,6 @@ const Admin = {
     const thumbs = document.getElementById('imgThumbs');
     if(thumbs) thumbs.innerHTML = imgs.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
   },
-
   removeTag(tag){
     const hidden = document.getElementById('pTags');
     let tags = JSON.parse(hidden.value || '[]');
@@ -2013,7 +1951,6 @@ const Admin = {
     hidden.value = JSON.stringify(tags);
     document.querySelector(`.tag-pill[data-tag="${tag}"]`)?.remove();
   },
-
   async saveProduct(id){
     const data = {
       id: id || '',
@@ -2039,11 +1976,9 @@ const Admin = {
     try { await DB.saveProduct(data); Modal.close(); Toast.show(t('saveSuccess'),'success'); }
     catch(e){ Toast.show('Failed: '+e.message,'error'); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('save')}`; }
   },
-
   deleteProduct(id){
     Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteProduct(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } });
   },
-
   orders(){
     const q = (App._oQuery||'').toLowerCase();
     const list = DB.orders.filter(o=> !q || o.id.toLowerCase().includes(q) || (o.customer?.name||'').toLowerCase().includes(q));
@@ -2060,14 +1995,11 @@ const Admin = {
               <td><b>${o.id}</b><br><small style="color:var(--text-dim)">${new Date(o.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</small></td>
               <td>${o.customer?.name||'—'}<br><small style="color:var(--text-dim)">${o.customer?.phone||''}</small></td>
               <td><b>${money(o.total)}</b><br><small style="color:var(--text-dim)">Delivery: ${money(o.deliveryCharge||0)}</small></td>
-              <td>
-                <span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span>
-                ${o.txnId?`<br><small style="color:var(--text-dim);font-size:11px">${o.txnId}</small>`:''}
-              </td>
+              <td><span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span>${o.txnId?`<br><small style="color:var(--text-dim);font-size:11px">${o.txnId}</small>`:''}</td>
               <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
               <td><div class="actions">
-                <button class="icon-btn-sm" onclick="Admin.openOrderModal('${o.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
-                <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')" title="${t('printInvoice')}"><i class="fa-solid fa-print"></i></button>
+                <button class="icon-btn-sm" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button>
+                <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')"><i class="fa-solid fa-print"></i></button>
                 <button class="icon-btn-sm danger" onclick="Admin.deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
               </div></td>
             </tr>`).join('') : `<tr><td colspan="6" class="muted">${t('noData')}</td></tr>`}</tbody>
@@ -2075,7 +2007,6 @@ const Admin = {
         </div>
       </div>`;
   },
-
   openOrderModal(id){
     const o = DB.orders.find(x=>x.id===id); if(!o) return;
     Modal.open(`
@@ -2086,25 +2017,19 @@ const Admin = {
           <b style="font-size:14px">${o.customer.name}</b>
           <p style="font-size:12.5px;color:var(--text-dim);margin-top:4px">${o.customer.phone||''} • ${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</p>
         </div>
-
         <div class="form-group">
           <label>${t('orderStatus')}</label>
-          <select id="aoStatus">
-            ${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}
-          </select>
+          <select id="aoStatus">${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}</select>
         </div>
-
         <div class="form-group">
           <label>${t('adminComment')} <span class="optional">${t('adminCommentOptional')}</span></label>
           <textarea id="aoComment" rows="2" placeholder="${t('commentPlaceholder')}"></textarea>
         </div>
-
         <div class="form-group">
           <label>${t('deliveryChargeEdit')} (৳)</label>
           <input id="aoDelivery" type="number" value="${o.deliveryCharge||0}" min="0">
-          <div class="delivery-edit-hint"><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন করলে সর্বমোট দাম অটো আপডেট হবে':'Total will auto-update'}</div>
+          <div class="delivery-edit-hint"><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন করলে সর্বমোট আপডেট হবে':'Total will auto-update'}</div>
         </div>
-
         <div class="form-group">
           <label>${t('paymentInfo')}</label>
           <div style="background:var(--surface-2);padding:12px;border-radius:10px;font-size:13px">
@@ -2113,7 +2038,6 @@ const Admin = {
             ${o.screenshot?`<div style="margin-top:8px"><b>Screenshot:</b><br><img src="${o.screenshot}" style="max-width:120px;margin-top:6px;border-radius:8px;cursor:pointer" onclick="window.open('${o.screenshot}','_blank')"></div>`:''}
           </div>
         </div>
-
         ${o.history && o.history.length ? `<div class="form-group"><label>History</label><div style="font-size:12px;line-height:1.8">${o.history.map(h=>`<div>• ${new Date(h.time).toLocaleString(LANG==='bn'?'bn-BD':'en-US')} — <b>${t(h.status)}</b>${h.comment?` <i style="color:var(--text-dim)">— ${h.comment}</i>`:''}</div>`).join('')}</div></div>`:''}
       </div>
       <div class="modal-foot">
@@ -2122,30 +2046,21 @@ const Admin = {
       </div>
     `, 'lg');
   },
-
   async saveOrderChanges(id){
     const status = document.getElementById('aoStatus').value;
     const comment = document.getElementById('aoComment').value.trim();
     const delivery = +document.getElementById('aoDelivery').value || 0;
     const o = DB.orders.find(x=>x.id===id); if(!o) return;
-
     try {
-      if(delivery !== (o.deliveryCharge||0)){
-        await Orders.updateDeliveryCharge(id, delivery);
-      }
+      if(delivery !== (o.deliveryCharge||0)) await Orders.updateDeliveryCharge(id, delivery);
       const o2 = DB.orders.find(x=>x.id===id);
-      if(status !== o2.status || comment){
-        await Orders.updateStatus(id, status, comment);
-      }
+      if(status !== o2.status || comment) await Orders.updateStatus(id, status, comment);
       Modal.close();
       Toast.show(t('saveSuccess'),'success');
       Admin.refreshContent();
     } catch(e){ Toast.show('Failed: '+e.message,'error'); }
   },
-
-  async changeOrderStatus(id, status){ try { await Orders.updateStatus(id, status, ''); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } },
   deleteOrder(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await Orders.remove(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
-
   users(){
     const q = (App._uQuery||'').toLowerCase();
     const list = DB.users.filter(u=> !q || (u.name+u.email).toLowerCase().includes(q));
@@ -2187,7 +2102,6 @@ const Admin = {
         </div>
       </div>`;
   },
-
   toggleUser(id, checked){
     const sel = App._selectedUsers || [];
     if(checked && !sel.includes(id)) sel.push(id);
@@ -2206,7 +2120,6 @@ const Admin = {
       App._selectedUsers = []; Toast.show(t('saveSuccess'),'success');
     });
   },
-
   openUserModal(id){
     const u = id ? DB.users.find(x=>x.id===id) : {name:'',email:'',password:'',phone:'',role:'customer'};
     Modal.open(`
@@ -2230,7 +2143,6 @@ const Admin = {
       </div>
     `);
   },
-
   async saveUser(id){
     const name = document.getElementById('uName').value.trim();
     const email = document.getElementById('uEmail').value.trim();
@@ -2247,14 +2159,11 @@ const Admin = {
     try { await DB.saveUser(data); Modal.close(); Toast.show(t('saveSuccess'),'success'); }
     catch(e){ Toast.show('Failed: '+e.message,'error'); }
   },
-
   async toggleBlock(id){
     const u = DB.users.find(x=>x.id===id); if(!u || u.role==='admin') return;
     try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
-
   deleteUser(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteUser(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
-
   categories(){
     const keys = Object.entries(DB.catRaw);
     return `
@@ -2275,7 +2184,6 @@ const Admin = {
     try { await DB.saveCategory(v); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
   delCat(key){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteCategory(key); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
-
   coupons(){
     const list = DB.coupons;
     return `
@@ -2309,7 +2217,6 @@ const Admin = {
     try { await DB.saveCoupon({ code, type, value }); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
   async delCoupon(id){ try { await DB.deleteCoupon(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } },
-
   settings(){
     const s = DB.settings;
     return `
@@ -2320,46 +2227,33 @@ const Admin = {
           <div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${s.supportPhone||''}"></div>
           <div class="form-group"><label>${t('email')}</label><input id="stEmail" value="${s.supportEmail||''}"></div>
         </div>
-
         <div class="settings-section">
-          <h4><i class="fa-solid fa-truck"></i> ${LANG==='bn'?'ডেলিভারি চার্জ':'Delivery Charges'}</h4>
+          <h4><i class="fa-solid fa-truck"></i> ${LANG==='bn'?'ডেলিভারি চার্জ':'Delivery'}</h4>
           <div class="form-row">
             <div class="form-group"><label>${t('insideDhaka')} (৳)</label><input id="stShipIn" type="number" value="${s.shippingInsideDhaka||100}"></div>
             <div class="form-group"><label>${t('outsideDhaka')} (৳)</label><input id="stShipOut" type="number" value="${s.shippingOutsideDhaka||120}"></div>
           </div>
         </div>
-
         <div class="settings-section">
           <h4><i class="fa-solid fa-mobile-screen"></i> ${t('paymentNumberConfig')}</h4>
           <div class="form-group"><label>${t('bkash')} ${t('paymentNumber')}</label><input id="stBkash" value="${s.bkashNumber||''}"></div>
           <div class="form-group"><label>${t('nagad')} ${t('paymentNumber')}</label><input id="stNagad" value="${s.nagadNumber||''}"></div>
           <div class="form-group"><label>${t('rocket')} ${t('paymentNumber')}</label><input id="stRocket" value="${s.rocketNumber||''}"></div>
         </div>
-
         <div class="settings-section">
-          <h4><i class="fa-solid fa-toggle-on"></i> ${LANG==='bn'?'পেমেন্ট অপশন চালু/বন্ধ':'Enable Payment Options'}</h4>
+          <h4><i class="fa-solid fa-toggle-on"></i> ${LANG==='bn'?'পেমেন্ট চালু/বন্ধ':'Enable Payments'}</h4>
           <div style="display:grid;gap:10px">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
-              <input type="checkbox" id="stCOD" ${s.enableCOD?'checked':''} style="width:auto"><b>${t('cod')}</b>
-            </label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
-              <input type="checkbox" id="stBkashEn" ${s.enableBkash?'checked':''} style="width:auto"><b>${t('bkash')}</b>
-            </label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
-              <input type="checkbox" id="stNagadEn" ${s.enableNagad?'checked':''} style="width:auto"><b>${t('nagad')}</b>
-            </label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
-              <input type="checkbox" id="stRocketEn" ${s.enableRocket?'checked':''} style="width:auto"><b>${t('rocket')}</b>
-            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stCOD" ${s.enableCOD?'checked':''} style="width:auto"><b>${t('cod')}</b></label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stBkashEn" ${s.enableBkash?'checked':''} style="width:auto"><b>${t('bkash')}</b></label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stNagadEn" ${s.enableNagad?'checked':''} style="width:auto"><b>${t('nagad')}</b></label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stRocketEn" ${s.enableRocket?'checked':''} style="width:auto"><b>${t('rocket')}</b></label>
           </div>
         </div>
-
         <div class="settings-save-bar">
-          <span><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন সেভ করুন':'Save changes'}</span>
+          <span><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন সেভ করুন':'Save'}</span>
           <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
         </div>
       </div>
-
       <div class="admin-card">
         <div class="admin-card-head"><h3><i class="fa-solid fa-database"></i> ${t('exportData')}</h3></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -2368,7 +2262,6 @@ const Admin = {
         </div>
       </div>`;
   },
-
   async saveSettings(){
     const settings = {
       siteName: document.getElementById('stName').value.trim(),
@@ -2384,12 +2277,9 @@ const Admin = {
       enableNagad: document.getElementById('stNagadEn').checked,
       enableRocket: document.getElementById('stRocketEn').checked
     };
-    try {
-      await DB.saveSettings(settings);
-      Toast.show(t('settingsSaved'),'success');
-    } catch(e){ Toast.show('Failed: '+e.message,'error'); }
+    try { await DB.saveSettings(settings); Toast.show(t('settingsSaved'),'success'); }
+    catch(e){ Toast.show('Failed: '+e.message,'error'); }
   },
-
   resetAll(){
     Modal.confirm(t('resetConfirm'), async ()=>{
       try { await db.ref().set({ settings: DEFAULT_SETTINGS }); localStorage.clear(); location.reload(); }
@@ -2402,7 +2292,6 @@ const Admin = {
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ecoshop-backup-${Date.now()}.json`; a.click();
     Toast.show(t('saveSuccess'),'success');
   },
-
   refreshContent(){
     const el = document.getElementById('adminContent');
     if(el) el.innerHTML = this.render(App._adminTab||'dashboard');
@@ -2410,20 +2299,25 @@ const Admin = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   AUTH UI
+   AuthUI (with OTP)
    ═══════════════════════════════════════════════════════════ */
 const AuthUI = {
   tab(which){
     App._authTab = which;
+    App._otpStep = null;
+    OTP.reset();
     document.getElementById('tabLogin').classList.toggle('active', which==='login');
     document.getElementById('tabReg').classList.toggle('active', which==='reg');
-    document.getElementById('authForm').innerHTML = which==='login' ? this.loginForm(App._authRedirect||'home') : this.regForm(App._authRedirect||'home');
+    document.getElementById('authForm').innerHTML = which==='login'
+      ? this.loginForm(App._authRedirect||'home')
+      : this.regForm(App._authRedirect||'home');
   },
+
   loginForm(redirect='home'){
     return `<form onsubmit="AuthUI.doLogin(event, '${redirect}')">
       <div class="form-group">
         <label>${t('email')}</label>
-        <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="authEmail" required placeholder="admin@eco.pro" autocomplete="email"></div>
+        <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="authEmail" required placeholder="you@example.com" autocomplete="email"></div>
       </div>
       <div class="form-group">
         <label>${t('password')}</label>
@@ -2436,15 +2330,34 @@ const AuthUI = {
       <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginSubmit">${t('login')} <i class="fa-solid fa-arrow-right"></i></button>
     </form>`;
   },
+
   regForm(redirect='home'){
-    return `<form onsubmit="AuthUI.doReg(event, '${redirect}')">
+    if(App._otpStep === 'verify' && OTP.currentEmail){
+      return this.otpVerifyForm(redirect);
+    }
+    return this.regInfoForm(redirect);
+  },
+
+  regInfoForm(redirect='home'){
+    return `<form onsubmit="AuthUI.sendOTP(event, '${redirect}')" novalidate>
+      <div class="reg-steps">
+        <div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">${LANG==='bn'?'তথ্য':'Info'}</span></div>
+        <div class="reg-step-line"></div>
+        <div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">${LANG==='bn'?'OTP':'Verify'}</span></div>
+        <div class="reg-step-line"></div>
+        <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${LANG==='bn'?'সম্পন্ন':'Done'}</span></div>
+      </div>
+
       <div class="form-group">
         <label>${t('fullName')} <span class="req">*</span></label>
         <div class="input-wrap"><i class="fa-solid fa-user input-icon"></i><input id="regName" required autocomplete="name" placeholder="Rahim Uddin"></div>
       </div>
       <div class="form-group">
         <label>${t('email')} <span class="req">*</span></label>
-        <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="regEmail" required autocomplete="email" placeholder="you@example.com"></div>
+        <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i>
+          <input type="email" id="regEmail" required autocomplete="email" placeholder="you@example.com" oninput="AuthUI.checkEmailAvailability(this.value)">
+        </div>
+        <div class="form-hint" id="emailCheckHint"></div>
       </div>
       <div class="form-group">
         <label>${t('phone')}</label>
@@ -2459,12 +2372,10 @@ const AuthUI = {
         </div>
         <div class="pwd-strength">
           <div class="pwd-bars">
-            <div class="pwd-bar" id="pwdBar1"></div>
-            <div class="pwd-bar" id="pwdBar2"></div>
-            <div class="pwd-bar" id="pwdBar3"></div>
-            <div class="pwd-bar" id="pwdBar4"></div>
+            <div class="pwd-bar" id="pwdBar1"></div><div class="pwd-bar" id="pwdBar2"></div>
+            <div class="pwd-bar" id="pwdBar3"></div><div class="pwd-bar" id="pwdBar4"></div>
           </div>
-          <div class="pwd-text" id="pwdText">${LANG==='bn'?'পাসওয়ার্ড শক্তি':'Password strength'}</div>
+          <div class="pwd-text" id="pwdText">${LANG==='bn'?'পাসওয়ার্ড শক্তি':'Strength'}</div>
         </div>
       </div>
       <div class="form-group">
@@ -2482,15 +2393,261 @@ const AuthUI = {
           <span>${t('agreeTerms')}</span>
         </label>
       </div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg" id="regSubmit">${t('register')} <i class="fa-solid fa-user-plus"></i></button>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="regSendBtn">
+        <i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}
+      </button>
+      <div class="otp-info-note">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>${LANG==='bn'?'নিরাপত্তার জন্য ইমেইলে ৬-ডিজিটের কোড পাঠানো হবে':'A 6-digit code will be sent to your email'}</span>
+      </div>
     </form>`;
   },
+
+  otpVerifyForm(redirect='home'){
+    const masked = OTP.maskEmail(OTP.currentEmail);
+    return `<form onsubmit="AuthUI.verifyOTP(event, '${redirect}')" novalidate>
+      <div class="reg-steps">
+        <div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${LANG==='bn'?'তথ্য':'Info'}</span></div>
+        <div class="reg-step-line done"></div>
+        <div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">${LANG==='bn'?'OTP':'Verify'}</span></div>
+        <div class="reg-step-line"></div>
+        <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${LANG==='bn'?'সম্পন্ন':'Done'}</span></div>
+      </div>
+
+      <div class="otp-header">
+        <div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+        <h3>${t('verifyEmail')}</h3>
+        <p>${t('weSentCode')}<br><b>${masked}</b></p>
+      </div>
+
+      <div class="otp-inputs" id="otpInputs">
+        <input type="text" inputmode="numeric" maxlength="1" data-idx="0" autocomplete="one-time-code" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        <input type="text" inputmode="numeric" maxlength="1" data-idx="1" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        <input type="text" inputmode="numeric" maxlength="1" data-idx="2" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        <input type="text" inputmode="numeric" maxlength="1" data-idx="3" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        <input type="text" inputmode="numeric" maxlength="1" data-idx="4" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        <input type="text" inputmode="numeric" maxlength="1" data-idx="5" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+      </div>
+
+      <div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div>
+
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="otpVerifyBtn">
+        <i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}
+      </button>
+
+      <div class="otp-actions">
+        <button type="button" class="btn-link" id="otpResendBtn" onclick="AuthUI.resendOTP()" disabled>
+          <i class="fa-solid fa-rotate-right"></i> <span id="otpResendText">${t('resendOTP')}</span>
+        </button>
+        <button type="button" class="btn-link" onclick="AuthUI.backToInfo()">
+          <i class="fa-solid fa-arrow-left"></i> ${t('changeInfo')}
+        </button>
+      </div>
+    </form>`;
+  },
+
+  checkEmailAvailability(email){
+    const hint = document.getElementById('emailCheckHint');
+    if(!hint) return;
+    if(!email || !email.includes('@')){ hint.textContent=''; return; }
+    if(Auth.isEmailTaken(email)){
+      hint.textContent = t('emailTaken');
+      hint.style.color = 'var(--danger)';
+    } else {
+      hint.textContent = t('emailAvailable');
+      hint.style.color = 'var(--success)';
+    }
+  },
+
+  otpInput(el){
+    let v = el.value.replace(/\D/g, '');
+    el.value = v.slice(0, 1);
+    el.classList.toggle('filled', !!el.value);
+    if(v){
+      const idx = +el.dataset.idx;
+      const next = document.querySelector(`.otp-inputs input[data-idx="${idx+1}"]`);
+      if(next) next.focus();
+      else el.blur();
+    }
+  },
+
+  otpKey(e, el){
+    const idx = +el.dataset.idx;
+    if(e.key === 'Backspace' && !el.value){
+      const prev = document.querySelector(`.otp-inputs input[data-idx="${idx-1}"]`);
+      if(prev){ prev.focus(); prev.value=''; prev.classList.remove('filled'); }
+    }
+    if(e.key === 'ArrowLeft'){ document.querySelector(`.otp-inputs input[data-idx="${idx-1}"]`)?.focus(); }
+    if(e.key === 'ArrowRight'){ document.querySelector(`.otp-inputs input[data-idx="${idx+1}"]`)?.focus(); }
+  },
+
+  otpPaste(e){
+    e.preventDefault();
+    const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
+    if(!text) return;
+    const inputs = document.querySelectorAll('.otp-inputs input');
+    text.split('').forEach((ch, i)=>{ if(inputs[i]){ inputs[i].value = ch; inputs[i].classList.add('filled'); } });
+    const nextEmpty = Array.from(inputs).find(inp => !inp.value);
+    (nextEmpty || inputs[inputs.length-1]).focus();
+  },
+
+  getOTPValue(){
+    const inputs = document.querySelectorAll('.otp-inputs input');
+    return Array.from(inputs).map(i=>i.value).join('');
+  },
+
+  clearOTPInputs(){
+    document.querySelectorAll('.otp-inputs input').forEach(i=>{ i.value=''; i.classList.remove('filled','error'); });
+    document.querySelector('.otp-inputs input[data-idx="0"]')?.focus();
+  },
+
+  async sendOTP(e, redirect){
+    if(e) e.preventDefault();
+    const name = document.getElementById('regName').value.trim();
+    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const phone = document.getElementById('regPhone').value.trim();
+    const pass = document.getElementById('regPass').value;
+    const pass2 = document.getElementById('regPass2').value;
+    const terms = document.getElementById('regTerms').checked;
+    const err = document.getElementById('passError');
+
+    if(!name || !email || !pass){ Toast.show(t('fillAllFields'),'error'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ Toast.show(t('invalidEmail'),'error'); return; }
+    if(pass !== pass2){ err.classList.add('show'); Toast.show(t('passwordMismatch'),'error'); return; }
+    err.classList.remove('show');
+    if(pass.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
+    if(!terms){ Toast.show(t('agreeToTerms'),'warning'); return; }
+    if(Auth.isEmailTaken(email)){ Toast.show(t('emailExists'),'error'); return; }
+
+    App._pendingReg = { name, email, phone, password: pass };
+
+    const btn = document.getElementById('regSendBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
+
+    const result = await OTP.send(email, name);
+
+    if(!result.ok){
+      Toast.show(t('otpFailed') + ': ' + result.msg, 'error', 6000);
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}`;
+      return;
+    }
+
+    Toast.show(t('otpSent'),'success', 4000);
+    App._otpStep = 'verify';
+    App._authRedirect = redirect;
+    App.render();
+
+    setTimeout(()=>{
+      document.querySelector('.otp-inputs input[data-idx="0"]')?.focus();
+      this.startResendCooldown(60);
+    }, 300);
+  },
+
+  startResendCooldown(seconds){
+    const btn = document.getElementById('otpResendBtn');
+    const txt = document.getElementById('otpResendText');
+    if(!btn || !txt) return;
+    btn.disabled = true;
+    txt.textContent = `${t('resendOTP')} (${seconds}s)`;
+    OTP.startCooldown(seconds, (remaining)=>{
+      if(remaining <= 0){
+        btn.disabled = false;
+        txt.textContent = t('resendOTP');
+      } else {
+        txt.textContent = `${t('resendOTP')} (${remaining}s)`;
+      }
+    });
+  },
+
+  async verifyOTP(e, redirect){
+    if(e) e.preventDefault();
+    const code = this.getOTPValue();
+    if(code.length !== 6){ Toast.show(t('enterFullCode'),'warning'); return; }
+
+    const btn = document.getElementById('otpVerifyBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpVerifying')}`;
+
+    const result = await OTP.verify(code);
+    if(!result.ok){
+      Toast.show(result.msg, 'error');
+      document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.add('error'));
+      setTimeout(()=>document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.remove('error')), 500);
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
+      return;
+    }
+
+    const pending = App._pendingReg;
+    if(!pending){
+      Toast.show('Session lost, try again','error');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
+      return;
+    }
+
+    const reg = await Auth.register(pending);
+    if(!reg.ok){
+      Toast.show(reg.msg, 'error');
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
+      return;
+    }
+
+    OTP.reset();
+    App._pendingReg = null;
+    App._otpStep = null;
+    App._authRedirect = null;
+
+    Toast.show(t('registrationSuccess') + ' ' + reg.user.name, 'success', 4000);
+    PushNotif.localNotif(LANG==='bn'?'রেজিস্ট্রেশন সফল':'Registration successful', LANG==='bn'?'স্বাগতম '+reg.user.name:'Welcome '+reg.user.name);
+
+    setTimeout(()=>{ App.go(redirect && redirect !== 'home' ? redirect : 'home'); }, 600);
+  },
+
+  async resendOTP(){
+    const pending = App._pendingReg;
+    if(!pending) return;
+    const btn = document.getElementById('otpResendBtn');
+    btn.disabled = true;
+    const txt = document.getElementById('otpResendText');
+    txt.textContent = LANG==='bn'?'পাঠানো হচ্ছে...':'Sending...';
+    OTP.attempts = 0;
+    const result = await OTP.send(pending.email, pending.name);
+    if(!result.ok){
+      Toast.show(t('otpFailed') + ': ' + result.msg,'error');
+      btn.disabled = false;
+      txt.textContent = t('resendOTP');
+      return;
+    }
+    Toast.show(t('otpSent'),'success');
+    this.clearOTPInputs();
+    this.startResendCooldown(60);
+  },
+
+  backToInfo(){
+    App._otpStep = null;
+    OTP.reset();
+    App.render();
+    setTimeout(()=>{
+      const pending = App._pendingReg;
+      if(pending){
+        const nEl = document.getElementById('regName'); if(nEl) nEl.value = pending.name || '';
+        const eEl = document.getElementById('regEmail'); if(eEl) eEl.value = pending.email || '';
+        const pEl = document.getElementById('regPhone'); if(pEl) pEl.value = pending.phone || '';
+      }
+    }, 100);
+  },
+
   togglePass(id, btn){
     const input = document.getElementById(id); if(!input) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
     btn.innerHTML = `<i class="fa-solid fa-eye${show?'-slash':''}"></i>`;
   },
+
   checkPwd(val){
     let score = 0;
     if(val.length >= 6) score++;
@@ -2503,43 +2660,25 @@ const AuthUI = {
     const txt = document.getElementById('pwdText');
     if(txt){
       const labels = { weak: LANG==='bn'?'দুর্বল':'Weak', medium: LANG==='bn'?'মাঝারি':'Medium', strong: LANG==='bn'?'শক্তিশালী':'Strong' };
-      txt.textContent = score ? labels[cls] : (LANG==='bn'?'পাসওয়ার্ড শক্তি':'Password strength');
+      txt.textContent = score ? labels[cls] : (LANG==='bn'?'পাসওয়ার্ড শক্তি':'Strength');
     }
   },
+
   async doLogin(e, redirect){
     e.preventDefault();
     const btn = document.getElementById('loginSubmit');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-    const r = await Auth.login(document.getElementById('authEmail').value.trim(), document.getElementById('authPass').value);
+    const r = await Auth.login(document.getElementById('authEmail').value.trim().toLowerCase(), document.getElementById('authPass').value);
     if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `${t('login')} <i class="fa-solid fa-arrow-right"></i>`; return; }
     Toast.show(t('loginSuccess') + ', ' + r.user.name,'success');
     const target = r.user.role==='admin' ? 'admin' : (redirect && redirect!=='home' ? redirect : 'home');
     App._authRedirect = null;
     App.go(target);
-  },
-  async doReg(e, redirect){
-    e.preventDefault();
-    const name = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const phone = document.getElementById('regPhone').value.trim();
-    const pass = document.getElementById('regPass').value;
-    const pass2 = document.getElementById('regPass2').value;
-    const err = document.getElementById('passError');
-    if(pass !== pass2){ err.classList.add('show'); Toast.show(t('passwordMismatch'),'error'); return; }
-    err.classList.remove('show');
-    if(pass.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
-    const btn = document.getElementById('regSubmit');
-    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-    const r = await Auth.register({ name, email, phone, password: pass });
-    if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `${t('register')} <i class="fa-solid fa-user-plus"></i>`; return; }
-    Toast.show(t('registerSuccess'),'success');
-    App._authRedirect = null;
-    App.go(redirect && redirect!=='home' ? redirect : 'home');
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   PROFILE
+   Profile
    ═══════════════════════════════════════════════════════════ */
 const Profile = {
   async save(){
@@ -2560,7 +2699,7 @@ const Profile = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   THEME / LANG / OFFLINE / INIT
+   Theme / Lang / Init
    ═══════════════════════════════════════════════════════════ */
 function applyTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
@@ -2585,25 +2724,20 @@ function setFbStatus(ok, text){
   if(el) el.style.color = ok ? 'var(--success)' : 'var(--warning)';
   if(txt) txt.textContent = text;
 }
-
 function initOfflineDetect(){
   const bar = document.getElementById('offlineBar');
   const txt = document.getElementById('offlineText');
   function update(){
-    if(navigator.onLine){
-      bar?.classList.remove('show');
-    } else {
-      if(txt) txt.textContent = t('offlineMode');
-      bar?.classList.add('show');
-    }
+    if(navigator.onLine) bar?.classList.remove('show');
+    else { if(txt) txt.textContent = t('offlineMode'); bar?.classList.add('show'); }
   }
-  window.addEventListener('online', ()=>{ update(); Toast.show(LANG==='bn'?'✅ অনলাইনে ফিরে এসেছেন':'✅ Back online','success'); });
-  window.addEventListener('offline', ()=>{ update(); Toast.show(LANG==='bn'?'⚠️ অফলাইন মোড':'⚠️ Offline mode','warning'); });
+  window.addEventListener('online', ()=>{ update(); Toast.show(LANG==='bn'?'✅ অনলাইনে':'✅ Online','success'); });
+  window.addEventListener('offline', ()=>{ update(); Toast.show(LANG==='bn'?'⚠️ অফলাইন':'⚠️ Offline','warning'); });
   update();
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  console.log('🚀 App starting v6.0...');
+  console.log('🚀 App v7.0 starting...');
 
   const savedTheme = localStorage.getItem('eco_theme');
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -2612,7 +2746,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.documentElement.lang = LANG;
   const lc = document.getElementById('langChip'); if(lc) lc.textContent = LANG.toUpperCase();
 
-  /* Splash animation */
+  /* Init EmailJS */
+  OTP.init();
+
+  /* Splash */
   let p = 0;
   const statuses = ['Firebase-এ সংযুক্ত হচ্ছে...','ডেটা সিঙ্ক হচ্ছে...','প্রায় শেষ...','স্বাগতম!'];
   const splashTimer = setInterval(()=>{
@@ -2625,14 +2762,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }, 350);
   setTimeout(()=>App.hideSplash(), 5000);
 
-  /* Firebase connect */
+  /* Firebase */
   if(fbReady){
     setFbStatus(false, 'Firebase: connecting...');
-    try {
-      db.ref('.info/connected').on('value', snap=>{
-        setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: ✅ connected' : 'Firebase: ⚠️ offline');
-      });
-    } catch(e){}
+    try { db.ref('.info/connected').on('value', snap=>{ setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: ✅ connected' : 'Firebase: ⚠️ offline'); }); } catch(e){}
     DB.init();
   } else {
     setFbStatus(false, 'Firebase: ❌ failed');
@@ -2640,24 +2773,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
     App.hideSplash();
   }
 
-  /* PWA */
   PWA.registerSW();
   PWA.initInstallPrompt();
-
-  /* Push Notifications */
   PushNotif.init();
-
-  /* Offline detection */
   initOfflineDetect();
 
-  /* Scroll */
   window.addEventListener('scroll', ()=>{
     const nb = document.getElementById('navbar'); if(nb) nb.classList.toggle('scrolled', window.scrollY>10);
     const btt = document.getElementById('backToTop'); if(btt) btt.classList.toggle('show', window.scrollY>400);
   }, { passive: true });
   const btt = document.getElementById('backToTop'); if(btt) btt.onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
 
-  /* Cursor glow */
   if(window.matchMedia('(hover:hover) and (pointer:fine)').matches){
     const glow = document.getElementById('cursorGlow');
     if(glow){
@@ -2671,7 +2797,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
     }
   }
 
-  /* Nav */
   document.querySelectorAll('[data-nav]').forEach(a=>{
     a.onclick = ()=>{
       const r = a.dataset.nav;
@@ -2681,29 +2806,27 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
   document.querySelectorAll('.nav-menu a').forEach(a=>{ a.onclick = ()=> App.go(a.dataset.nav); });
 
-  /* Drawers */
   const openPM = ()=>{ document.getElementById('powerMenu').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
   const closePM = ()=>{ document.getElementById('powerMenu').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
-  const menuToggle = document.getElementById('menuToggle'); if(menuToggle) menuToggle.onclick = openPM;
-  const pmClose = document.getElementById('pmClose'); if(pmClose) pmClose.onclick = closePM;
+  document.getElementById('menuToggle').onclick = openPM;
+  document.getElementById('pmClose').onclick = closePM;
 
   const openCart = ()=>{ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
   const closeCart = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
-  const cartBtn = document.getElementById('cartBtn'); if(cartBtn) cartBtn.onclick = openCart;
-  const cartClose = document.getElementById('cartClose'); if(cartClose) cartClose.onclick = closeCart;
-  const checkoutBtn = document.getElementById('checkoutBtn'); if(checkoutBtn) checkoutBtn.onclick = ()=>{ closeCart(); App.go('checkout'); };
+  document.getElementById('cartBtn').onclick = openCart;
+  document.getElementById('cartClose').onclick = closeCart;
+  document.getElementById('checkoutBtn').onclick = ()=>{ closeCart(); App.go('checkout'); };
 
   const openNotif = ()=>{ document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); document.body.style.overflow='hidden'; };
   const closeNotif = ()=>{ document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
-  const notifBtn = document.getElementById('notifBtn'); if(notifBtn) notifBtn.onclick = openNotif;
-  const notifClose = document.getElementById('notifClose'); if(notifClose) notifClose.onclick = closeNotif;
+  document.getElementById('notifBtn').onclick = openNotif;
+  document.getElementById('notifClose').onclick = closeNotif;
 
-  const backdrop = document.getElementById('backdrop');
-  if(backdrop) backdrop.onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
+  document.getElementById('backdrop').onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
 
-  const loginBtn = document.getElementById('loginBtn'); if(loginBtn) loginBtn.onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App.go('auth'); };
-  const pmLoginBtn = document.getElementById('pmLoginBtn'); if(pmLoginBtn) pmLoginBtn.onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App.go('auth'); };
-  const pmLogoutBtn = document.getElementById('pmLogoutBtn'); if(pmLogoutBtn) pmLogoutBtn.onclick = ()=>{ closePM(); Auth.logout(); };
+  document.getElementById('loginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; OTP.reset(); App.go('auth'); };
+  document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; OTP.reset(); App.go('auth'); };
+  document.getElementById('pmLogoutBtn').onclick = ()=>{ closePM(); Auth.logout(); };
 
   const av = document.getElementById('userAvatarBtn');
   const dd = document.getElementById('userDropdown');
@@ -2712,14 +2835,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
     document.addEventListener('click', ()=> dd.classList.remove('active'));
   }
 
-  const themeBtn = document.getElementById('themeBtn');
-  if(themeBtn) themeBtn.onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
-  const langBtn = document.getElementById('langBtn');
-  if(langBtn) langBtn.onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
+  document.getElementById('themeBtn').onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  document.getElementById('langBtn').onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
   document.querySelectorAll('[data-set-theme]').forEach(b=> b.onclick = ()=> applyTheme(b.dataset.setTheme));
   document.querySelectorAll('[data-set-lang]').forEach(b=> b.onclick = ()=> applyLang(b.dataset.setLang));
 
-  /* Search */
   const gs = document.getElementById('globalSearch');
   const searchClear = document.getElementById('searchClear');
   if(gs){
@@ -2732,18 +2852,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }
   if(searchClear) searchClear.onclick = ()=>{ if(gs){ gs.value=''; App._shopQ=''; searchClear.style.display='none'; App.render(); gs.focus(); } };
   SearchSuggest.init();
-  VoiceSearch.init();
 
-  /* Keyboard */
   document.addEventListener('keydown', (e)=>{
     if((e.ctrlKey || e.metaKey) && e.key === 'k'){ e.preventDefault(); document.getElementById('globalSearch')?.focus(); }
     if(e.key === 'Escape'){ Modal.close(); QuickView.close(); document.getElementById('searchSuggest')?.classList.remove('active'); }
   });
 
-  /* Prevent pinch zoom */
   document.addEventListener('touchmove', (e)=>{ if(e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
-  /* Initial render */
   App.render();
-  console.log('✅ App ready v6.0');
+  console.log('✅ App ready v7.0');
 });
