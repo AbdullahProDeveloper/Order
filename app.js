@@ -19,7 +19,7 @@ const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
 /* ───────── EmailJS Config ───────── */
 const EmailJSConfig = {
   publicKey: 'zuPQJsWL-br59MV3t',
-  serviceId: 'service_Abdullah_200',
+  serviceId: 'service_wc4f02h',
   templateId: 'template_edu2aen',
   initialized: false
 };
