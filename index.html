@@ -2,24 +2,52 @@
 <html lang="bn" data-theme="light">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover" />
 <meta name="theme-color" content="#6366f1" />
-<title>EcoShop Pro — প্রফেশনাল ই-কমার্স প্ল্যাটফর্ম</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="description" content="EcoShop Pro MAX — Premium E-Commerce Platform" />
+<title>EcoShop Pro MAX — Premium Store</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Sans+Bengali:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+<!-- Phosphor Icons (modern, professional) -->
+<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+
+<!-- Font Awesome fallback -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<!-- ═══ BOOT LOADER ═══ -->
-<div class="boot-loader" id="bootLoader">
-  <div class="boot-logo">
-    <div class="boot-icon"><i class="fa-solid fa-store"></i></div>
-    <h1>Eco<span>Shop</span> <sup>PRO</sup></h1>
-    <div class="boot-bar"><span></span></div>
-    <p id="bootText">Initializing...</p>
+<!-- ═══ SPLASH SCREEN ═══ -->
+<div class="splash" id="splash">
+  <div class="splash-bg"></div>
+  <div class="splash-content">
+    <div class="splash-logo">
+      <div class="splash-icon-wrap">
+        <div class="splash-icon">
+          <i class="ph-fill ph-storefront"></i>
+        </div>
+        <span class="splash-ring"></span>
+        <span class="splash-ring splash-ring-2"></span>
+      </div>
+      <h1 class="splash-title">
+        <span class="t-eco">Eco</span><span class="t-shop">Shop</span>
+        <span class="t-pro">MAX</span>
+      </h1>
+      <p class="splash-tagline">Premium Shopping Experience</p>
+    </div>
+    <div class="splash-progress">
+      <div class="splash-bar"><span id="splashBar"></span></div>
+      <p class="splash-status" id="splashStatus">বুট হচ্ছে...</p>
+    </div>
+    <div class="splash-dots">
+      <span></span><span></span><span></span>
+    </div>
   </div>
 </div>
 
@@ -29,114 +57,344 @@
 <!-- ═══ PROGRESS ═══ -->
 <div class="top-progress" id="topProgress"></div>
 
-<!-- ═══ PUBLIC NAVBAR ═══ -->
+<!-- ═══ PUBLIC NAVBAR (Premium Header) ═══ -->
 <header class="navbar" id="publicNavbar">
+  <div class="nav-top-strip">
+    <div class="strip-inner">
+      <span class="strip-item"><i class="ph-fill ph-lightning"></i> ফ্ল্যাশ সেল চলছে — সর্বোচ্চ ৫০% ছাড়!</span>
+      <div class="strip-right">
+        <span><i class="ph-fill ph-truck"></i> ফ্রি ডেলিভারি ৳৫০০০+</span>
+        <span><i class="ph-fill ph-headset"></i> ২৪/৭ সাপোর্ট</span>
+      </div>
+    </div>
+  </div>
+
   <div class="nav-container">
-    <button class="hamburger" id="hamburger" aria-label="menu">
-      <span></span><span></span><span></span>
+    <button class="menu-toggle" id="menuToggle" aria-label="Open menu">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
     </button>
 
     <a class="nav-logo" onclick="router.go('home')">
-      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
-      <div class="logo-text"><span>Eco</span><span class="accent">Shop</span><sup>PRO</sup></div>
+      <div class="logo-icon">
+        <i class="ph-fill ph-storefront"></i>
+        <span class="logo-shine"></span>
+      </div>
+      <div class="logo-text">
+        <span class="t-eco">Eco</span><span class="t-shop">Shop</span>
+        <span class="t-pro">MAX</span>
+      </div>
     </a>
 
     <div class="nav-search" id="navSearchWrap">
-      <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="globalSearchInput" placeholder="পণ্য খুঁজুন..." autocomplete="off" />
-      <button class="tool-btn voice-btn" id="voiceSearchBtn" title="ভয়েস সার্চ"><i class="fa-solid fa-microphone"></i></button>
-      <button class="tool-btn image-btn" id="imageSearchBtn" title="ছবি থেকে খুঁজুন"><i class="fa-solid fa-camera"></i></button>
+      <i class="ph-bold ph-magnifying-glass search-icon"></i>
+      <input type="text" id="globalSearchInput" placeholder="পণ্য, ব্র্যান্ড বা ক্যাটাগরি খুঁজুন..." autocomplete="off" />
+      <button class="tool-btn voice-btn" id="voiceSearchBtn" title="ভয়েস সার্চ">
+        <i class="ph-fill ph-microphone"></i>
+      </button>
+      <button class="tool-btn image-btn" id="imageSearchBtn" title="ছবি থেকে সার্চ">
+        <i class="ph-fill ph-camera"></i>
+      </button>
+      <button class="tool-btn kbd-btn" id="cmdBtn" title="Ctrl+K">
+        <i class="ph-fill ph-command"></i>
+      </button>
       <input type="file" id="imageSearchInput" accept="image/*" hidden />
       <div class="search-suggest" id="searchSuggest"></div>
     </div>
 
     <nav class="nav-menu">
-      <a onclick="router.go('home')" data-page="home"><i class="fa-solid fa-house"></i> <span data-i18n="home">হোম</span></a>
-      <a onclick="router.go('products')" data-page="products"><i class="fa-solid fa-bag-shopping"></i> <span data-i18n="products">পণ্য</span></a>
-      <a onclick="router.go('orders')" data-page="orders" id="ordersNavLink"><i class="fa-solid fa-receipt"></i> <span data-i18n="orders">অর্ডার</span></a>
+      <a onclick="router.go('home')" data-page="home">
+        <i class="ph-bold ph-house"></i>
+        <span data-i18n="home">হোম</span>
+      </a>
+      <a onclick="router.go('products')" data-page="products">
+        <i class="ph-bold ph-shopping-bag"></i>
+        <span data-i18n="products">পণ্য</span>
+      </a>
+      <a onclick="router.go('orders')" data-page="orders" id="ordersNavLink">
+        <i class="ph-bold ph-receipt"></i>
+        <span data-i18n="orders">অর্ডার</span>
+      </a>
     </nav>
 
     <div class="nav-actions">
-      <button class="icon-btn" id="cmdBtn" title="Command (Ctrl+K)"><i class="fa-solid fa-terminal"></i></button>
-      <button class="icon-btn" id="themeToggle" title="Theme"><i class="fa-solid fa-moon"></i></button>
-      <button class="icon-btn" id="langToggle" title="Language">
-        <i class="fa-solid fa-globe"></i>
-        <span class="lang-label" id="currentLangLabel">বাং</span>
+      <button class="icon-btn" id="themeToggle" title="থিম পরিবর্তন" data-tooltip="থিম">
+        <i class="ph-bold ph-moon"></i>
       </button>
-      <button class="icon-btn" id="wishlistBtn" title="Wishlist">
-        <i class="fa-solid fa-heart"></i>
+
+      <button class="icon-btn" id="langToggle" title="ভাষা পরিবর্তন" data-tooltip="ভাষা">
+        <i class="ph-bold ph-globe-hemisphere-west"></i>
+        <span class="lang-chip" id="currentLangLabel">বাং</span>
+      </button>
+
+      <button class="icon-btn" id="wishlistBtn" title="পছন্দ" data-tooltip="উইশলিস্ট">
+        <i class="ph-bold ph-heart"></i>
         <span class="badge" id="wishlistBadge">0</span>
       </button>
-      <button class="icon-btn" id="cartBtn" title="Cart">
-        <i class="fa-solid fa-cart-shopping"></i>
+
+      <button class="icon-btn" id="cartBtn" title="কার্ট" data-tooltip="কার্ট">
+        <i class="ph-bold ph-shopping-cart-simple"></i>
         <span class="badge" id="cartBadge">0</span>
       </button>
-      <button class="icon-btn" id="notifBtn" title="Notifications">
-        <i class="fa-solid fa-bell"></i>
+
+      <button class="icon-btn" id="notifBtn" title="নোটিফিকেশন" data-tooltip="নোটিফিকেশন">
+        <i class="ph-bold ph-bell-ringing"></i>
         <span class="badge" id="notifBadge">0</span>
       </button>
+
       <div class="user-menu" id="userMenu">
         <button class="avatar-btn" id="userMenuBtn">
           <img id="userAvatar" src="https://ui-avatars.com/api/?name=U&background=6366f1&color=fff" alt="user" />
+          <span class="avatar-ring"></span>
         </button>
         <div class="dropdown" id="userDropdown">
           <div class="dropdown-header" id="dropdownUserHeader"></div>
-          <a onclick="router.go('profile')"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
-          <a onclick="router.go('dashboard')"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span></a>
-          <a onclick="router.go('wishlist')"><i class="fa-solid fa-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span></a>
-          <a onclick="router.go('settings')"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">সেটিংস</span></a>
+          <a onclick="router.go('profile')"><i class="ph-bold ph-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
+          <a onclick="router.go('dashboard')"><i class="ph-bold ph-gauge"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span></a>
+          <a onclick="router.go('wishlist')"><i class="ph-bold ph-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span></a>
+          <a onclick="router.go('settings')"><i class="ph-bold ph-gear"></i> <span data-i18n="settings">সেটিংস</span></a>
           <div class="dropdown-divider"></div>
-          <a id="logoutBtn" class="danger"><i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">লগআউট</span></a>
+          <a id="logoutBtn" class="danger"><i class="ph-bold ph-sign-out"></i> <span data-i18n="logout">লগআউট</span></a>
         </div>
       </div>
+
       <button class="btn btn-primary login-btn" id="loginBtn" onclick="router.go('auth')">
-        <i class="fa-solid fa-right-to-bracket"></i>
+        <i class="ph-bold ph-sign-in"></i>
         <span data-i18n="login">লগইন</span>
       </button>
     </div>
   </div>
 </header>
 
+<!-- ═══ POWER SIDE MENU (Mobile + Desktop) ═══ -->
+<aside class="power-menu" id="powerMenu">
+  <div class="pm-header">
+    <div class="pm-profile" id="pmProfile">
+      <div class="pm-avatar-wrap">
+        <img id="pmAvatar" src="https://ui-avatars.com/api/?name=G&background=6366f1&color=fff&size=120" />
+        <span class="pm-status-dot"></span>
+      </div>
+      <div class="pm-profile-info">
+        <h3 id="pmName">Guest User</h3>
+        <p id="pmEmail">লগইন করুন অথবা সাইনআপ করুন</p>
+        <span class="pm-role-badge" id="pmRoleBadge">GUEST</span>
+      </div>
+    </div>
+    <button class="pm-close" id="pmClose"><i class="ph-bold ph-x"></i></button>
+  </div>
+
+  <div class="pm-quick-stats" id="pmQuickStats">
+    <div class="pm-stat" onclick="router.go('cart');closePowerMenu()">
+      <i class="ph-fill ph-shopping-cart-simple"></i>
+      <div><strong id="pmCartCount">0</strong><span>কার্ট</span></div>
+    </div>
+    <div class="pm-stat" onclick="router.go('wishlist');closePowerMenu()">
+      <i class="ph-fill ph-heart"></i>
+      <div><strong id="pmWishCount">0</strong><span>উইশ</span></div>
+    </div>
+    <div class="pm-stat" onclick="router.go('orders');closePowerMenu()">
+      <i class="ph-fill ph-receipt"></i>
+      <div><strong id="pmOrderCount">0</strong><span>অর্ডার</span></div>
+    </div>
+  </div>
+
+  <nav class="pm-nav">
+    <div class="pm-section">
+      <div class="pm-section-title"><i class="ph-fill ph-compass"></i> নেভিগেশন</div>
+      <a onclick="router.go('home');closePowerMenu()" data-page="home">
+        <i class="ph-bold ph-house"></i>
+        <span>হোম</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+      <a onclick="router.go('products');closePowerMenu()" data-page="products">
+        <i class="ph-bold ph-shopping-bag"></i>
+        <span>সকল পণ্য</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+      <a onclick="router.go('wishlist');closePowerMenu()" data-page="wishlist">
+        <i class="ph-bold ph-heart"></i>
+        <span>উইশলিস্ট</span>
+        <span class="pm-badge" id="pmWishBadge">0</span>
+      </a>
+      <a onclick="router.go('orders');closePowerMenu()" data-page="orders">
+        <i class="ph-bold ph-receipt"></i>
+        <span>আমার অর্ডার</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+    </div>
+
+    <div class="pm-section">
+      <div class="pm-section-title"><i class="ph-fill ph-user-circle"></i> অ্যাকাউন্ট</div>
+      <a onclick="router.go('profile');closePowerMenu()" data-page="profile">
+        <i class="ph-bold ph-user"></i>
+        <span>প্রোফাইল</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+      <a onclick="router.go('dashboard');closePowerMenu()" data-page="dashboard">
+        <i class="ph-bold ph-gauge"></i>
+        <span>ড্যাশবোর্ড</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+      <a onclick="router.go('settings');closePowerMenu()" data-page="settings">
+        <i class="ph-bold ph-gear"></i>
+        <span>সেটিংস</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+      <a id="pmAdminBtn" style="display:none;" onclick="router.go('admin');closePowerMenu()">
+        <i class="ph-bold ph-shield-check"></i>
+        <span>এডমিন প্যানেল</span>
+        <span class="pm-badge pm-badge-admin">ADMIN</span>
+      </a>
+    </div>
+
+    <div class="pm-section">
+      <div class="pm-section-title"><i class="ph-fill ph-sparkle"></i> প্রেফারেন্স</div>
+
+      <div class="pm-row">
+        <div class="pm-row-label">
+          <i class="ph-bold ph-translate"></i>
+          <span>ভাষা</span>
+        </div>
+        <div class="pm-seg" id="pmLangSeg">
+          <button data-lang="bn" class="active">বাংলা</button>
+          <button data-lang="en">English</button>
+        </div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-row-label">
+          <i class="ph-bold ph-moon-stars"></i>
+          <span>থিম</span>
+        </div>
+        <div class="pm-seg" id="pmThemeSeg">
+          <button data-theme="light">☀️</button>
+          <button data-theme="dark">🌙</button>
+          <button data-theme="auto">A</button>
+        </div>
+      </div>
+
+      <div class="pm-row">
+        <div class="pm-row-label">
+          <i class="ph-bold ph-bell"></i>
+          <span>নোটিফিকেশন</span>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="pmNotifSwitch" checked />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="pm-section">
+      <div class="pm-section-title"><i class="ph-fill ph-lifebuoy"></i> সহায়তা</div>
+      <a href="#">
+        <i class="ph-bold ph-question"></i>
+        <span>সাহায্য / FAQ</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+      <a href="#">
+        <i class="ph-bold ph-chat-circle-dots"></i>
+        <span>লাইভ চ্যাট</span>
+        <span class="pm-badge pm-badge-live">LIVE</span>
+      </a>
+      <a href="#">
+        <i class="ph-bold ph-info"></i>
+        <span>আমাদের সম্পর্কে</span>
+        <i class="ph-bold ph-caret-right arrow"></i>
+      </a>
+    </div>
+  </nav>
+
+  <div class="pm-footer">
+    <button class="pm-login-btn" id="pmLoginBtn" onclick="router.go('auth');closePowerMenu()">
+      <i class="ph-bold ph-sign-in"></i>
+      <span>লগইন করুন</span>
+    </button>
+    <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none;" onclick="authUI.doLogout()">
+      <i class="ph-bold ph-sign-out"></i>
+      <span>লগআউট</span>
+    </button>
+    <p class="pm-version">EcoShop Pro MAX · v3.0</p>
+  </div>
+</aside>
+<div class="backdrop" id="backdrop"></div>
+
+<!-- ═══ NOTIFICATION PANEL ═══ -->
+<aside class="notif-panel" id="notifPanel">
+  <div class="panel-header">
+    <div>
+      <h3><i class="ph-fill ph-bell-ringing"></i> নোটিফিকেশন</h3>
+      <p class="panel-sub" id="notifSubtitle">সকল আপডেট দেখুন</p>
+    </div>
+    <button class="panel-close" id="closeNotif"><i class="ph-bold ph-x"></i></button>
+  </div>
+  <div class="notif-tabs" id="notifTabs">
+    <button class="active" data-filter="all">সব</button>
+    <button data-filter="unread">অপঠিত <span id="unreadCount">0</span></button>
+    <button data-filter="order">অর্ডার</button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+  <div class="notif-footer">
+    <button class="btn btn-outline btn-sm" onclick="api.markAllRead(state.user?.uid, state.notifications)">
+      <i class="ph-bold ph-check-circle"></i> সব পড়া হয়েছে
+    </button>
+  </div>
+</aside>
+
+<!-- ═══ CART DRAWER ═══ -->
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="panel-header">
+    <div>
+      <h3><i class="ph-fill ph-shopping-cart-simple"></i> আপনার কার্ট</h3>
+      <p class="panel-sub" id="cartSubtitle">0 টি পণ্য</p>
+    </div>
+    <button class="panel-close" id="closeCart"><i class="ph-bold ph-x"></i></button>
+  </div>
+  <div class="cart-body" id="cartDrawerBody"></div>
+  <div class="cart-foot" id="cartDrawerFoot"></div>
+</aside>
+
 <!-- ═══ ADMIN LAYOUT ═══ -->
 <div class="admin-layout" id="adminLayout" style="display:none;">
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="admin-brand">
-      <div class="logo-icon"><i class="fa-solid fa-store"></i></div>
-      <div class="logo-text"><span>Eco</span><span class="accent">Shop</span></div>
-      <span class="pro-pill">ADMIN</span>
+      <div class="logo-icon"><i class="ph-fill ph-storefront"></i></div>
+      <div class="logo-text"><span class="t-eco">Eco</span><span class="t-shop">Shop</span></div>
+      <span class="admin-pill">ADMIN</span>
     </div>
 
     <nav class="admin-nav">
       <div class="nav-section">
-        <div class="nav-section-title">Dashboard</div>
-        <a data-admin="overview" class="active"><i class="fa-solid fa-chart-line"></i> <span>Overview</span></a>
-        <a data-admin="analytics"><i class="fa-solid fa-chart-pie"></i> <span>Analytics</span></a>
+        <div class="nav-section-title">ড্যাশবোর্ড</div>
+        <a data-admin="overview" class="active"><i class="ph-bold ph-chart-line-up"></i> <span>ওভারভিউ</span></a>
+        <a data-admin="analytics"><i class="ph-bold ph-chart-pie-slice"></i> <span>অ্যানালিটিক্স</span></a>
       </div>
       <div class="nav-section">
-        <div class="nav-section-title">Commerce</div>
-        <a data-admin="orders"><i class="fa-solid fa-receipt"></i> <span>Orders</span> <span class="count-badge" id="navOrderCount">0</span></a>
-        <a data-admin="products"><i class="fa-solid fa-box"></i> <span>Products</span> <span class="count-badge" id="navProductCount">0</span></a>
-        <a data-admin="categories"><i class="fa-solid fa-tags"></i> <span>Categories</span></a>
-        <a data-admin="coupons"><i class="fa-solid fa-ticket"></i> <span>Coupons</span></a>
-        <a data-admin="reviews"><i class="fa-solid fa-star"></i> <span>Reviews</span></a>
+        <div class="nav-section-title">কমার্স</div>
+        <a data-admin="orders"><i class="ph-bold ph-receipt"></i> <span>অর্ডার</span> <span class="count-badge" id="navOrderCount">0</span></a>
+        <a data-admin="products"><i class="ph-bold ph-package"></i> <span>পণ্য</span> <span class="count-badge" id="navProductCount">0</span></a>
+        <a data-admin="categories"><i class="ph-bold ph-tag"></i> <span>ক্যাটাগরি</span></a>
+        <a data-admin="coupons"><i class="ph-bold ph-ticket"></i> <span>কুপন</span></a>
+        <a data-admin="reviews"><i class="ph-bold ph-star"></i> <span>রিভিউ</span></a>
       </div>
       <div class="nav-section">
-        <div class="nav-section-title">Users</div>
-        <a data-admin="users"><i class="fa-solid fa-users"></i> <span>Users</span></a>
-        <a data-admin="notifications"><i class="fa-solid fa-bell"></i> <span>Push Notify</span></a>
+        <div class="nav-section-title">ইউজার</div>
+        <a data-admin="users"><i class="ph-bold ph-users-three"></i> <span>ইউজার</span></a>
+        <a data-admin="notifications"><i class="ph-bold ph-bell"></i> <span>পুশ নোটিফাই</span></a>
       </div>
       <div class="nav-section">
-        <div class="nav-section-title">System</div>
-        <a data-admin="banners"><i class="fa-solid fa-images"></i> <span>Banners</span></a>
-        <a data-admin="settings"><i class="fa-solid fa-sliders"></i> <span>Site Settings</span></a>
-        <a data-admin="activity"><i class="fa-solid fa-clock-rotate-left"></i> <span>Activity Logs</span></a>
-        <a data-admin="export"><i class="fa-solid fa-download"></i> <span>Export Data</span></a>
+        <div class="nav-section-title">সিস্টেম</div>
+        <a data-admin="banners"><i class="ph-bold ph-images"></i> <span>ব্যানার</span></a>
+        <a data-admin="settings"><i class="ph-bold ph-sliders-horizontal"></i> <span>সাইট সেটিংস</span></a>
+        <a data-admin="activity"><i class="ph-bold ph-clock-counter-clockwise"></i> <span>অ্যাক্টিভিটি</span></a>
+        <a data-admin="export"><i class="ph-bold ph-download-simple"></i> <span>এক্সপোর্ট</span></a>
       </div>
     </nav>
 
     <div class="admin-footer">
       <button class="admin-exit" onclick="router.go('home')">
-        <i class="fa-solid fa-arrow-left"></i> Back to Store
+        <i class="ph-bold ph-arrow-left"></i> দোকানে ফিরে যান
       </button>
     </div>
   </aside>
@@ -144,18 +402,18 @@
   <main class="admin-main">
     <header class="admin-header">
       <button class="admin-sidebar-toggle" id="adminSidebarToggle">
-        <i class="fa-solid fa-bars"></i>
+        <i class="ph-bold ph-list"></i>
       </button>
       <div class="admin-header-title">
-        <h1 id="adminPageTitle">Dashboard Overview</h1>
-        <p id="adminPageSubtitle">Welcome back, Admin</p>
+        <h1 id="adminPageTitle">ড্যাশবোর্ড</h1>
+        <p id="adminPageSubtitle">স্বাগতম, এডমিন</p>
       </div>
       <div class="admin-header-actions">
         <div class="admin-search">
-          <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="adminSearch" placeholder="Quick search..." />
+          <i class="ph-bold ph-magnifying-glass"></i>
+          <input type="text" id="adminSearch" placeholder="দ্রুত খুঁজুন..." />
         </div>
-        <button class="icon-btn" onclick="router.go('home')"><i class="fa-solid fa-store"></i></button>
+        <button class="icon-btn" onclick="router.go('home')" title="দোকান"><i class="ph-bold ph-storefront"></i></button>
         <button class="avatar-btn" onclick="authUI.doLogout()">
           <img id="adminAvatar" src="https://ui-avatars.com/api/?name=A&background=6366f1&color=fff" />
         </button>
@@ -165,89 +423,106 @@
   </main>
 </div>
 
-<!-- ═══ SIDE MENU (Mobile user) ═══ -->
-<aside class="side-menu" id="sideMenu">
-  <div class="side-menu-header">
-    <div class="logo-text"><span>Eco</span><span class="accent">Shop</span></div>
-    <button id="closeSideMenu"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-  <nav>
-    <a onclick="router.go('home');closeSideMenu()"><i class="fa-solid fa-house"></i> <span data-i18n="home">হোম</span></a>
-    <a onclick="router.go('products');closeSideMenu()"><i class="fa-solid fa-bag-shopping"></i> <span data-i18n="products">পণ্য</span></a>
-    <a onclick="router.go('orders');closeSideMenu()"><i class="fa-solid fa-receipt"></i> <span data-i18n="orders">অর্ডার</span></a>
-    <a onclick="router.go('wishlist');closeSideMenu()"><i class="fa-solid fa-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span></a>
-    <a onclick="router.go('profile');closeSideMenu()"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
-    <a onclick="router.go('dashboard');closeSideMenu()"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span></a>
-    <a onclick="router.go('settings');closeSideMenu()"><i class="fa-solid fa-gear"></i> <span data-i18n="settings">সেটিংস</span></a>
-  </nav>
-</aside>
-<div class="overlay" id="overlay"></div>
+<!-- ═══ MOBILE BOTTOM NAV ═══ -->
+<nav class="bottom-nav" id="bottomNav">
+  <a onclick="router.go('home')" data-nav="home">
+    <div class="bn-icon"><i class="ph-bold ph-house"></i></div>
+    <span>হোম</span>
+  </a>
+  <a onclick="router.go('products')" data-nav="products">
+    <div class="bn-icon"><i class="ph-bold ph-shopping-bag"></i></div>
+    <span>পণ্য</span>
+  </a>
+  <a class="bn-center" onclick="router.go('products')">
+    <div class="bn-center-btn">
+      <i class="ph-bold ph-magnifying-glass"></i>
+    </div>
+  </a>
+  <a onclick="router.go('wishlist')" data-nav="wishlist">
+    <div class="bn-icon">
+      <i class="ph-bold ph-heart"></i>
+      <span class="mini-badge" id="bnWishlistBadge">0</span>
+    </div>
+    <span>উইশ</span>
+  </a>
+  <a onclick="router.go('dashboard')" data-nav="dashboard">
+    <div class="bn-icon"><i class="ph-bold ph-user"></i></div>
+    <span>প্রোফাইল</span>
+  </a>
+</nav>
 
-<!-- ═══ NOTIFICATION PANEL ═══ -->
-<aside class="notif-panel" id="notifPanel">
-  <div class="panel-header">
-    <h3><i class="fa-solid fa-bell"></i> <span data-i18n="notifications">নোটিফিকেশন</span></h3>
-    <button id="closeNotif"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-  <div class="notif-list" id="notifList"></div>
-</aside>
+<!-- ═══ FLOATING ACTION BUTTON ═══ -->
+<button class="fab" id="fab" aria-label="Quick Actions">
+  <i class="ph-bold ph-plus"></i>
+</button>
 
-<!-- ═══ CART DRAWER ═══ -->
-<aside class="cart-drawer" id="cartDrawer">
-  <div class="panel-header">
-    <h3><i class="fa-solid fa-cart-shopping"></i> <span data-i18n="cart">কার্ট</span> <span class="cart-count-pill" id="cartDrawerCount">0</span></h3>
-    <button id="closeCart"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-  <div class="cart-body" id="cartDrawerBody"></div>
-  <div class="cart-foot" id="cartDrawerFoot"></div>
-</aside>
+<!-- ═══ LIVE CHAT BUTTON ═══ -->
+<button class="chat-btn" id="chatBtn" aria-label="Live Chat">
+  <i class="ph-fill ph-chat-circle-dots"></i>
+  <span class="chat-pulse"></span>
+</button>
 
-<!-- ═══ MAIN (Public) ═══ -->
+<!-- ═══ MAIN APP ═══ -->
 <main id="app"></main>
 
 <!-- ═══ FOOTER ═══ -->
 <footer class="footer" id="publicFooter">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <div class="logo-text"><span>Eco</span><span class="accent">Shop</span> <sup>PRO</sup></div>
-      <p data-i18n="footer_about">প্রফেশনাল ইকোনমিক ই-কমার্স প্ল্যাটফর্ম। নিরাপদ, দ্রুত এবং বিশ্বস্ত।</p>
-      <div class="social">
-        <a href="#"><i class="fa-brands fa-facebook"></i></a>
-        <a href="#"><i class="fa-brands fa-twitter"></i></a>
-        <a href="#"><i class="fa-brands fa-instagram"></i></a>
-        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+  <div class="footer-top">
+    <div class="footer-inner">
+      <div class="footer-brand">
+        <div class="logo-text"><span class="t-eco">Eco</span><span class="t-shop">Shop</span> <span class="t-pro">MAX</span></div>
+        <p>প্রফেশনাল ইকোনমিক ই-কমার্স প্ল্যাটফর্ম। নিরাপদ, দ্রুত এবং বিশ্বস্ত। সেরা পণ্য সেরা দামে।</p>
+        <div class="social">
+          <a href="#" aria-label="Facebook"><i class="ph-fill ph-facebook-logo"></i></a>
+          <a href="#" aria-label="Twitter"><i class="ph-fill ph-x-logo"></i></a>
+          <a href="#" aria-label="Instagram"><i class="ph-fill ph-instagram-logo"></i></a>
+          <a href="#" aria-label="YouTube"><i class="ph-fill ph-youtube-logo"></i></a>
+          <a href="#" aria-label="TikTok"><i class="ph-fill ph-tiktok-logo"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>দ্রুত লিংক</h4>
+        <a onclick="router.go('home')"><i class="ph-bold ph-caret-right"></i> হোম</a>
+        <a onclick="router.go('products')"><i class="ph-bold ph-caret-right"></i> সকল পণ্য</a>
+        <a onclick="router.go('orders')"><i class="ph-bold ph-caret-right"></i> অর্ডার</a>
+        <a onclick="router.go('wishlist')"><i class="ph-bold ph-caret-right"></i> উইশলিস্ট</a>
+      </div>
+      <div class="footer-col">
+        <h4>সাপোর্ট</h4>
+        <a href="#"><i class="ph-bold ph-caret-right"></i> FAQ</a>
+        <a href="#"><i class="ph-bold ph-caret-right"></i> প্রাইভেসি পলিসি</a>
+        <a href="#"><i class="ph-bold ph-caret-right"></i> শর্তাবলী</a>
+        <a href="#"><i class="ph-bold ph-caret-right"></i> রিটার্ন পলিসি</a>
+      </div>
+      <div class="footer-col">
+        <h4>যোগাযোগ</h4>
+        <p><i class="ph-fill ph-envelope"></i> support@ecoshop.com</p>
+        <p><i class="ph-fill ph-phone"></i> +880 1234-567890</p>
+        <p><i class="ph-fill ph-map-pin"></i> ঢাকা, বাংলাদেশ</p>
+        <div class="payment-badges">
+          <span>💳 Visa</span>
+          <span>💰 bKash</span>
+          <span>🏦 Bank</span>
+        </div>
       </div>
     </div>
-    <div class="footer-col">
-      <h4 data-i18n="quick_links">দ্রুত লিংক</h4>
-      <a onclick="router.go('home')">হোম</a>
-      <a onclick="router.go('products')">পণ্য</a>
-      <a onclick="router.go('orders')">অর্ডার</a>
-      <a onclick="router.go('wishlist')">উইশলিস্ট</a>
-    </div>
-    <div class="footer-col">
-      <h4 data-i18n="support">সাপোর্ট</h4>
-      <a href="#">FAQ</a><a href="#">Privacy</a><a href="#">Terms</a><a href="#">Returns</a>
-    </div>
-    <div class="footer-col">
-      <h4 data-i18n="contact">যোগাযোগ</h4>
-      <p><i class="fa-solid fa-envelope"></i> support@ecoshop.com</p>
-      <p><i class="fa-solid fa-phone"></i> +880 1234-567890</p>
-      <p><i class="fa-solid fa-location-dot"></i> ঢাকা, বাংলাদেশ</p>
-    </div>
   </div>
-  <div class="footer-bottom"><p>© 2025 EcoShop Pro. <span data-i18n="rights">সকল অধিকার সংরক্ষিত</span>।</p></div>
+  <div class="footer-bottom">
+    <p>© 2025 EcoShop Pro MAX. সকল অধিকার সংরক্ষিত। Made with <span style="color:#ec4899">❤</span></p>
+  </div>
 </footer>
 
 <!-- ═══ BACK TO TOP ═══ -->
-<button class="back-to-top" id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
+<button class="back-to-top" id="backToTop" title="উপরে যান">
+  <i class="ph-bold ph-arrow-up"></i>
+</button>
 
 <!-- ═══ COMMAND PALETTE ═══ -->
 <div class="cmd-overlay" id="cmdOverlay">
   <div class="cmd-box">
     <div class="cmd-input-wrap">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" id="cmdInput" placeholder="Type a command or search..." autocomplete="off" />
+      <i class="ph-bold ph-magnifying-glass"></i>
+      <input type="text" id="cmdInput" placeholder="কমান্ড টাইপ করুন বা খুঁজুন..." autocomplete="off" />
       <kbd>ESC</kbd>
     </div>
     <div class="cmd-results" id="cmdResults"></div>
@@ -259,6 +534,7 @@
 
 <!-- ═══ SCRIPTS ═══ -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 <script type="module" src="script.js"></script>
 </body>
 </html>
