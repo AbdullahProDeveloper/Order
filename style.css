@@ -364,3 +364,50 @@ a{color:inherit;text-decoration:none;cursor:pointer;}
   .form-card{padding:16px;}
   .modal-box{border-radius:16px;}
 }
+
+/* ═══ ERROR / WARNING BANNER ═══ */
+.error-banner{
+  background:rgba(239,68,68,.1); border:1.5px solid var(--danger); color:var(--danger);
+  padding:14px 18px; border-radius:12px; margin:16px 0; display:flex; gap:12px; align-items:flex-start;
+  font-size:13.5px; line-height:1.5;
+}
+.error-banner i{font-size:20px;flex-shrink:0;margin-top:2px;}
+.error-banner b{display:block;margin-bottom:4px;font-size:14px;}
+.error-banner code{
+  background:rgba(0,0,0,.08); padding:2px 6px; border-radius:4px; font-family:monospace;
+  font-size:12px; word-break:break-all;
+}
+
+.info-banner{
+  background:rgba(99,102,241,.08); border:1.5px solid var(--brand-light); color:var(--brand-dark);
+  padding:14px 18px; border-radius:12px; margin:16px 0; display:flex; gap:12px; align-items:flex-start;
+  font-size:13.5px; line-height:1.5;
+}
+.info-banner i{font-size:20px;flex-shrink:0;margin-top:2px;}
+
+/* ═══ IMPROVED LOADING ═══ */
+.loading-state{
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:80px 20px; color:var(--text-dim); min-height:50vh;
+}
+.loading-state .spinner{
+  width:48px;height:48px;border:4px solid var(--border);border-top-color:var(--brand);
+  border-radius:50%;animation:spin 1s linear infinite;margin-bottom:16px;
+}
+.loading-state p{font-size:14px;font-weight:600;}
+.loading-state small{font-size:12px;margin-top:4px;}
+
+/* ═══ LOGIN PAGE ENHANCED ═══ */
+.auth-page{min-height:calc(100vh - var(--nav-h));display:flex;align-items:center;justify-content:center;padding:40px 18px;background:linear-gradient(135deg,var(--bg),var(--surface-2));}
+.auth-card{width:100%;max-width:440px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:34px;box-shadow:var(--shadow-lg);}
+.auth-logo{text-align:center;margin-bottom:24px;}
+.auth-logo .logo-icon{width:56px;height:56px;font-size:24px;margin:0 auto 12px;border-radius:16px;}
+.auth-logo h2{font-family:var(--font-en);font-size:22px;font-weight:800;}
+.auth-logo p{font-size:13px;color:var(--text-dim);margin-top:4px;}
+.auth-tabs{display:flex;background:var(--surface-2);border-radius:11px;padding:4px;margin-bottom:22px;}
+.auth-tabs button{flex:1;border:none;background:transparent;padding:11px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;color:var(--text-dim);transition:.15s;}
+.auth-tabs button.active{background:var(--surface);color:var(--brand);box-shadow:var(--shadow-sm);}
+
+/* ═══ ERROR STATE FOR IMAGES ═══ */
+.product-img-wrap img{background:var(--surface-2);}
+.thumb{background:var(--surface-2);}
