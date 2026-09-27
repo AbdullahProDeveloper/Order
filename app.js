@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   EcoShop Pro MAX v7.1 — Firebase Realtime OTP Registration
+   EcoShop Pro MAX v8.0 — Full OTP + Password Reset (EmailJS)
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ───────── Firebase Config ───────── */
@@ -19,7 +19,7 @@ const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
 /* ───────── EmailJS Config ───────── */
 const EmailJSConfig = {
   publicKey: 'zuPQJsWL-br59MV3t',
-  serviceId: 'service_wc4f02h',
+  serviceId: 'service_Abdullah_200',
   templateId: 'template_edu2aen',
   initialized: false
 };
@@ -141,7 +141,22 @@ const I18N = {
     checkingEmail:'ইমেইল চেক হচ্ছে...',
     dataLoadingWait:'ডেটা লোড হচ্ছে, একটু অপেক্ষা করুন...',
     redirectingToLogin:'লগইন পেজে নিয়ে যাওয়া হচ্ছে...',
-    emailAlreadyRegisteredTitle:'ইমেইল আগেই রেজিস্ট্রেশন করা আছে'
+    emailAlreadyRegisteredTitle:'ইমেইল আগেই রেজিস্ট্রেশন করা আছে',
+    forgotPassword:'পাসওয়ার্ড ভুলে গেছেন?',
+    resetPassword:'পাসওয়ার্ড রিসেট',
+    resetPasswordDesc:'আপনার রেজিস্টার্ড ইমেইল দিন। আমরা ৬-ডিজিটের একটি কোড পাঠাবো।',
+    sendCode:'কোড পাঠান',
+    back:'পিছনে',
+    newPassword2:'নতুন পাসওয়ার্ড',
+    updatePassword:'পাসওয়ার্ড আপডেট করুন',
+    passwordUpdated:'✅ পাসওয়ার্ড আপডেট হয়েছে',
+    passwordUpdatedDesc:'আপনার পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে লগইন করুন।',
+    loginNow:'লগইন করুন',
+    noAccountWithEmail:'এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট নেই',
+    verifyCodeFirst:'আগে কোড যাচাই করুন',
+    updateFailed:'আপডেট ব্যর্থ',
+    codeVerified:'✅ কোড যাচাই সফল',
+    stepEmail:'ইমেইল', stepOtp:'OTP', stepNew:'নতুন'
   },
   en: {
     home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
@@ -231,7 +246,22 @@ const I18N = {
     checkingEmail:'Checking email...',
     dataLoadingWait:'Data loading, please wait...',
     redirectingToLogin:'Redirecting to login...',
-    emailAlreadyRegisteredTitle:'Email already registered'
+    emailAlreadyRegisteredTitle:'Email already registered',
+    forgotPassword:'Forgot Password?',
+    resetPassword:'Reset Password',
+    resetPasswordDesc:'Enter your registered email. We will send a 6-digit code.',
+    sendCode:'Send Code',
+    back:'Back',
+    newPassword2:'New Password',
+    updatePassword:'Update Password',
+    passwordUpdated:'✅ Password Updated',
+    passwordUpdatedDesc:'Your password has been changed successfully. Login with your new password.',
+    loginNow:'Login Now',
+    noAccountWithEmail:'No account with this email',
+    verifyCodeFirst:'Verify code first',
+    updateFailed:'Update failed',
+    codeVerified:'✅ Code verified',
+    stepEmail:'Email', stepOtp:'OTP', stepNew:'New'
   }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
@@ -471,7 +501,7 @@ const OTP = {
   async verify(inputCode){
     if(!this.currentCode) return { ok:false, msg: LANG==='bn'?'আগে কোড পাঠান':'Send code first' };
     if(Date.now() > this.expiresAt) return { ok:false, msg: LANG==='bn'?'কোডের মেয়াদ শেষ':'Code expired' };
-    if(this.attempts >= 5) return { ok:false, msg: LANG==='bn'?'অনেকবার ভুল, আবার কোড পাঠান':'Too many attempts' };
+    if(this.attempts >= 5) return { ok:false, msg: LANG==='bn'?'অনেকবার ভুল, আবার পাঠান':'Too many attempts' };
     if(String(inputCode).trim() !== this.currentCode){
       this.attempts++;
       return { ok:false, msg: LANG==='bn'?`ভুল কোড (${5-this.attempts} বার বাকি)`:`Wrong code (${5-this.attempts} left)` };
@@ -643,32 +673,19 @@ const Auth = {
   user(){ return Session.get(); },
   isAdmin(){ const u=this.user(); return u && u.role==='admin'; },
 
-  /* Normalize email — lowercase + trim, used everywhere */
   normalizeEmail(email){
     if(!email) return '';
     return String(email).trim().toLowerCase();
   },
 
-  /* Check if email exists in Firebase Realtime DB
-     Returns:
-     { status: 'taken' }  — Firebase-এ আছে
-     { status: 'free' }   — Firebase-এ নেই
-     { status: 'unknown' } — DB এখনো লোড হয়নি
-  */
   checkEmailStatus(email){
     const target = this.normalizeEmail(email);
     if(!target) return { status: 'free' };
-
-    // DB users লোড না হলে অনিশ্চিত
-    if(!DB.ready.users){
-      return { status: 'unknown' };
-    }
-
+    if(!DB.ready.users) return { status: 'unknown' };
     const exists = (DB.users || []).some(u => this.normalizeEmail(u.email) === target);
     return { status: exists ? 'taken' : 'free' };
   },
 
-  /* Convenience boolean — only reliable when DB is ready */
   isEmailTaken(email){
     return this.checkEmailStatus(email).status === 'taken';
   },
@@ -687,14 +704,10 @@ const Auth = {
 
   async register(data){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
-
     const target = this.normalizeEmail(data.email);
-
-    // Final gate — Firebase-এ আগে থেকেই আছে কি না
     if(this.isEmailTaken(target)){
       return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
     }
-
     const u = {
       id: 'u_' + Date.now() + '_' + Math.floor(Math.random()*1000),
       name: data.name,
@@ -707,9 +720,7 @@ const Auth = {
       emailVerified: true,
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff`
     };
-
     try {
-      // Absolute last check right before write
       if(this.isEmailTaken(target)){
         return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
       }
@@ -1330,7 +1341,7 @@ const Pages = {
             <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
             <div class="admin-header-title">
               <h1>${Admin.titles[tab]||t('dashboard')}</h1>
-              <p>EcoShop Pro MAX v7.1</p>
+              <p>EcoShop Pro MAX v8.0</p>
             </div>
             <div class="admin-header-actions">
               <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i><span> ${t('shop')}</span></button>
@@ -2362,7 +2373,440 @@ const Admin = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   AuthUI — OTP Flow with Firebase-based email check
+   Password Reset — EmailJS OTP based
+   ═══════════════════════════════════════════════════════════ */
+const PasswordReset = {
+  step: 1,
+  email: null,
+  otpCode: null,
+  otpExpiresAt: 0,
+  otpAttempts: 0,
+  cooldownTimer: null,
+  verified: false,
+
+  open(){
+    this.reset();
+    this.step = 1;
+    this.renderModal();
+  },
+
+  close(){
+    Modal.close();
+    this.reset();
+    if(this.cooldownTimer){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
+  },
+
+  reset(){
+    this.step = 1;
+    this.email = null;
+    this.otpCode = null;
+    this.otpExpiresAt = 0;
+    this.otpAttempts = 0;
+    this.verified = false;
+  },
+
+  renderModal(){
+    if(this.step === 1) this.renderStep1();
+    else if(this.step === 2) this.renderStep2();
+    else this.renderStep3();
+  },
+
+  /* ───────── Step 1: Email ───────── */
+  renderStep1(){
+    Modal.open(`
+      <button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-key"></i> ${t('resetPassword')}</h3>
+      </div>
+      <div class="modal-body">
+        <div class="pr-steps">
+          <div class="pr-step active"><span>1</span><label>${t('stepEmail')}</label></div>
+          <div class="pr-step-line"></div>
+          <div class="pr-step"><span>2</span><label>${t('stepOtp')}</label></div>
+          <div class="pr-step-line"></div>
+          <div class="pr-step"><span>3</span><label>${t('stepNew')}</label></div>
+        </div>
+
+        <p class="pr-desc">${t('resetPasswordDesc')}</p>
+
+        <div class="form-group">
+          <label>${t('email')}</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-envelope input-icon"></i>
+            <input type="email" id="prEmail" placeholder="you@example.com" autocomplete="email" autofocus>
+          </div>
+          <div class="form-hint" id="prEmailHint"></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button>
+        <button class="btn btn-primary btn-block" id="prSendBtn" onclick="PasswordReset.sendOTP()">
+          <i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}
+        </button>
+      </div>
+    `);
+
+    const inp = document.getElementById('prEmail');
+    if(inp){
+      inp.focus();
+      inp.addEventListener('keydown', e=>{ if(e.key==='Enter') PasswordReset.sendOTP(); });
+    }
+  },
+
+  async sendOTP(){
+    const inp = document.getElementById('prEmail');
+    const hint = document.getElementById('prEmailHint');
+    const email = Auth.normalizeEmail(inp ? inp.value : '');
+
+    if(!email){ Toast.show(t('invalidEmail'),'error'); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ Toast.show(t('invalidEmail'),'error'); return; }
+
+    if(!DB.ready.users){
+      if(hint){ hint.textContent = t('dataLoadingWait'); hint.style.color = 'var(--text-dim)'; }
+      Toast.show(t('dataLoadingWait'),'warning',3000);
+      return;
+    }
+
+    const user = (DB.users || []).find(u => Auth.normalizeEmail(u.email) === email);
+    if(!user){
+      if(hint){ hint.textContent = t('noAccountWithEmail'); hint.style.color = 'var(--danger)'; }
+      Toast.show(t('noAccountWithEmail'),'error',4000);
+      return;
+    }
+
+    if(user.blocked){
+      if(hint){ hint.textContent = t('accountBlocked'); hint.style.color = 'var(--danger)'; }
+      Toast.show(t('accountBlocked'),'error');
+      return;
+    }
+
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    this.email = email;
+    this.otpCode = code;
+    this.otpExpiresAt = Date.now() + 10 * 60 * 1000;
+    this.otpAttempts = 0;
+    this.verified = false;
+
+    if(!OTP.init()){
+      Toast.show(LANG==='bn'?'EmailJS লোড হয়নি':'EmailJS not loaded','error',5000);
+      return;
+    }
+
+    const btn = document.getElementById('prSendBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
+
+    try {
+      await emailjs.send(
+        EmailJSConfig.serviceId,
+        EmailJSConfig.templateId,
+        {
+          to_email: this.email,
+          email: this.email,
+          user_email: this.email,
+          reply_to: this.email,
+          otp_code: code,
+          code: code,
+          otp: code,
+          user_name: user.name || 'User',
+          name: user.name || 'User',
+          site_name: 'EcoShop Pro MAX',
+          expiry: '10 minutes'
+        }
+      );
+      console.log('✅ Reset OTP sent to', this.email);
+      Toast.show(t('otpSent'),'success',4000);
+
+      this.step = 2;
+      this.renderModal();
+      setTimeout(()=>{
+        const first = document.querySelector('.otp-inputs input[data-idx="0"]');
+        if(first) first.focus();
+        this.startCooldown(60);
+      }, 250);
+    } catch(err){
+      console.error('❌ Send failed:', err);
+      const msg = err?.text || err?.message || 'Failed';
+      Toast.show(t('otpFailed') + ': ' + msg,'error',6000);
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}`;
+    }
+  },
+
+  /* ───────── Step 2: OTP ───────── */
+  renderStep2(){
+    const masked = OTP.maskEmail(this.email);
+    Modal.open(`
+      <button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-shield-halved"></i> ${t('verifyOTP')}</h3>
+      </div>
+      <div class="modal-body">
+        <div class="pr-steps">
+          <div class="pr-step done"><span><i class="fa-solid fa-check"></i></span><label>${t('stepEmail')}</label></div>
+          <div class="pr-step-line done"></div>
+          <div class="pr-step active"><span>2</span><label>${t('stepOtp')}</label></div>
+          <div class="pr-step-line"></div>
+          <div class="pr-step"><span>3</span><label>${t('stepNew')}</label></div>
+        </div>
+
+        <div class="otp-header">
+          <div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+          <h3>${t('verifyEmail')}</h3>
+          <p>${t('weSentCode')}<br><b>${masked}</b></p>
+        </div>
+
+        <div class="otp-inputs" id="otpInputs">
+          <input type="text" inputmode="numeric" maxlength="1" data-idx="0" autocomplete="one-time-code" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+          <input type="text" inputmode="numeric" maxlength="1" data-idx="1" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+          <input type="text" inputmode="numeric" maxlength="1" data-idx="2" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+          <input type="text" inputmode="numeric" maxlength="1" data-idx="3" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+          <input type="text" inputmode="numeric" maxlength="1" data-idx="4" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+          <input type="text" inputmode="numeric" maxlength="1" data-idx="5" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        </div>
+
+        <div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div>
+      </div>
+      <div class="modal-foot">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
+          <button class="btn btn-outline" style="flex:1;min-width:100px" onclick="PasswordReset.backToStep1()">
+            <i class="fa-solid fa-arrow-left"></i> ${t('back')}
+          </button>
+          <button class="btn btn-outline" style="flex:1;min-width:100px" id="prResendBtn" onclick="PasswordReset.resendOTP()" disabled>
+            <i class="fa-solid fa-rotate-right"></i> <span id="prResendText">${t('resendOTP')}</span>
+          </button>
+          <button class="btn btn-primary" style="flex:1;min-width:140px" id="prVerifyBtn" onclick="PasswordReset.verifyOTP()">
+            <i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}
+          </button>
+        </div>
+      </div>
+    `);
+    setTimeout(()=>{
+      const first = document.querySelector('.otp-inputs input[data-idx="0"]');
+      if(first) first.focus();
+    }, 200);
+  },
+
+  async verifyOTP(){
+    const code = AuthUI.getOTPValue();
+    if(code.length !== 6){ Toast.show(t('enterFullCode'),'warning'); return; }
+
+    if(!this.otpCode){ Toast.show(LANG==='bn'?'আগে কোড পাঠান':'Send code first','error'); return; }
+    if(Date.now() > this.otpExpiresAt){ Toast.show(LANG==='bn'?'কোডের মেয়াদ শেষ':'Code expired','error'); return; }
+    if(this.otpAttempts >= 5){ Toast.show(LANG==='bn'?'অনেকবার ভুল, আবার পাঠান':'Too many attempts','error'); return; }
+    if(code !== this.otpCode){
+      this.otpAttempts++;
+      Toast.show(LANG==='bn'?`ভুল কোড (${5-this.otpAttempts} বার বাকি)`:`Wrong code (${5-this.otpAttempts} left)`,'error');
+      document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.add('error'));
+      setTimeout(()=>document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.remove('error')),500);
+      return;
+    }
+
+    this.verified = true;
+    Toast.show(t('codeVerified'),'success');
+    this.step = 3;
+    this.renderModal();
+  },
+
+  startCooldown(seconds){
+    const btn = document.getElementById('prResendBtn');
+    const txt = document.getElementById('prResendText');
+    if(!btn || !txt) return;
+    btn.disabled = true;
+    txt.textContent = `${t('resendOTP')} (${seconds}s)`;
+    if(this.cooldownTimer) clearInterval(this.cooldownTimer);
+    this.cooldownTimer = setInterval(()=>{
+      seconds--;
+      if(seconds <= 0){
+        clearInterval(this.cooldownTimer);
+        this.cooldownTimer = null;
+        btn.disabled = false;
+        txt.textContent = t('resendOTP');
+      } else {
+        txt.textContent = `${t('resendOTP')} (${seconds}s)`;
+      }
+    }, 1000);
+  },
+
+  async resendOTP(){
+    if(!this.email){ this.backToStep1(); return; }
+
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    this.otpCode = code;
+    this.otpExpiresAt = Date.now() + 10 * 60 * 1000;
+    this.otpAttempts = 0;
+
+    const btn = document.getElementById('prResendBtn');
+    const txt = document.getElementById('prResendText');
+    if(btn){ btn.disabled = true; }
+    if(txt){ txt.textContent = t('otpSending'); }
+
+    try {
+      const user = (DB.users || []).find(u => Auth.normalizeEmail(u.email) === this.email);
+      await emailjs.send(
+        EmailJSConfig.serviceId,
+        EmailJSConfig.templateId,
+        {
+          to_email: this.email,
+          email: this.email,
+          reply_to: this.email,
+          otp_code: code,
+          code: code,
+          user_name: user ? user.name : 'User',
+          site_name: 'EcoShop Pro MAX',
+          expiry: '10 minutes'
+        }
+      );
+      Toast.show(t('otpSent'),'success');
+      AuthUI.clearOTPInputs();
+      this.startCooldown(60);
+    } catch(err){
+      console.error(err);
+      Toast.show(t('otpFailed') + ': ' + (err?.text || err?.message || 'Failed'),'error',6000);
+      if(btn){ btn.disabled = false; }
+      if(txt){ txt.textContent = t('resendOTP'); }
+    }
+  },
+
+  backToStep1(){
+    this.step = 1;
+    if(this.cooldownTimer){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
+    this.renderModal();
+    setTimeout(()=>{
+      const inp = document.getElementById('prEmail');
+      if(inp && this.email) inp.value = this.email;
+      if(inp) inp.focus();
+    }, 100);
+  },
+
+  /* ───────── Step 3: New Password ───────── */
+  renderStep3(){
+    Modal.open(`
+      <button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head">
+        <h3><i class="fa-solid fa-lock"></i> ${t('newPassword2')}</h3>
+      </div>
+      <div class="modal-body">
+        <div class="pr-steps">
+          <div class="pr-step done"><span><i class="fa-solid fa-check"></i></span><label>${t('stepEmail')}</label></div>
+          <div class="pr-step-line done"></div>
+          <div class="pr-step done"><span><i class="fa-solid fa-check"></i></span><label>${t('stepOtp')}</label></div>
+          <div class="pr-step-line done"></div>
+          <div class="pr-step active"><span>3</span><label>${t('stepNew')}</label></div>
+        </div>
+
+        <div class="form-group">
+          <label>${t('newPassword2')}</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="prNewPass" required minlength="6" autocomplete="new-password" placeholder="••••••" oninput="AuthUI.checkPwd(this.value)">
+            <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass', this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <div class="pwd-strength">
+            <div class="pwd-bars">
+              <div class="pwd-bar" id="pwdBar1"></div>
+              <div class="pwd-bar" id="pwdBar2"></div>
+              <div class="pwd-bar" id="pwdBar3"></div>
+              <div class="pwd-bar" id="pwdBar4"></div>
+            </div>
+            <div class="pwd-text" id="pwdText">${LANG==='bn'?'পাসওয়ার্ড শক্তি':'Password strength'}</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>${t('confirmPassword')}</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="prNewPass2" required autocomplete="new-password" placeholder="••••••">
+            <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass2', this)"><i class="fa-solid fa-eye"></i></button>
+          </div>
+          <div class="form-error" id="prPassError">${t('passwordMismatch')}</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button>
+        <button class="btn btn-primary btn-block" id="prUpdateBtn" onclick="PasswordReset.updatePassword()">
+          <i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}
+        </button>
+      </div>
+    `);
+    setTimeout(()=>{
+      const p = document.getElementById('prNewPass');
+      if(p) p.focus();
+    }, 200);
+  },
+
+  async updatePassword(){
+    const p1 = document.getElementById('prNewPass').value;
+    const p2 = document.getElementById('prNewPass2').value;
+    const err = document.getElementById('prPassError');
+
+    if(!p1 || !p2){ Toast.show(t('fillAllFields'),'error'); return; }
+    if(p1.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
+    if(p1 !== p2){
+      err.classList.add('show');
+      Toast.show(t('passwordMismatch'),'error');
+      return;
+    }
+    err.classList.remove('show');
+
+    if(!this.verified){
+      Toast.show(t('verifyCodeFirst'),'error');
+      return;
+    }
+
+    const btn = document.getElementById('prUpdateBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
+
+    try {
+      const user = (DB.users || []).find(u => Auth.normalizeEmail(u.email) === this.email);
+      if(!user) throw new Error('User not found');
+
+      await DB.updateUser(user.id, { password: p1, passwordUpdatedAt: Date.now() });
+      console.log('✅ Password updated for', this.email);
+
+      const emailForLogin = this.email;
+      Modal.open(`
+        <div style="padding:32px 24px;text-align:center">
+          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--success),var(--success-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 18px;box-shadow:0 12px 32px rgba(16,185,129,.35);">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <h3 style="font-size:19px;font-weight:800;margin-bottom:8px;color:var(--text)">${t('passwordUpdated')}</h3>
+          <p style="font-size:13.5px;color:var(--text-dim);line-height:1.6;margin-bottom:22px">${t('passwordUpdatedDesc')}</p>
+          <button class="btn btn-primary btn-block" onclick="PasswordReset.finishAndLogin('${emailForLogin}')">
+            <i class="fa-solid fa-right-to-bracket"></i> ${t('loginNow')}
+          </button>
+        </div>
+      `);
+      this.reset();
+    } catch(e){
+      console.error('Update failed:', e);
+      Toast.show(t('updateFailed') + ': ' + e.message,'error',5000);
+      btn.disabled = false;
+      btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}`;
+    }
+  },
+
+  finishAndLogin(emailToFill){
+    Modal.close();
+    App._authTab = 'login';
+    App._otpStep = null;
+    App._pendingReg = null;
+    OTP.reset();
+    this.reset();
+    App.go('auth');
+    setTimeout(()=>{
+      const eInp = document.getElementById('authEmail');
+      const pInp = document.getElementById('authPass');
+      if(eInp){ eInp.value = emailToFill || ''; }
+      if(pInp){ pInp.value = ''; pInp.focus(); }
+    }, 150);
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   AuthUI — OTP Registration + Password Reset link
    ═══════════════════════════════════════════════════════════ */
 const AuthUI = {
   tab(which){
@@ -2377,7 +2821,6 @@ const AuthUI = {
       ? this.loginForm(App._authRedirect || 'home')
       : this.regForm(App._authRedirect || 'home');
 
-    // If switching to register, auto-check email field
     if(which==='reg'){
       setTimeout(()=>{ const e = document.getElementById('regEmail'); if(e && e.value) this.checkEmailAvailability(e.value); }, 100);
     }
@@ -2396,6 +2839,11 @@ const AuthUI = {
           <input type="password" id="authPass" required placeholder="••••••" autocomplete="current-password">
           <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('authPass', this)"><i class="fa-solid fa-eye"></i></button>
         </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+        <button type="button" class="forgot-password-link" onclick="PasswordReset.open()">
+          <i class="fa-solid fa-key"></i> ${t('forgotPassword')}
+        </button>
       </div>
       <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginSubmit">${t('login')} <i class="fa-solid fa-arrow-right"></i></button>
     </form>`;
@@ -2516,7 +2964,6 @@ const AuthUI = {
     </form>`;
   },
 
-  /* ── Live email input handler ── */
   onEmailInput(email){
     const hint = document.getElementById('emailCheckHint');
     if(!hint) return;
@@ -2524,18 +2971,14 @@ const AuthUI = {
     hint.style.color = '';
 
     const target = Auth.normalizeEmail(email);
-    if(!target || target.length < 5 || !target.includes('@')){
-      return;
-    }
+    if(!target || target.length < 5 || !target.includes('@')) return;
 
-    // If DB isn't loaded yet — say so instead of showing false positive
     if(!DB.ready.users){
       hint.textContent = t('dataLoadingWait');
       hint.style.color = 'var(--text-dim)';
       return;
     }
 
-    // Immediate feedback (no debounce here to keep it snappy)
     const status = Auth.checkEmailStatus(target);
     if(status.status === 'taken'){
       hint.textContent = t('emailTaken');
@@ -2549,13 +2992,11 @@ const AuthUI = {
     }
   },
 
-  /* Debounced blur-check */
   checkEmailAvailability(email){
     const hint = document.getElementById('emailCheckHint');
     if(!hint) return;
     if(!email || !email.includes('@')){ hint.textContent=''; return; }
 
-    // Safe fallback when DB not ready
     if(!DB.ready.users){
       hint.textContent = t('dataLoadingWait');
       hint.style.color = 'var(--text-dim)';
@@ -2621,7 +3062,6 @@ const AuthUI = {
     document.querySelector('.otp-inputs input[data-idx="0"]')?.focus();
   },
 
-  /* ── Send OTP with strict Firebase check ── */
   async sendOTP(e, redirect){
     if(e) e.preventDefault();
 
@@ -2634,7 +3074,6 @@ const AuthUI = {
     const terms = document.getElementById('regTerms').checked;
     const err = document.getElementById('passError');
 
-    // ── Basic validation ──
     if(!name){ Toast.show(t('fillAllFields'),'error'); return; }
     if(!email){ Toast.show(t('invalidEmail'),'error'); return; }
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ Toast.show(t('invalidEmail'),'error'); return; }
@@ -2650,26 +3089,20 @@ const AuthUI = {
     if(pass.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
     if(!terms){ Toast.show(t('agreeToTerms'),'warning'); return; }
 
-    // ── Wait for DB to load ──
     if(!DB.ready.users){
       Toast.show(t('dataLoadingWait'),'warning',3000);
       return;
     }
 
-    // ── Firebase email uniqueness check (STRICT) ──
     const status = Auth.checkEmailStatus(email);
     if(status.status === 'unknown'){
       Toast.show(t('dataLoadingWait'),'warning',3000);
       return;
     }
     if(status.status === 'taken'){
-      // Show inline hint + toast + redirect to LOGIN tab
       const hint = document.getElementById('emailCheckHint');
       if(hint){ hint.textContent = t('emailTaken'); hint.style.color = 'var(--danger)'; }
-
       Toast.show(t('emailExists'),'error',4000);
-
-      // Prefill login email & switch to login tab
       setTimeout(()=>{
         App._authTab = 'login';
         App._otpStep = null;
@@ -2685,10 +3118,8 @@ const AuthUI = {
       return;
     }
 
-    // ── Save pending data ──
     App._pendingReg = { name, email, phone, password: pass };
 
-    // ── Send OTP via EmailJS ──
     const btn = document.getElementById('regSendBtn');
     btn.disabled = true;
     btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
@@ -2729,7 +3160,6 @@ const AuthUI = {
     });
   },
 
-  /* ── Verify OTP and register ── */
   async verifyOTP(e, redirect){
     if(e) e.preventDefault();
     const code = this.getOTPValue();
@@ -2739,7 +3169,6 @@ const AuthUI = {
     btn.disabled = true;
     btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpVerifying')}`;
 
-    // ── Verify OTP ──
     const result = await OTP.verify(code);
     if(!result.ok){
       Toast.show(result.msg, 'error');
@@ -2758,7 +3187,6 @@ const AuthUI = {
       return;
     }
 
-    // ── Re-check Firebase email right before register ──
     if(Auth.isEmailTaken(pending.email)){
       Toast.show(t('emailExists'),'error');
       OTP.reset();
@@ -2773,7 +3201,6 @@ const AuthUI = {
       return;
     }
 
-    // ── Register ──
     const reg = await Auth.register(pending);
     if(!reg.ok){
       Toast.show(reg.msg, 'error');
@@ -2782,7 +3209,6 @@ const AuthUI = {
       return;
     }
 
-    // ── Success ──
     OTP.reset();
     App._pendingReg = null;
     App._otpStep = null;
@@ -2803,7 +3229,6 @@ const AuthUI = {
     const txt = document.getElementById('otpResendText');
     txt.textContent = LANG==='bn'?'পাঠানো হচ্ছে...':'Sending...';
 
-    // Before resend, re-check Firebase (in case email got registered somewhere else)
     if(Auth.isEmailTaken(pending.email)){
       Toast.show(t('emailExists'),'error');
       OTP.reset();
@@ -2937,7 +3362,7 @@ function initOfflineDetect(){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  console.log('🚀 App v7.1 starting...');
+  console.log('🚀 App v8.0 starting...');
 
   const savedTheme = localStorage.getItem('eco_theme');
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -2946,10 +3371,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.documentElement.lang = LANG;
   const lc = document.getElementById('langChip'); if(lc) lc.textContent = LANG.toUpperCase();
 
-  /* Init EmailJS */
   OTP.init();
 
-  /* Splash */
   let p = 0;
   const statuses = ['Firebase-এ সংযুক্ত হচ্ছে...','ডেটা সিঙ্ক হচ্ছে...','প্রায় শেষ...','স্বাগতম!'];
   const splashTimer = setInterval(()=>{
@@ -2962,7 +3385,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   }, 350);
   setTimeout(()=>App.hideSplash(), 5000);
 
-  /* Firebase */
   if(fbReady){
     setFbStatus(false, 'Firebase: connecting...');
     try { db.ref('.info/connected').on('value', snap=>{ setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: ✅ connected' : 'Firebase: ⚠️ offline'); }); } catch(e){}
@@ -3061,6 +3483,5 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener('touchmove', (e)=>{ if(e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
   App.render();
-  console.log('✅ App ready v7.1');
+  console.log('✅ App ready v8.0');
 });
-       
