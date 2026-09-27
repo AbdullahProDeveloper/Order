@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   EcoShop Pro MAX v3.0 — Firebase Realtime + ImgBB Edition
+   EcoShop Pro MAX v3.1 — Firebase Realtime + ImgBB (FIXED)
    ═══════════════════════════════════════════════════════════ */
 
 /* ───────── Firebase Config ───────── */
@@ -14,43 +14,44 @@ const firebaseConfig = {
   measurementId: "G-L4HEZ409HR"
 };
 
-/* ───────── ImgBB Config ───────── */
 const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
 const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-try { firebase.analytics(); } catch(e){}
+/* ───────── Init Firebase (with error guard) ───────── */
+let fbApp, db, fbReady = false, fbError = null;
+
+try {
+  fbApp = firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+  try { firebase.analytics(); } catch(e){ console.warn('Analytics skip:', e.message); }
+  fbReady = true;
+  console.log('✅ Firebase initialized');
+} catch (e) {
+  fbError = e.message;
+  console.error('❌ Firebase init failed:', e);
+}
 
 /* ───────── i18n ───────── */
 const I18N = {
-  bn: {
-    home:'হোম', shop:'শপ', orders:'অর্ডার', profile:'প্রোফাইল',
-    admin:'অ্যাডমিন', login:'লগইন', logout:'লগআউট', search:'পণ্য খুঁজুন...',
-    addToCart:'কার্টে যোগ', wishlist:'উইশলিস্ট',
-    cart:'কার্ট', checkout:'চেকআউট', empty:'কোনো পণ্য নেই',
-    allProducts:'সকল পণ্য', price:'দাম', inStock:'স্টকে আছে', outOfStock:'স্টক নেই',
-    save:'সেভ করুন', cancel:'বাতিল', delete:'ডিলিট',
-    confirmDelete:'আপনি কি নিশ্চিত?', yes:'হ্যাঁ',
-    pending:'পেন্ডিং', confirmed:'কনফার্মড', shipped:'শিপড', delivered:'ডেলিভারড', cancelled:'বাতিল',
-    loginRequired:'অনুগ্রহ করে লগইন করুন', adminRequired:'শুধুমাত্র অ্যাডমিন'
-  },
-  en: {
-    home:'Home', shop:'Shop', orders:'Orders', profile:'Profile',
-    admin:'Admin', login:'Login', logout:'Logout', search:'Search products...',
-    addToCart:'Add to Cart', wishlist:'Wishlist',
-    cart:'Cart', checkout:'Checkout', empty:'No products found',
-    allProducts:'All Products', price:'Price', inStock:'In Stock', outOfStock:'Out of Stock',
-    save:'Save', cancel:'Cancel', delete:'Delete',
-    confirmDelete:'Are you sure?', yes:'Yes',
-    pending:'Pending', confirmed:'Confirmed', shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
-    loginRequired:'Please login first', adminRequired:'Admin only'
-  }
+  bn: { home:'হোম', shop:'শপ', orders:'অর্ডার', profile:'প্রোফাইল', admin:'অ্যাডমিন',
+        login:'লগইন', logout:'লগআউট', addToCart:'কার্টে যোগ', wishlist:'উইশলিস্ট',
+        cart:'কার্ট', checkout:'চেকআউট', empty:'কোনো পণ্য নেই', allProducts:'সকল পণ্য',
+        inStock:'স্টকে আছে', outOfStock:'স্টক নেই', save:'সেভ', cancel:'বাতিল',
+        delete:'ডিলিট', yes:'হ্যাঁ', confirmDelete:'আপনি কি নিশ্চিত?',
+        pending:'পেন্ডিং', confirmed:'কনফার্মড', shipped:'শিপড', delivered:'ডেলিভারড', cancelled:'বাতিল',
+        loginRequired:'অনুগ্রহ করে লগইন করুন' },
+  en: { home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
+        login:'Login', logout:'Logout', addToCart:'Add to Cart', wishlist:'Wishlist',
+        cart:'Cart', checkout:'Checkout', empty:'No products', allProducts:'All Products',
+        inStock:'In Stock', outOfStock:'Out of Stock', save:'Save', cancel:'Cancel',
+        delete:'Delete', yes:'Yes', confirmDelete:'Are you sure?',
+        pending:'Pending', confirmed:'Confirmed', shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
+        loginRequired:'Please login first' }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
 const t = k => (I18N[LANG] && I18N[LANG][k]) || k;
 
-/* ───────── Session Storage ───────── */
+/* ───────── Storage helpers ───────── */
 const Session = {
   get(){ try{ return JSON.parse(localStorage.getItem('eco_session')) || null; }catch(e){ return null; } },
   set(u){ localStorage.setItem('eco_session', JSON.stringify(u)); },
@@ -66,80 +67,110 @@ const WishStore = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   REALTIME DATABASE — পূর্ণ ডেটা লেয়ার
+   DB LAYER (Realtime DB)
    ═══════════════════════════════════════════════════════════ */
 const DB = {
-  products:[], users:[], orders:[], categories:[], coupons:[], notifs:[], settings:{},
-  listeners:[], ready:{products:false,users:false,orders:false,categories:false,coupons:false,notifs:false},
+  products: [],
+  users: [],
+  orders: [],
+  categories: [],
+  coupons: [],
+  notifs: [],
+  settings: {},
+  catRaw: {},   // ← FIX: was missing
+  ready: { products:false, users:false, orders:false, categories:false, coupons:false, notifs:false },
+  seeded: false,
+  error: null,
 
   init(){
-    this.watch('products', (data)=>{ this.products = this._toArray(data); this._onUpdate('products'); });
-    this.watch('users', (data)=>{ this.users = this._toArray(data); this._onUpdate('users'); });
-    this.watch('orders', (data)=>{ this.orders = this._toArray(data).sort((a,b)=>b.date-a.date); this._onUpdate('orders'); });
-    this.watch('categories', (data)=>{ this.categories = this._toArray(data).map(c=>typeof c==='string'?c:c.name); this._onUpdate('categories'); });
-    this.watch('coupons', (data)=>{ this.coupons = this._toArray(data); this._onUpdate('coupons'); });
-    this.watch('notifications', (data)=>{ this.notifs = this._toArray(data).sort((a,b)=>b.time-a.time); this._onUpdate('notifs'); });
-    this.watch('settings', (data)=>{ this.settings = data || {}; });
+    if(!fbReady){ this.error = fbError || 'Firebase not initialized'; return; }
+    this.watch('products', data => { this.products = this._toArray(data); this._markReady('products'); });
+    this.watch('users', data => { this.users = this._toArray(data); this._markReady('users'); });
+    this.watch('orders', data => { this.orders = this._toArray(data).sort((a,b)=>(b.date||0)-(a.date||0)); this._markReady('orders'); });
+    this.watch('categories', data => { this.catRaw = data || {}; this.categories = Object.values(this.catRaw).filter(v=>typeof v==='string'); this._markReady('categories'); });
+    this.watch('coupons', data => { this.coupons = this._toArray(data); this._markReady('coupons'); });
+    this.watch('notifications', data => { this.notifs = this._toArray(data).sort((a,b)=>(b.time||0)-(a.time||0)); this._markReady('notifs'); });
+    this.watch('settings', data => { this.settings = data || {}; });
 
-    // Seed initial data if empty
-    setTimeout(()=>this.seedIfEmpty(), 1500);
+    // Safety timeout — splash কখনো infinite লক হবে না
+    setTimeout(()=>{
+      const allReady = this.ready.products && this.ready.users;
+      if(!allReady){
+        console.warn('⚠️ Firebase timeout — forcing ready');
+        this.ready.products = true; this.ready.users = true; this.ready.orders = true;
+        App.hideSplash();
+      }
+      this.trySeed();
+    }, 4000);
   },
 
   watch(path, cb){
-    const ref = db.ref(path);
-    const handler = ref.on('value', snap => cb(snap.val()), err => console.error('DB error on', path, err));
-    this.listeners.push({ref, handler});
+    try {
+      db.ref(path).on('value',
+        snap => { try{ cb(snap.val()); }catch(e){ console.error('Parse error', path, e); } },
+        err => { this.error = err.message; console.error('DB error on', path, err.message); }
+      );
+    } catch(e){ console.error('Watch failed', path, e); }
   },
 
   _toArray(data){
     if(!data) return [];
     if(Array.isArray(data)) return data.filter(Boolean);
-    return Object.entries(data).map(([k,v])=>({ ...v, _key:k, id:v.id||k }));
+    return Object.entries(data).map(([k,v]) => {
+      if(typeof v !== 'object' || v===null) return { id:k, value:v };
+      return { ...v, id: v.id || k };
+    });
   },
 
-  _onUpdate(which){
+  _markReady(which){
     this.ready[which] = true;
-    if(App.route) App.rerenderIfVisible();
+    // সব critical ready হলে splash hide + rerender
+    if(this.ready.products && this.ready.users && this.ready.orders){
+      App.hideSplash();
+      this.trySeed();
+      App.rerenderIfVisible();
+    }
   },
 
-  isReady(){ return this.ready.products && this.ready.users && this.ready.orders; },
-
-  async seedIfEmpty(){
-    if(!this.ready.products || this.products.length) return;
+  async trySeed(){
+    if(this.seeded) return;
+    this.seeded = true;
+    if(!this.ready.products) return;
+    if(this.products.length > 0) return;
     console.log('🌱 Seeding initial data...');
-    const products = [
-      {id:'p1', name:'প্রিমিয়াম ইকো-বোতল', nameEn:'Premium Eco Bottle', cat:'ইলেকট্রনিকস', catEn:'Electronics', price:850, oldPrice:1200, discount:29, stock:45, img:'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80', desc:'পরিবেশ বান্ধব স্টেইনলেস স্টিল বোতল', featured:true, createdAt: Date.now()},
-      {id:'p2', name:'ওয়্যারলেস হেডফোন', nameEn:'Wireless Headphone', cat:'ইলেকট্রনিকস', catEn:'Electronics', price:2500, oldPrice:3500, discount:29, stock:20, img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80', desc:'নয়েজ ক্যানসেলিং হেডফোন', featured:true, createdAt: Date.now()+1},
-      {id:'p3', name:'স্মার্ট ওয়াচ', nameEn:'Smart Watch', cat:'গ্যাজেট', catEn:'Gadgets', price:3200, oldPrice:4500, discount:29, stock:15, img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80', desc:'ফিটনেস ট্র্যাকিং স্মার্ট ওয়াচ', featured:true, createdAt: Date.now()+2},
-      {id:'p4', name:'মিনিমালিস্ট ব্যাগ', nameEn:'Minimalist Bag', cat:'ফ্যাশন', catEn:'Fashion', price:1200, oldPrice:1800, discount:33, stock:30, img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80', desc:'ওয়াটারপ্রুফ লেদার ব্যাগ', featured:false, createdAt: Date.now()+3},
-      {id:'p5', name:'ক্যামেরা লেন্স', nameEn:'Camera Lens', cat:'ফটোগ্রাফি', catEn:'Photography', price:8500, oldPrice:10000, discount:15, stock:8, img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80', desc:'প্রফেশনাল ক্যামেরা লেন্স', featured:false, createdAt: Date.now()+4},
-      {id:'p6', name:'সানগ্লাস প্রিমিয়াম', nameEn:'Premium Sunglass', cat:'ফ্যাশন', catEn:'Fashion', price:950, oldPrice:1400, discount:32, stock:0, img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80', desc:'UV প্রোটেকশন সানগ্লাস', featured:false, createdAt: Date.now()+5}
-    ];
+    const products = {
+      p1:{id:'p1',name:'প্রিমিয়াম ইকো-বোতল',nameEn:'Premium Eco Bottle',cat:'ইলেকট্রনিকস',catEn:'Electronics',price:850,oldPrice:1200,discount:29,stock:45,img:'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80',desc:'পরিবেশ বান্ধব বোতল',featured:true,createdAt:Date.now()},
+      p2:{id:'p2',name:'ওয়্যারলেস হেডফোন',nameEn:'Wireless Headphone',cat:'ইলেকট্রনিকস',catEn:'Electronics',price:2500,oldPrice:3500,discount:29,stock:20,img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80',desc:'নয়েজ ক্যানসেলিং',featured:true,createdAt:Date.now()+1},
+      p3:{id:'p3',name:'স্মার্ট ওয়াচ',nameEn:'Smart Watch',cat:'গ্যাজেট',catEn:'Gadgets',price:3200,oldPrice:4500,discount:29,stock:15,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',desc:'ফিটনেস ট্র্যাকিং',featured:true,createdAt:Date.now()+2},
+      p4:{id:'p4',name:'মিনিমালিস্ট ব্যাগ',nameEn:'Minimalist Bag',cat:'ফ্যাশন',catEn:'Fashion',price:1200,oldPrice:1800,discount:33,stock:30,img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80',desc:'ওয়াটারপ্রুফ',featured:false,createdAt:Date.now()+3},
+      p5:{id:'p5',name:'ক্যামেরা লেন্স',nameEn:'Camera Lens',cat:'ফটোগ্রাফি',catEn:'Photography',price:8500,oldPrice:10000,discount:15,stock:8,img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80',desc:'প্রফেশনাল',featured:false,createdAt:Date.now()+4},
+      p6:{id:'p6',name:'সানগ্লাস প্রিমিয়াম',nameEn:'Premium Sunglass',cat:'ফ্যাশন',catEn:'Fashion',price:950,oldPrice:1400,discount:32,stock:0,img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80',desc:'UV প্রোটেকশন',featured:false,createdAt:Date.now()+5}
+    };
     const users = {
-      u_admin: {id:'u_admin', name:'Admin', email:'admin@eco.pro', password:'admin123', role:'admin', blocked:false, joined:Date.now(), avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff'},
-      u_rahim: {id:'u_rahim', name:'Rahim Uddin', email:'rahim@mail.com', password:'123456', role:'customer', blocked:false, joined:Date.now(), avatar:'https://ui-avatars.com/api/?name=Rahim&background=10b981&color=fff'},
-      u_karim: {id:'u_karim', name:'Karim Ahmed', email:'karim@mail.com', password:'123456', role:'customer', blocked:false, joined:Date.now(), avatar:'https://ui-avatars.com/api/?name=Karim&background=f59e0b&color=fff'}
+      u_admin:{id:'u_admin',name:'Admin',email:'admin@eco.pro',password:'admin123',role:'admin',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff'},
+      u_rahim:{id:'u_rahim',name:'Rahim Uddin',email:'rahim@mail.com',password:'123456',role:'customer',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Rahim&background=10b981&color=fff'}
     };
-    const cats = {'c1':'ইলেকট্রনিকস','c2':'গ্যাজেট','c3':'ফ্যাশন','c4':'ফটোগ্রাফি'};
-    const coupons = {
-      cp1: {id:'cp1', code:'ECO10', type:'percent', value:10},
-      cp2: {id:'cp2', code:'FLAT100', type:'flat', value:100}
-    };
-    const notifs = {
-      n1: {id:'n1', title:'স্বাগতম!', body:'EcoShop Pro MAX-এ আপনাকে স্বাগতম', time:Date.now(), read:false}
-    };
-    await Promise.all([
-      db.ref('products').set(products.reduce((a,p)=>(a[p.id]=p,a),{})),
-      db.ref('users').set(users),
-      db.ref('categories').set(cats),
-      db.ref('coupons').set(coupons),
-      db.ref('notifications').set(notifs),
-      db.ref('settings').set({siteName:'EcoShop Pro MAX', shipping:60, supportPhone:'+880 1700-000000'})
-    ]);
-    Toast.show('প্রাথমিক ডেটা লোড হয়েছে','success');
+    const cats = { c1:'ইলেকট্রনিকস', c2:'গ্যাজেট', c3:'ফ্যাশন', c4:'ফটোগ্রাফি' };
+    const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10}, cp2:{id:'cp2',code:'FLAT100',type:'flat',value:100} };
+    const notifs = { n1:{id:'n1',title:'স্বাগতম!',body:'EcoShop Pro MAX-এ আপনাকে স্বাগতম',time:Date.now(),read:false} };
+    try {
+      await Promise.all([
+        db.ref('products').set(products),
+        this.ready.users ? Promise.resolve() : db.ref('users').set(users),
+        db.ref('categories').set(cats),
+        db.ref('coupons').set(coupons),
+        db.ref('notifications').set(notifs),
+        db.ref('settings').set({siteName:'EcoShop Pro MAX', shipping:60, supportPhone:'+880 1700-000000'})
+      ]);
+      console.log('✅ Seed complete');
+      Toast.show('প্রাথমিক ডেটা লোড হয়েছে','success');
+    } catch(e){
+      console.error('Seed failed:', e);
+      Toast.show('ডেটা সেভ ব্যর্থ — Firebase Rules চেক করুন','error', 6000);
+    }
   },
 
-  /* ─── CRUD helpers (firebase paths) ─── */
+  /* ─── CRUD ─── */
   saveProduct(p){
     const id = p.id || 'p_'+Date.now();
     p.id = id; p.updatedAt = Date.now(); if(!p.createdAt) p.createdAt = Date.now();
@@ -163,13 +194,8 @@ const DB = {
   updateOrder(id, patch){ return db.ref('orders/'+id).update(patch); },
   deleteOrder(id){ return db.ref('orders/'+id).remove(); },
 
-  saveCategory(name){
-    const id = 'c_'+Date.now();
-    return db.ref('categories/'+id).set(name);
-  },
-  deleteCategory(key){
-    return db.ref('categories/'+key).remove();
-  },
+  saveCategory(name){ return db.ref('categories/c_'+Date.now()).set(name); },
+  deleteCategory(key){ return db.ref('categories/'+key).remove(); },
 
   saveCoupon(c){
     const id = c.id || 'cp_'+Date.now();
@@ -180,40 +206,35 @@ const DB = {
   pushNotif(n){
     const id = 'n_'+Date.now(); n.id = id; n.time = Date.now(); n.read = false;
     return db.ref('notifications/'+id).set(n);
-  }
+  },
+
+  isReady(){ return this.ready.products && this.ready.users && this.ready.orders; }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   ImgBB Upload Service
+   ImgBB Upload
    ═══════════════════════════════════════════════════════════ */
 const ImageUpload = {
   async upload(file){
     if(!file) throw new Error('কোনো ফাইল নেই');
-    if(file.size > 32*1024*1024) throw new Error('ফাইল সাইজ ৩২MB এর কম হতে হবে');
-    if(!file.type.startsWith('image/')) throw new Error('শুধুমাত্র ইমেজ ফাইল');
-    
+    if(file.size > 32*1024*1024) throw new Error('ফাইল ৩২MB এর কম হতে হবে');
+    if(!file.type.startsWith('image/')) throw new Error('শুধু ইমেজ ফাইল');
     const form = new FormData();
     form.append('key', IMGBB_API_KEY);
     form.append('image', file);
-    
     const res = await fetch(IMGBB_UPLOAD_URL, { method:'POST', body: form });
     const json = await res.json();
     if(!json.success) throw new Error(json.error?.message || 'আপলোড ব্যর্থ');
-    return {
-      url: json.data.url,
-      thumb: json.data.thumb?.url || json.data.url,
-      delete_url: json.data.delete_url,
-      id: json.data.id
-    };
+    return { url: json.data.url, thumb: json.data.thumb?.url || json.data.url, id: json.data.id };
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Toast / UI
+   UI Helpers
    ═══════════════════════════════════════════════════════════ */
 const Toast = {
   show(msg, type='info', ms=2600){
-    const box = document.getElementById('toastContainer');
+    const box = document.getElementById('toastContainer'); if(!box) return;
     const el = document.createElement('div');
     el.className = `toast ${type}`;
     const icons = {info:'fa-circle-info', success:'fa-circle-check', error:'fa-circle-exclamation', warning:'fa-triangle-exclamation'};
@@ -221,7 +242,7 @@ const Toast = {
     box.appendChild(el);
     setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(40px)'; setTimeout(()=>el.remove(),250); }, ms);
   },
-  progress(){ const p=document.getElementById('topProgress'); p.style.width='70%'; setTimeout(()=>{p.style.width='100%';setTimeout(()=>p.style.width='0',300);},300); }
+  progress(){ const p=document.getElementById('topProgress'); if(!p) return; p.style.width='70%'; setTimeout(()=>{p.style.width='100%';setTimeout(()=>p.style.width='0',300);},300); }
 };
 
 const Modal = {
@@ -249,20 +270,25 @@ const Auth = {
   user(){ return Session.get(); },
   isAdmin(){ const u = this.user(); return u && u.role==='admin'; },
   async login(email, password){
+    if(!DB.ready.users) return { ok:false, msg:'ডেটা লোড হচ্ছে, একটু অপেক্ষা করুন...' };
     const u = DB.users.find(x=>x.email===email && x.password===password);
-    if(!u) return {ok:false, msg:'ভুল ইমেইল বা পাসওয়ার্ড'};
-    if(u.blocked) return {ok:false, msg:'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে'};
+    if(!u) return { ok:false, msg:'ভুল ইমেইল বা পাসওয়ার্ড' };
+    if(u.blocked) return { ok:false, msg:'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে' };
     Session.set(u);
-    return {ok:true, user:u};
+    return { ok:true, user:u };
   },
   async register(name, email, password){
-    if(DB.users.find(x=>x.email===email)) return {ok:false, msg:'এই ইমেইল ইতিমধ্যেই ব্যবহৃত'};
-    const u = {id:'u_'+Date.now(), name, email, password, role:'customer', blocked:false, joined:Date.now(), avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`};
-    await DB.saveUser(u);
-    Session.set(u);
-    return {ok:true, user:u};
+    if(!DB.ready.users) return { ok:false, msg:'ডেটা লোড হচ্ছে, একটু অপেক্ষা করুন...' };
+    if(DB.users.find(x=>x.email===email)) return { ok:false, msg:'এই ইমেইল ইতিমধ্যেই ব্যবহৃত' };
+    const u = { id:'u_'+Date.now(), name, email, password, role:'customer', blocked:false, joined:Date.now(),
+      avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff` };
+    try {
+      await DB.saveUser(u);
+      Session.set(u);
+      return { ok:true, user:u };
+    } catch(e){ return { ok:false, msg:'সেভ ব্যর্থ: '+e.message }; }
   },
-  logout(){ Session.clear(); Toast.show('লগআউট সফল','success'); App.render(); }
+  logout(){ Session.clear(); Toast.show('লগআউট সফল','success'); App.go('home'); }
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -278,7 +304,7 @@ const Cart = {
     if(!p) return;
     if(p.stock < qty) return Toast.show('স্টক যথেষ্ট নয়','error');
     if(found){ if(found.qty+qty > p.stock) return Toast.show('স্টক শেষ','error'); found.qty += qty; }
-    else items.push({id, qty});
+    else items.push({ id, qty });
     this.save(items);
     Toast.show('কার্টে যোগ হয়েছে','success');
   },
@@ -291,12 +317,8 @@ const Cart = {
     it.qty = Math.max(1, qty); this.save(items);
   },
   count(){ return this.items().reduce((s,i)=>s+i.qty,0); },
-  subtotal(){
-    return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); return s + (p?p.price*i.qty:0); },0);
-  },
-  discountTotal(){
-    return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); if(!p||!p.oldPrice) return s; return s + ((p.oldPrice-p.price)*i.qty); },0);
-  },
+  subtotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); return s+(p?p.price*i.qty:0); },0); },
+  discountTotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); if(!p||!p.oldPrice) return s; return s+((p.oldPrice-p.price)*i.qty); },0); },
   refresh(){
     const c = this.count();
     const badge = document.getElementById('cartBadge'); if(badge) badge.textContent = c>0 ? c : '';
@@ -304,7 +326,7 @@ const Cart = {
     const st = document.getElementById('cartSubtotal'); if(st) st.textContent = '৳'+this.subtotal();
     const sh = document.getElementById('cartShipping'); if(sh) sh.textContent = '৳'+(c>0?60:0);
     const dc = document.getElementById('cartDiscount'); if(dc) dc.textContent = '-৳'+this.discountTotal();
-    const tt = document.getElementById('cartTotal'); if(tt) tt.textContent = '৳'+(this.subtotal() + (c>0?60:0));
+    const tt = document.getElementById('cartTotal'); if(tt) tt.textContent = '৳'+(this.subtotal()+(c>0?60:0));
     this.renderDrawer();
   },
   renderDrawer(){
@@ -314,7 +336,7 @@ const Cart = {
     body.innerHTML = items.map(i=>{
       const p = DB.products.find(x=>x.id===i.id); if(!p) return '';
       return `<div class="cart-item">
-        <img src="${p.img}" alt="">
+        <img src="${p.img}" onerror="this.src='https://via.placeholder.com/60'">
         <div class="cart-item-info">
           <h5>${LANG==='bn'?p.name:p.nameEn||p.name}</h5>
           <div style="display:flex;justify-content:space-between;align-items:center">
@@ -332,7 +354,6 @@ const Cart = {
   }
 };
 
-/* ───────── WISH ───────── */
 const Wish = {
   all(){ return WishStore.get(); },
   has(id){ return this.all().includes(id); },
@@ -341,11 +362,12 @@ const Wish = {
     const idx = list.indexOf(id);
     if(idx>-1){ list.splice(idx,1); Toast.show('উইশলিস্ট থেকে সরানো হয়েছে','info'); }
     else { list.push(id); Toast.show('উইশলিস্টে যোগ হয়েছে','success'); }
-    WishStore.set(list); App.rerenderIfVisible();
+    WishStore.set(list);
+    if(App.route==='wishlist' || App.route==='shop' || App.route==='home') App.render();
+    else App.syncUI();
   }
 };
 
-/* ───────── ORDERS ───────── */
 const Orders = {
   all(){ return DB.orders; },
   mine(){ const u=Auth.user(); if(!u) return []; return DB.orders.filter(o=>o.userId===u.id); },
@@ -357,31 +379,27 @@ const Orders = {
       status:'pending', date: Date.now()
     };
     const saved = await DB.saveOrder(order);
-    // deduct stock
-    for(const i of items){
+    // deduct stock (fire & forget)
+    items.forEach(async i=>{
       const p = DB.products.find(x=>x.id===i.id);
-      if(p){
-        await db.ref('products/'+p.id+'/stock').set(Math.max(0, p.stock - i.qty));
-      }
-    }
-    // notify admin
-    await DB.pushNotif({title:'নতুন অর্ডার!', body:`${customer.name} — ৳${total}`, type:'order'});
+      if(p) try { await db.ref('products/'+p.id+'/stock').set(Math.max(0, p.stock - i.qty)); } catch(e){ console.error(e); }
+    });
+    try { await DB.pushNotif({ title:'নতুন অর্ডার!', body:`${customer.name} — ৳${total}`, type:'order' }); } catch(e){}
     Cart.save([]);
     return saved;
   },
-  updateStatus(id, status){ return DB.updateOrder(id, {status}); },
+  updateStatus(id, status){ return DB.updateOrder(id, { status }); },
   remove(id){ return DB.deleteOrder(id); }
 };
 
-/* ───────── NOTIFS ───────── */
 const Notifs = {
   all(){ return DB.notifs; },
   unread(){ return this.all().filter(n=>!n.read).length; },
   markAllRead(){
-    this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true); });
+    this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true).catch(()=>{}); });
   },
   refresh(){
-    const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread()||'';
+    const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread() || '';
     const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} unread`;
     const list = document.getElementById('notifList'); if(!list) return;
     const arr = this.all();
@@ -394,32 +412,88 @@ const Notifs = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   APP ROUTER
+   APP ROUTER (FIXED)
    ═══════════════════════════════════════════════════════════ */
 const App = {
-  route:'home',
+  route: 'home',
+  _shopCat: 'all',
+  _shopSort: 'default',
+  _shopQ: '',
+  _adminTab: 'dashboard',
+  _pQuery: '',
+  _uQuery: '',
+  _oQuery: '',
+  _selectedUsers: [],
+
+  hideSplash(){
+    const s = document.getElementById('splash');
+    if(s && !s.classList.contains('hidden')){
+      const bar = document.getElementById('splashBar');
+      const st = document.getElementById('splashStatus');
+      if(bar) bar.style.width = '100%';
+      if(st) st.textContent = 'স্বাগতম!';
+      setTimeout(()=>s.classList.add('hidden'), 400);
+    }
+  },
+
   rerenderIfVisible(){
-    if(this.route==='admin' || this.route==='home' || this.route==='shop') this.render();
-    else Cart.refresh(), Notifs.refresh();
+    if(['home','shop','admin','orders','wishlist','profile','auth'].includes(this.route)) this.render();
+    else { Cart.refresh(); Notifs.refresh(); this.syncUI(); }
   },
+
   go(route){
-    this.route = route;
-    document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active', a.dataset.nav===route));
+    console.log('→ Navigate:', route);
+    // Admin guard
+    if(route==='admin' && !Auth.isAdmin()){
+      Toast.show('শুধুমাত্র অ্যাডমিন','warning');
+      this.route = 'auth';
+      this._authRedirect = 'admin';
+    } else if(['orders','profile'].includes(route) && !Auth.user()){
+      Toast.show(t('loginRequired'),'warning');
+      this.route = 'auth';
+      this._authRedirect = route;
+    } else {
+      this.route = route;
+    }
+    document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active', a.dataset.nav===this.route));
     this.render();
-    window.scrollTo({top:0,behavior:'smooth'});
+    window.scrollTo({ top:0, behavior:'smooth' });
   },
+
   render(){
-    const el = document.getElementById('app'); if(!el) return;
+    const el = document.getElementById('app');
+    if(!el) return;
     Toast.progress();
-    const map = {home:Pages.home, shop:Pages.shop, orders:Pages.orders, profile:Pages.profile, wishlist:Pages.wishlist, admin:Pages.admin, auth:Pages.auth};
-    el.innerHTML = (map[this.route]||Pages.home)();
+    let html = '';
+    try {
+      switch(this.route){
+        case 'home':     html = Pages.home(); break;
+        case 'shop':     html = Pages.shop(); break;
+        case 'orders':   html = Pages.orders(); break;
+        case 'profile':  html = Pages.profile(); break;
+        case 'wishlist': html = Pages.wishlist(); break;
+        case 'admin':    html = Pages.admin(); break;
+        case 'auth':     html = Pages.auth(); break;
+        default:         html = Pages.home();
+      }
+    } catch(e){
+      console.error('Render error:', e);
+      html = `<div class="page"><div class="error-banner">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <div><b>রেন্ডার সমস্যা</b>${e.message}</div>
+      </div></div>`;
+    }
+    el.innerHTML = html;
     this.syncUI();
-    Cart.refresh(); Notifs.refresh();
+    Cart.refresh();
+    Notifs.refresh();
   },
+
   syncUI(){
     const u = Auth.user();
     const loginBtn = document.getElementById('loginBtn');
     const avatarBtn = document.getElementById('userAvatarBtn');
+    if(!loginBtn || !avatarBtn) return;
     if(u){
       loginBtn.style.display='none';
       avatarBtn.classList.add('show');
@@ -447,6 +521,7 @@ const App = {
       document.getElementById('pmLogoutBtn').style.display='none';
     }
   },
+
   openCart(){ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); }
 };
 
@@ -455,9 +530,9 @@ const App = {
    ═══════════════════════════════════════════════════════════ */
 const Pages = {
   home(){
-    if(!DB.ready.products) return `<div class="loading-state"><div class="spinner"></div><p>পণ্য লোড হচ্ছে...</p></div>`;
+    if(!DB.isReady()) return loadingHTML('পণ্য লোড হচ্ছে...','Firebase থেকে ডেটা আসছে');
     const featured = DB.products.filter(p=>p.featured).slice(0,4);
-    const newArr = [...DB.products].sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
+    const newArr = [...DB.products].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,8);
     return `
       <section class="hero">
         <div class="hero-inner">
@@ -473,37 +548,38 @@ const Pages = {
         </div>
       </section>
       <div class="page">
+        ${DB.error ? `<div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Firebase সংযোগ সমস্যা</b>${DB.error}<br>Rules চেক করুন: <code>".read": true, ".write": true</code></div></div>` : ''}
         <div class="section-head"><h2><i class="fa-solid fa-fire" style="color:var(--accent)"></i> ফিচার্ড পণ্য</h2><span class="count-chip">${featured.length} items</span></div>
         <div class="product-grid">${featured.map(Components.productCard).join('') || `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${t('empty')}</h3></div>`}</div>
-        <div class="section-head" style="margin-top:40px"><h2><i class="fa-solid fa-sparkles" style="color:var(--brand)"></i> নতুন পণ্য</h2><button class="btn btn-outline btn-sm" onclick="App.go('shop')">সব দেখুন <i class="fa-solid fa-arrow-right"></i></button></div>
+        <div class="section-head" style="margin-top:40px"><h2><i class="fa-solid fa-star" style="color:var(--brand)"></i> নতুন পণ্য</h2><button class="btn btn-outline btn-sm" onclick="App.go('shop')">সব দেখুন <i class="fa-solid fa-arrow-right"></i></button></div>
         <div class="product-grid">${newArr.map(Components.productCard).join('')}</div>
       </div>`;
   },
 
   shop(){
-    if(!DB.ready.products) return `<div class="loading-state"><div class="spinner"></div><p>পণ্য লোড হচ্ছে...</p></div>`;
+    if(!DB.isReady()) return loadingHTML('পণ্য লোড হচ্ছে...','Firebase থেকে ডেটা আসছে');
     const cats = DB.categories;
     let list = DB.products.slice();
-    if(this._shopCat && this._shopCat!=='all') list = list.filter(p=>p.cat===this._shopCat);
-    if(this._shopQ){ const s=this._shopQ.toLowerCase(); list = list.filter(p=>(p.name+(p.nameEn||'')+(p.desc||'')).toLowerCase().includes(s)); }
-    if(this._shopSort==='low') list.sort((a,b)=>a.price-b.price);
-    else if(this._shopSort==='high') list.sort((a,b)=>b.price-a.price);
-    else if(this._shopSort==='new') list.sort((a,b)=>b.createdAt-a.createdAt);
+    if(App._shopCat && App._shopCat!=='all') list = list.filter(p=>p.cat===App._shopCat);
+    if(App._shopQ){ const s=App._shopQ.toLowerCase(); list = list.filter(p=>(p.name+(p.nameEn||'')+(p.desc||'')).toLowerCase().includes(s)); }
+    if(App._shopSort==='low') list.sort((a,b)=>a.price-b.price);
+    else if(App._shopSort==='high') list.sort((a,b)=>b.price-a.price);
+    else if(App._shopSort==='new') list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
     return `
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-store"></i> ${t('allProducts')}</h2><span class="count-chip">${list.length} items</span></div>
         <div class="filters-bar">
           <select onchange="App._shopCat=this.value;App.render()">
             <option value="all">সব ক্যাটাগরি</option>
-            ${cats.map(c=>`<option value="${c}" ${this._shopCat===c?'selected':''}>${c}</option>`).join('')}
+            ${cats.map(c=>`<option value="${c}" ${App._shopCat===c?'selected':''}>${c}</option>`).join('')}
           </select>
           <select onchange="App._shopSort=this.value;App.render()">
-            <option value="default" ${this._shopSort==='default'?'selected':''}>ডিফল্ট</option>
-            <option value="new" ${this._shopSort==='new'?'selected':''}>নতুন</option>
-            <option value="low" ${this._shopSort==='low'?'selected':''}>দাম: কম → বেশি</option>
-            <option value="high" ${this._shopSort==='high'?'selected':''}>দাম: বেশি → কম</option>
+            <option value="default" ${App._shopSort==='default'?'selected':''}>ডিফল্ট</option>
+            <option value="new" ${App._shopSort==='new'?'selected':''}>নতুন</option>
+            <option value="low" ${App._shopSort==='low'?'selected':''}>দাম: কম → বেশি</option>
+            <option value="high" ${App._shopSort==='high'?'selected':''}>দাম: বেশি → কম</option>
           </select>
-          <input placeholder="সার্চ..." value="${this._shopQ||''}" oninput="App._shopQ=this.value;clearTimeout(window._sq);window._sq=setTimeout(()=>App.render(),300)">
+          <input placeholder="সার্চ..." value="${App._shopQ||''}" oninput="App._shopQ=this.value;clearTimeout(window._sq);window._sq=setTimeout(()=>App.render(),300)">
         </div>
         <div class="product-grid">${list.map(Components.productCard).join('') || `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3></div>`}</div>
       </div>`;
@@ -545,7 +621,7 @@ const Pages = {
     return `
       <div class="page">
         <div class="profile-header">
-          <img class="profile-avatar" src="${u.avatar}">
+          <img class="profile-avatar" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U'">
           <div class="profile-info">
             <h2>${u.name}</h2>
             <p><i class="fa-solid fa-envelope"></i> ${u.email}</p>
@@ -567,26 +643,34 @@ const Pages = {
       </div>`;
   },
 
-  auth(){ return this.authPage('home'); },
+  auth(){ return this.authPage(App._authRedirect || 'home'); },
+
   authPage(redirect){
+    const tab = App._authTab || 'login';
     return `
       <div class="auth-page">
         <div class="auth-card">
-          <div class="auth-tabs">
-            <button class="active" id="tabLogin" onclick="AuthUI.tab('login')">লগইন</button>
-            <button id="tabReg" onclick="AuthUI.tab('reg')">রেজিস্টার</button>
+          <div class="auth-logo">
+            <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+            <h2>EcoShop<span style="color:var(--brand)">Pro</span></h2>
+            <p>প্রিমিয়াম শপিং অভিজ্ঞতা</p>
           </div>
-          <div id="authForm">${AuthUI.loginForm(redirect)}</div>
-          <p style="text-align:center;font-size:12.5px;color:var(--text-dim);margin-top:16px">
-            ডেমো অ্যাডমিন: <b>admin@eco.pro</b> / <b>admin123</b>
-          </p>
+          <div class="auth-tabs">
+            <button class="${tab==='login'?'active':''}" id="tabLogin" onclick="AuthUI.tab('login')">লগইন</button>
+            <button class="${tab==='reg'?'active':''}" id="tabReg" onclick="AuthUI.tab('reg')">রেজিস্টার</button>
+          </div>
+          <div id="authForm">${tab==='login' ? AuthUI.loginForm(redirect) : AuthUI.regForm(redirect)}</div>
+          <div class="info-banner" style="margin-top:16px;font-size:12px">
+            <i class="fa-solid fa-circle-info"></i>
+            <div>ডেমো অ্যাডমিন:<br><b>admin@eco.pro</b> / <b>admin123</b></div>
+          </div>
         </div>
       </div>`;
   },
 
   admin(){
     if(!Auth.isAdmin()) return this.authPage('admin');
-    if(!DB.ready.products) return `<div class="loading-state"><div class="spinner"></div><p>ডেটা লোড হচ্ছে...</p></div>`;
+    if(!DB.isReady()) return loadingHTML('অ্যাডমিন প্যানেল লোড হচ্ছে...','ডেটা সিঙ্ক হচ্ছে');
     const tab = App._adminTab || 'dashboard';
     return `
       <div class="admin-layout">
@@ -595,7 +679,7 @@ const Pages = {
           <div class="admin-header">
             <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
             <div class="admin-header-title">
-              <h1>${Admin.titles[tab]}</h1>
+              <h1>${Admin.titles[tab]||'ড্যাশবোর্ড'}</h1>
               <p>EcoShop Pro MAX — Firebase Admin</p>
             </div>
             <div class="admin-header-actions">
@@ -608,6 +692,14 @@ const Pages = {
       </div>`;
   }
 };
+
+function loadingHTML(msg='লোড হচ্ছে...', sub=''){
+  return `<div class="loading-state">
+    <div class="spinner"></div>
+    <p>${msg}</p>
+    ${sub?`<small>${sub}</small>`:''}
+  </div>`;
+}
 
 /* ═══════════════════════════════════════════════════════════
    COMPONENTS
@@ -663,7 +755,7 @@ const Components = {
         ${items.map(g=>`
           <div class="nav-section">
             <div class="nav-section-title">${g.sec}</div>
-            ${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="App._adminTab='${i.id}';App.render()"><i class="fa-solid ${i.icon}"></i> ${i.label}</a>`).join('')}
+            ${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')"><i class="fa-solid ${i.icon}"></i> ${i.label}</a>`).join('')}
           </div>`).join('')}
       </nav>
       <div class="admin-footer">
@@ -674,29 +766,37 @@ const Components = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   ADMIN PANEL
+   ADMIN
    ═══════════════════════════════════════════════════════════ */
 const Admin = {
-  titles: {dashboard:'ড্যাশবোর্ড', products:'পণ্য ম্যানেজমেন্ট', orders:'অর্ডার ম্যানেজমেন্ট', users:'ইউজার ম্যানেজমেন্ট', categories:'ক্যাটাগরি ম্যানেজমেন্ট', coupons:'কুপন ম্যানেজমেন্ট', settings:'সেটিংস'},
+  titles: { dashboard:'ড্যাশবোর্ড', products:'পণ্য ম্যানেজমেন্ট', orders:'অর্ডার ম্যানেজমেন্ট',
+            users:'ইউজার ম্যানেজমেন্ট', categories:'ক্যাটাগরি', coupons:'কুপন', settings:'সেটিংস' },
+
+  switchTab(tab){
+    App._adminTab = tab;
+    App.render();
+  },
 
   render(tab){
-    switch(tab){
-      case 'dashboard': return this.dashboard();
-      case 'products': return this.products();
-      case 'orders': return this.orders();
-      case 'users': return this.users();
-      case 'categories': return this.categories();
-      case 'coupons': return this.coupons();
-      case 'settings': return this.settings();
-      default: return this.dashboard();
-    }
+    try {
+      switch(tab){
+        case 'dashboard': return this.dashboard();
+        case 'products': return this.products();
+        case 'orders': return this.orders();
+        case 'users': return this.users();
+        case 'categories': return this.categories();
+        case 'coupons': return this.coupons();
+        case 'settings': return this.settings();
+        default: return this.dashboard();
+      }
+    } catch(e){ return `<div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div>${e.message}</div></div>`; }
   },
 
   dashboard(){
     const orders = DB.orders;
     const users = DB.users;
     const prods = DB.products;
-    const totalSales = orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+    const totalSales = orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+(o.total||0),0);
     const pending = orders.filter(o=>o.status==='pending').length;
     const lowStock = prods.filter(p=>p.stock<10).length;
     const recent = orders.slice(0,5);
@@ -709,17 +809,17 @@ const Admin = {
       </div>
       <div class="stat-grid">
         <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><div><p>পেন্ডিং অর্ডার</p><h3>${pending}</h3></div></div>
-        <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div><div><p>লো স্টক পণ্য</p><h3>${lowStock}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div><div><p>লো স্টক</p><h3>${lowStock}</h3></div></div>
         <div class="stat-card"><div class="stat-icon brand"><i class="fa-solid fa-user-check"></i></div><div><p>সক্রিয় ইউজার</p><h3>${users.filter(u=>!u.blocked).length}</h3></div></div>
       </div>
       <div class="admin-card">
-        <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> সাম্প্রতিক অর্ডার</h3><button class="btn btn-outline btn-sm" onclick="App._adminTab='orders';App.render()">সব দেখুন</button></div>
+        <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> সাম্প্রতিক অর্ডার</h3><button class="btn btn-outline btn-sm" onclick="Admin.switchTab('orders')">সব দেখুন</button></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead><tr><th>অর্ডার ID</th><th>কাস্টমার</th><th>মোট</th><th>স্ট্যাটাস</th><th>তারিখ</th></tr></thead>
             <tbody>${recent.length ? recent.map(o=>`<tr>
               <td><b>${o.id}</b></td>
-              <td>${o.customer.name}</td>
+              <td>${o.customer?.name||'—'}</td>
               <td>৳${o.total}</td>
               <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
               <td>${new Date(o.date).toLocaleDateString('bn-BD')}</td>
@@ -730,18 +830,18 @@ const Admin = {
   },
 
   products(){
-    const q = this._pQuery || '';
+    const q = App._pQuery || '';
     const list = DB.products.filter(p=> !q || (p.name+(p.nameEn||'')).toLowerCase().includes(q.toLowerCase()));
     return `
       <div class="admin-toolbar">
-        <input placeholder="পণ্য সার্চ..." value="${q}" oninput="Admin._pQuery=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>Admin.refreshContent(),250)">
+        <input placeholder="পণ্য সার্চ..." value="${q}" oninput="App._pQuery=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>Admin.refreshContent(),250)">
         <button class="btn btn-primary" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i> নতুন পণ্য</button>
       </div>
       <div class="admin-card">
         <div class="admin-card-head"><h3>মোট পণ্য (${list.length})</h3></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>ছবি</th><th>নাম</th><th>ক্যাটাগরি</th><th>দাম</th><th>ডিসকাউন্ট</th><th>স্টক</th><th>${t('delete')}</th></tr></thead>
+            <thead><tr><th>ছবি</th><th>নাম</th><th>ক্যাটাগরি</th><th>দাম</th><th>ডিসকাউন্ট</th><th>স্টক</th><th>অ্যাকশন</th></tr></thead>
             <tbody>${list.length ? list.map(p=>`<tr>
               <td><img class="thumb" src="${p.img}" onerror="this.src='https://via.placeholder.com/60'"></td>
               <td><b>${p.name}</b><br><small style="color:var(--text-dim)">${p.nameEn||''}</small></td>
@@ -750,8 +850,8 @@ const Admin = {
               <td>${p.discount?`<span class="chip">-${p.discount}%</span>`:'—'}</td>
               <td>${p.stock<=0?`<span class="chip blocked">স্টক নেই</span>`:(p.stock<10?`<span class="chip" style="background:rgba(245,158,11,.15);color:#b45309">${p.stock}</span>`:`<span class="chip active-status">${p.stock}</span>`)}</td>
               <td><div class="actions">
-                <button class="icon-btn-sm" title="Edit" onclick="Admin.openProductModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
-                <button class="icon-btn-sm danger" title="Delete" onclick="Admin.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+                <button class="icon-btn-sm" onclick="Admin.openProductModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn-sm danger" onclick="Admin.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
               </div></td>
             </tr>`).join('') : `<tr><td colspan="7" class="muted">কোনো পণ্য নেই</td></tr>`}</tbody>
           </table>
@@ -761,17 +861,17 @@ const Admin = {
 
   openProductModal(id){
     const p = id ? DB.products.find(x=>x.id===id) : {name:'',nameEn:'',cat:'',catEn:'',price:'',oldPrice:'',discount:0,stock:'',img:'',desc:'',featured:false};
-    const cats = DB.categories;
+    const cats = DB.categories.length ? DB.categories : ['ইলেকট্রনিকস','গ্যাজেট','ফ্যাশন','ফটোগ্রাফি'];
     Modal.open(`
       <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-head"><h3>${id?'পণ্য এডিট':'নতুন পণ্য যোগ'}</h3></div>
       <div class="modal-body">
         <div class="form-group">
-          <label>পণ্যের ছবি (ImgBB-তে আপলোড)</label>
+          <label>পণ্যের ছবি (ImgBB)</label>
           <div class="img-upload">
             <div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div>
             <div class="upload-btn-wrap">
-              <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ছবি আপলোড করুন</button>
+              <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ছবি আপলোড</button>
               <input type="file" id="imgFile" accept="image/*" style="display:none">
               <div class="upload-hint">JPG, PNG, WebP — সর্বোচ্চ 32MB</div>
               <div class="upload-progress" id="uploadProgress"><span></span></div>
@@ -798,7 +898,7 @@ const Admin = {
           <div class="form-group"><label>স্টক</label><input id="pStock" type="number" value="${p.stock}"></div>
         </div>
         <div class="form-group"><label>বিবরণ</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
-        <div class="form-group"><label><input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto;display:inline"> ফিচার্ড পণ্য হিসেবে দেখান</label></div>
+        <div class="form-group"><label><input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto;display:inline"> ফিচার্ড পণ্য</label></div>
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
@@ -818,25 +918,22 @@ const Admin = {
     btn.onclick = ()=> file.click();
     file.onchange = async ()=>{
       const f = file.files[0]; if(!f) return;
-      // instant preview
       const reader = new FileReader();
       reader.onload = e => prev.innerHTML = `<img src="${e.target.result}">`;
       reader.readAsDataURL(f);
-
       btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> আপলোড হচ্ছে...`;
       prog.style.display='block'; prog.firstElementChild.style.width='40%';
-      try{
+      try {
         const res = await ImageUpload.upload(f);
         hidden.value = res.url;
         prev.innerHTML = `<img src="${res.url}">`;
         prog.firstElementChild.style.width='100%';
         Toast.show('ছবি আপলোড সফল!','success');
       } catch(err){
-        console.error(err);
         Toast.show('আপলোড ব্যর্থ: '+err.message,'error');
         prev.innerHTML = `<i class="fa-solid fa-image"></i>`;
       } finally {
-        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ছবি আপলোড করুন`;
+        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ছবি আপলোড`;
         setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
       }
     };
@@ -859,39 +956,39 @@ const Admin = {
     };
     if(!data.name || !data.price){ Toast.show('নাম ও দাম আবশ্যক','error'); return; }
     const btn = document.getElementById('pSaveBtn'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> সেভ হচ্ছে...`;
-    try{
+    try {
       await DB.saveProduct(data);
       Modal.close(); Toast.show('পণ্য সেভ হয়েছে','success');
-    } catch(e){ Toast.show('সেভ ব্যর্থ: '+e.message,'error'); btn.disabled=false; }
+    } catch(e){ Toast.show('সেভ ব্যর্থ: '+e.message,'error'); btn.disabled=false; btn.innerHTML=`<i class="fa-solid fa-floppy-disk"></i> সেভ`; }
   },
 
   deleteProduct(id){
-    Modal.confirm('এই পণ্যটি স্থায়ীভাবে ডিলিট করতে চান?', async ()=>{
-      try{ await DB.deleteProduct(id); Toast.show('পণ্য ডিলিট হয়েছে','success'); }
-      catch(e){ Toast.show('ডিলিট ব্যর্থ','error'); }
+    Modal.confirm('পণ্যটি ডিলিট করতে চান?', async ()=>{
+      try { await DB.deleteProduct(id); Toast.show('ডিলিট হয়েছে','success'); }
+      catch(e){ Toast.show('ব্যর্থ: '+e.message,'error'); }
     });
   },
 
   orders(){
-    const q = (this._oQuery||'').toLowerCase();
-    const list = DB.orders.filter(o=> !q || o.id.toLowerCase().includes(q) || o.customer.name.toLowerCase().includes(q));
+    const q = (App._oQuery||'').toLowerCase();
+    const list = DB.orders.filter(o=> !q || o.id.toLowerCase().includes(q) || (o.customer?.name||'').toLowerCase().includes(q));
     return `
       <div class="admin-toolbar">
-        <input placeholder="অর্ডার ID / কাস্টমার নাম সার্চ..." value="${this._oQuery||''}" oninput="Admin._oQuery=this.value;clearTimeout(window._oq);window._oq=setTimeout(()=>Admin.refreshContent(),250)">
+        <input placeholder="সার্চ..." value="${App._oQuery||''}" oninput="App._oQuery=this.value;clearTimeout(window._oq);window._oq=setTimeout(()=>Admin.refreshContent(),250)">
       </div>
       <div class="admin-card">
         <div class="admin-card-head"><h3>মোট অর্ডার (${list.length})</h3></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>ID</th><th>কাস্টমার</th><th>ফোন</th><th>আইটেম</th><th>মোট</th><th>স্ট্যাটাস</th><th>${t('delete')}</th></tr></thead>
+            <thead><tr><th>ID</th><th>কাস্টমার</th><th>ফোন</th><th>আইটেম</th><th>মোট</th><th>স্ট্যাটাস</th><th>ডিলিট</th></tr></thead>
             <tbody>${list.length ? list.map(o=>`<tr>
               <td><b>${o.id}</b><br><small style="color:var(--text-dim)">${new Date(o.date).toLocaleDateString('bn-BD')}</small></td>
-              <td>${o.customer.name}<br><small style="color:var(--text-dim)">${o.customer.address||''}</small></td>
-              <td>${o.customer.phone||'—'}</td>
-              <td>${o.items.length}</td>
+              <td>${o.customer?.name||'—'}<br><small style="color:var(--text-dim)">${o.customer?.address||''}</small></td>
+              <td>${o.customer?.phone||'—'}</td>
+              <td>${o.items?.length||0}</td>
               <td><b>৳${o.total}</b></td>
               <td>
-                <select onchange="Orders.updateStatus('${o.id}', this.value);Toast.show('স্ট্যাটাস আপডেট হয়েছে','success')" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12.5px">
+                <select onchange="Admin.changeOrderStatus('${o.id}', this.value)" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12.5px">
                   ${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}
                 </select>
               </td>
@@ -902,15 +999,20 @@ const Admin = {
       </div>`;
   },
 
-  deleteOrder(id){ Modal.confirm('অর্ডারটি ডিলিট করতে চান?', async ()=>{ await Orders.remove(id); Toast.show('অর্ডার ডিলিট হয়েছে','success'); }); },
+  async changeOrderStatus(id, status){
+    try { await Orders.updateStatus(id, status); Toast.show('স্ট্যাটাস আপডেট হয়েছে','success'); }
+    catch(e){ Toast.show('ব্যর্থ','error'); }
+  },
+
+  deleteOrder(id){ Modal.confirm('অর্ডারটি ডিলিট?', async ()=>{ try { await Orders.remove(id); Toast.show('ডিলিট হয়েছে','success'); } catch(e){ Toast.show('ব্যর্থ','error'); } }); },
 
   users(){
-    const q = (this._uQuery||'').toLowerCase();
+    const q = (App._uQuery||'').toLowerCase();
     const list = DB.users.filter(u=> !q || (u.name+u.email).toLowerCase().includes(q));
-    const selected = this._selectedUsers || [];
+    const selected = App._selectedUsers || [];
     return `
       <div class="admin-toolbar">
-        <input placeholder="নাম / ইমেইল সার্চ..." value="${this._uQuery||''}" oninput="Admin._uQuery=this.value;clearTimeout(window._uq);window._uq=setTimeout(()=>Admin.refreshContent(),250)">
+        <input placeholder="নাম / ইমেইল..." value="${App._uQuery||''}" oninput="App._uQuery=this.value;clearTimeout(window._uq);window._uq=setTimeout(()=>Admin.refreshContent(),250)">
         <button class="btn btn-primary" onclick="Admin.openUserModal()"><i class="fa-solid fa-user-plus"></i> নতুন ইউজার</button>
       </div>
       ${selected.length ? `<div class="bulk-bar">
@@ -918,7 +1020,7 @@ const Admin = {
         <button class="btn btn-sm btn-danger" onclick="Admin.bulkAction('delete')"><i class="fa-solid fa-trash"></i> ডিলিট</button>
         <button class="btn btn-sm btn-warning" onclick="Admin.bulkAction('block')"><i class="fa-solid fa-ban"></i> ব্লক</button>
         <button class="btn btn-sm btn-success" onclick="Admin.bulkAction('unblock')"><i class="fa-solid fa-check"></i> আনব্লক</button>
-        <button class="btn btn-sm btn-outline" onclick="Admin._selectedUsers=[];Admin.refreshContent()">বাতিল</button>
+        <button class="btn btn-sm btn-outline" onclick="App._selectedUsers=[];Admin.refreshContent()">বাতিল</button>
       </div>` : ''}
       <div class="admin-card">
         <div class="admin-card-head"><h3>মোট ইউজার (${list.length})</h3></div>
@@ -930,14 +1032,14 @@ const Admin = {
             </tr></thead>
             <tbody>${list.length ? list.map(u=>`<tr>
               <td><input type="checkbox" ${selected.includes(u.id)?'checked':''} onchange="Admin.toggleUser('${u.id}', this.checked)"></td>
-              <td><img class="thumb" style="border-radius:50%" src="${u.avatar}"></td>
+              <td><img class="thumb" style="border-radius:50%" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U'"></td>
               <td><b>${u.name}</b></td>
               <td>${u.email}</td>
               <td><span class="chip ${u.role==='admin'?'active-status':''}">${u.role}</span></td>
               <td>${u.blocked?`<span class="chip blocked">ব্লকড</span>`:`<span class="chip active-status">সক্রিয়</span>`}</td>
               <td><div class="actions">
-                <button class="icon-btn-sm" title="Edit" onclick="Admin.openUserModal('${u.id}')"><i class="fa-solid fa-pen"></i></button>
-                <button class="icon-btn-sm ${u.blocked?'success':''}" title="${u.blocked?'Unblock':'Block'}" onclick="Admin.toggleBlock('${u.id}')"><i class="fa-solid ${u.blocked?'fa-unlock':'fa-ban'}"></i></button>
+                <button class="icon-btn-sm" onclick="Admin.openUserModal('${u.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn-sm ${u.blocked?'success':''}" onclick="Admin.toggleBlock('${u.id}')"><i class="fa-solid ${u.blocked?'fa-unlock':'fa-ban'}"></i></button>
                 ${u.role!=='admin'?`<button class="icon-btn-sm danger" onclick="Admin.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>`:''}
               </div></td>
             </tr>`).join('') : `<tr><td colspan="7" class="muted">কোনো ইউজার নেই</td></tr>`}</tbody>
@@ -947,27 +1049,29 @@ const Admin = {
   },
 
   toggleUser(id, checked){
-    const sel = this._selectedUsers || [];
+    const sel = App._selectedUsers || [];
     if(checked && !sel.includes(id)) sel.push(id);
     else if(!checked) sel.splice(sel.indexOf(id),1);
-    this._selectedUsers = sel; this.refreshContent();
+    App._selectedUsers = sel; this.refreshContent();
   },
   toggleAllUsers(checked){
-    this._selectedUsers = checked ? DB.users.map(u=>u.id) : [];
+    App._selectedUsers = checked ? DB.users.map(u=>u.id) : [];
     this.refreshContent();
   },
   bulkAction(type){
-    const ids = this._selectedUsers || [];
+    const ids = App._selectedUsers || [];
     if(!ids.length) return;
-    Modal.confirm(`${ids.length} জন ইউজারের উপর ${type==='delete'?'ডিলিট':type==='block'?'ব্লক':'আনব্লক'} অ্যাকশন?`, async ()=>{
+    Modal.confirm(`${ids.length} জনের উপর ${type==='delete'?'ডিলিট':type==='block'?'ব্লক':'আনব্লক'}?`, async ()=>{
       for(const id of ids){
         const u = DB.users.find(x=>x.id===id);
         if(!u || u.role==='admin') continue;
-        if(type==='delete') await DB.deleteUser(id);
-        else await DB.updateUser(id, {blocked: type==='block'});
+        try {
+          if(type==='delete') await DB.deleteUser(id);
+          else await DB.updateUser(id, { blocked: type==='block' });
+        } catch(e){ console.error(e); }
       }
-      this._selectedUsers = [];
-      Toast.show('বাল্ক অ্যাকশন সফল','success');
+      App._selectedUsers = [];
+      Toast.show('সফল','success');
     });
   },
 
@@ -1000,26 +1104,29 @@ const Admin = {
     const password = document.getElementById('uPass').value.trim();
     const role = document.getElementById('uRole').value;
     if(!name || !email || !password){ Toast.show('সব তথ্য দিন','error'); return; }
-    if(!id && DB.users.find(x=>x.email===email)){ Toast.show('এই ইমেইল আগেই আছে','error'); return; }
-    const data = {id, name, email, password, role, blocked:false, avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`};
-    if(id){ const existing = DB.users.find(x=>x.id===id); data.blocked = existing?.blocked||false; data.joined = existing?.joined||Date.now(); }
-    await DB.saveUser(data);
-    Modal.close(); Toast.show('ইউজার সেভ হয়েছে','success');
+    if(!id && DB.users.find(x=>x.email===email)){ Toast.show('ইমেইল আগেই আছে','error'); return; }
+    const existing = id ? DB.users.find(x=>x.id===id) : null;
+    const data = { id, name, email, password, role,
+      blocked: existing?.blocked || false,
+      joined: existing?.joined || Date.now(),
+      avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff` };
+    try { await DB.saveUser(data); Modal.close(); Toast.show('সেভ হয়েছে','success'); }
+    catch(e){ Toast.show('ব্যর্থ: '+e.message,'error'); }
   },
 
   async toggleBlock(id){
     const u = DB.users.find(x=>x.id===id); if(!u || u.role==='admin') return;
-    await DB.updateUser(id, {blocked: !u.blocked});
-    Toast.show(u.blocked?'ইউজার আনব্লক হয়েছে':'ইউজার ব্লক হয়েছে','success');
+    try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(u.blocked?'আনব্লক হয়েছে':'ব্লক হয়েছে','success'); }
+    catch(e){ Toast.show('ব্যর্থ','error'); }
   },
 
   deleteUser(id){
-    Modal.confirm('ইউজারটি ডিলিট করতে চান?', async ()=>{ await DB.deleteUser(id); Toast.show('ইউজার ডিলিট হয়েছে','success'); });
+    Modal.confirm('ইউজারটি ডিলিট?', async ()=>{ try { await DB.deleteUser(id); Toast.show('ডিলিট হয়েছে','success'); } catch(e){ Toast.show('ব্যর্থ','error'); } });
   },
 
   categories(){
-    const entries = Object.entries(DB._catRaw || {});
     const cats = DB.categories;
+    const keys = Object.entries(DB.catRaw);
     return `
       <div class="admin-card">
         <div class="admin-card-head"><h3>ক্যাটাগরি ম্যানেজমেন্ট</h3></div>
@@ -1028,22 +1135,20 @@ const Admin = {
           <button class="btn btn-primary" onclick="Admin.addCat()"><i class="fa-solid fa-plus"></i> যোগ করুন</button>
         </div>
         <div class="chips-wrap">
-          ${cats.map(c=>`<div class="chip-large">${c}<button onclick="Admin.delCat('${c}')"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}
+          ${keys.length ? keys.map(([k,v])=>`<div class="chip-large">${v}<button onclick="Admin.delCat('${k}')"><i class="fa-solid fa-xmark"></i></button></div>`).join('') : '<p class="muted">কোনো ক্যাটাগরি নেই</p>'}
         </div>
       </div>`;
   },
   async addCat(){
     const v = document.getElementById('newCat').value.trim(); if(!v) return;
     if(DB.categories.includes(v)) return Toast.show('আগেই আছে','warning');
-    await DB.saveCategory(v); Toast.show('ক্যাটাগরি যোগ হয়েছে','success');
+    try { await DB.saveCategory(v); Toast.show('যোগ হয়েছে','success'); }
+    catch(e){ Toast.show('ব্যর্থ: '+e.message,'error'); }
   },
-  delCat(c){
-    Modal.confirm(`"${c}" ক্যাটাগরি ডিলিট?`, async ()=>{
-      // find key by name
-      const snap = await db.ref('categories').once('value');
-      const data = snap.val() || {};
-      for(const [k,v] of Object.entries(data)){ if(v===c){ await DB.deleteCategory(k); break; } }
-      Toast.show('ডিলিট হয়েছে','success');
+  delCat(key){
+    Modal.confirm('ক্যাটাগরি ডিলিট?', async ()=>{
+      try { await DB.deleteCategory(key); Toast.show('ডিলিট হয়েছে','success'); }
+      catch(e){ Toast.show('ব্যর্থ','error'); }
     });
   },
 
@@ -1051,9 +1156,9 @@ const Admin = {
     const list = DB.coupons;
     return `
       <div class="admin-card">
-        <div class="admin-card-head"><h3>কুপন কোড ম্যানেজমেন্ট</h3></div>
+        <div class="admin-card-head"><h3>কুপন কোড</h3></div>
         <div class="admin-toolbar">
-          <input id="cCode" placeholder="কুপন কোড (যেমন: ECO10)">
+          <input id="cCode" placeholder="কোড (ECO10)">
           <select id="cType"><option value="percent">শতাংশ (%)</option><option value="flat">ফ্ল্যাট (৳)</option></select>
           <input id="cVal" type="number" placeholder="মান">
           <button class="btn btn-primary" onclick="Admin.addCoupon()"><i class="fa-solid fa-plus"></i> যোগ</button>
@@ -1061,12 +1166,12 @@ const Admin = {
         <div class="admin-table-wrap">
           <table class="admin-table">
             <thead><tr><th>কোড</th><th>টাইপ</th><th>মান</th><th>অ্যাকশন</th></tr></thead>
-            <tbody>${list.map(c=>`<tr>
+            <tbody>${list.length ? list.map(c=>`<tr>
               <td><b>${c.code}</b></td>
               <td><span class="chip">${c.type}</span></td>
               <td>${c.type==='percent'?c.value+'%':'৳'+c.value}</td>
               <td><button class="icon-btn-sm danger" onclick="Admin.delCoupon('${c.id}')"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`).join('')}</tbody>
+            </tr>`).join('') : `<tr><td colspan="4" class="muted">কোনো কুপন নেই</td></tr>`}</tbody>
           </table>
         </div>
       </div>`;
@@ -1077,10 +1182,10 @@ const Admin = {
     const value = +document.getElementById('cVal').value;
     if(!code || !value) return Toast.show('সব তথ্য দিন','error');
     if(DB.coupons.find(c=>c.code===code)) return Toast.show('কোড আগেই আছে','warning');
-    await DB.saveCoupon({code, type, value});
-    Toast.show('কুপন যোগ হয়েছে','success');
+    try { await DB.saveCoupon({ code, type, value }); Toast.show('যোগ হয়েছে','success'); }
+    catch(e){ Toast.show('ব্যর্থ','error'); }
   },
-  async delCoupon(id){ await DB.deleteCoupon(id); Toast.show('ডিলিট হয়েছে','success'); },
+  async delCoupon(id){ try { await DB.deleteCoupon(id); Toast.show('ডিলিট','success'); } catch(e){ Toast.show('ব্যর্থ','error'); } },
 
   settings(){
     const s = DB.settings || {};
@@ -1093,10 +1198,10 @@ const Admin = {
         <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> সেভ</button>
       </div>
       <div class="admin-card">
-        <div class="admin-card-head"><h3><i class="fa-solid fa-database"></i> ডেটা ম্যানেজমেন্ট</h3></div>
-        <p style="color:var(--text-dim);font-size:13px;padding:0 0 12px">সমস্ত ডেটা Firebase Realtime Database-এ সংরক্ষিত। ছবি ImgBB-তে হোস্টেড।</p>
+        <div class="admin-card-head"><h3><i class="fa-solid fa-database"></i> ডেটা</h3></div>
+        <p style="color:var(--text-dim);font-size:13px;padding:0 0 12px">ডেটা Firebase-এ, ছবি ImgBB-তে সংরক্ষিত।</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-danger" onclick="Admin.resetAll()"><i class="fa-solid fa-trash"></i> সব ডেটা রিসেট</button>
+          <button class="btn btn-danger" onclick="Admin.resetAll()"><i class="fa-solid fa-trash"></i> সব রিসেট</button>
           <button class="btn btn-outline" onclick="Admin.exportData()"><i class="fa-solid fa-download"></i> এক্সপোর্ট JSON</button>
         </div>
       </div>`;
@@ -1107,17 +1212,17 @@ const Admin = {
       shipping: +document.getElementById('stShip').value || 60,
       supportPhone: document.getElementById('stPhone').value.trim()
     };
-    await db.ref('settings').set(settings);
-    Toast.show('সেটিংস সেভ হয়েছে','success');
+    try { await db.ref('settings').set(settings); Toast.show('সেভ হয়েছে','success'); }
+    catch(e){ Toast.show('ব্যর্থ','error'); }
   },
   resetAll(){
-    Modal.confirm('সমস্ত ডেটা মুছে যাবে! নিশ্চিত?', async ()=>{
-      await db.ref().set({settings:{siteName:'EcoShop Pro MAX', shipping:60}});
-      localStorage.clear(); location.reload();
+    Modal.confirm('সব ডেটা মুছে যাবে!', async ()=>{
+      try { await db.ref().set({ settings:{siteName:'EcoShop Pro MAX', shipping:60} }); localStorage.clear(); location.reload(); }
+      catch(e){ Toast.show('ব্যর্থ','error'); }
     });
   },
   exportData(){
-    const data = {products:DB.products, users:DB.users, orders:DB.orders, categories:DB.categories, coupons:DB.coupons};
+    const data = { products:DB.products, users:DB.users, orders:DB.orders, categories:DB.categories, coupons:DB.coupons };
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ecoshop-data.json'; a.click();
     Toast.show('এক্সপোর্ট সম্পন্ন','success');
@@ -1134,37 +1239,56 @@ const Admin = {
    ═══════════════════════════════════════════════════════════ */
 const AuthUI = {
   tab(which){
+    App._authTab = which;
     document.getElementById('tabLogin').classList.toggle('active', which==='login');
     document.getElementById('tabReg').classList.toggle('active', which==='reg');
-    document.getElementById('authForm').innerHTML = which==='login' ? this.loginForm() : this.regForm();
+    document.getElementById('authForm').innerHTML = which==='login' ? this.loginForm(App._authRedirect||'home') : this.regForm(App._authRedirect||'home');
   },
   loginForm(redirect='home'){
     return `<form onsubmit="AuthUI.doLogin(event, '${redirect}')">
-      <div class="form-group"><label>ইমেইল</label><input type="email" id="authEmail" required placeholder="admin@eco.pro"></div>
-      <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="authPass" required placeholder="admin123"></div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg">লগইন <i class="fa-solid fa-arrow-right"></i></button>
+      <div class="form-group"><label>ইমেইল</label><input type="email" id="authEmail" required placeholder="admin@eco.pro" autocomplete="email"></div>
+      <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="authPass" required placeholder="admin123" autocomplete="current-password"></div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginSubmit">লগইন <i class="fa-solid fa-arrow-right"></i></button>
     </form>`;
   },
-  regForm(){
-    return `<form onsubmit="AuthUI.doReg(event)">
-      <div class="form-group"><label>নাম</label><input id="regName" required></div>
-      <div class="form-group"><label>ইমেইল</label><input type="email" id="regEmail" required></div>
-      <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="regPass" required minlength="6"></div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg">রেজিস্টার <i class="fa-solid fa-user-plus"></i></button>
+  regForm(redirect='home'){
+    return `<form onsubmit="AuthUI.doReg(event, '${redirect}')">
+      <div class="form-group"><label>নাম</label><input id="regName" required autocomplete="name"></div>
+      <div class="form-group"><label>ইমেইল</label><input type="email" id="regEmail" required autocomplete="email"></div>
+      <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="regPass" required minlength="6" autocomplete="new-password"></div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="regSubmit">রেজিস্টার <i class="fa-solid fa-user-plus"></i></button>
     </form>`;
   },
   async doLogin(e, redirect){
     e.preventDefault();
-    const r = await Auth.login(document.getElementById('authEmail').value, document.getElementById('authPass').value);
-    if(!r.ok){ Toast.show(r.msg,'error'); return; }
+    const btn = document.getElementById('loginSubmit'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> লগইন হচ্ছে...`;
+    const r = await Auth.login(document.getElementById('authEmail').value.trim(), document.getElementById('authPass').value);
+    if(!r.ok){
+      Toast.show(r.msg,'error');
+      btn.disabled = false; btn.innerHTML = `লগইন <i class="fa-solid fa-arrow-right"></i>`;
+      return;
+    }
     Toast.show('স্বাগতম, '+r.user.name,'success');
-    App.go(r.user.role==='admin' ? 'admin' : (redirect||'home'));
+    const target = r.user.role==='admin' ? 'admin' : (redirect && redirect!=='home' ? redirect : 'home');
+    App._authRedirect = null;
+    App.go(target);
   },
-  async doReg(e){
+  async doReg(e, redirect){
     e.preventDefault();
-    const r = await Auth.register(document.getElementById('regName').value, document.getElementById('regEmail').value, document.getElementById('regPass').value);
-    if(!r.ok){ Toast.show(r.msg,'error'); return; }
-    Toast.show('রেজিস্ট্রেশন সফল','success'); App.go('home');
+    const btn = document.getElementById('regSubmit'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> রেজিস্টার...`;
+    const r = await Auth.register(
+      document.getElementById('regName').value.trim(),
+      document.getElementById('regEmail').value.trim(),
+      document.getElementById('regPass').value
+    );
+    if(!r.ok){
+      Toast.show(r.msg,'error');
+      btn.disabled = false; btn.innerHTML = `রেজিস্টার <i class="fa-solid fa-user-plus"></i>`;
+      return;
+    }
+    Toast.show('রেজিস্ট্রেশন সফল','success');
+    App._authRedirect = null;
+    App.go(redirect && redirect!=='home' ? redirect : 'home');
   }
 };
 
@@ -1172,10 +1296,10 @@ const AuthUI = {
    CHECKOUT
    ═══════════════════════════════════════════════════════════ */
 const Checkout = {
-  coupon:null,
+  coupon: null,
   open(){
     const u = Auth.user();
-    if(!u){ Toast.show(t('loginRequired'),'warning'); App.go('auth'); return; }
+    if(!u){ Toast.show(t('loginRequired'),'warning'); App._authRedirect='home'; App.go('auth'); return; }
     if(!Cart.items().length) return Toast.show('কার্ট খালি','warning');
     Modal.open(`
       <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
@@ -1187,7 +1311,7 @@ const Checkout = {
           <div class="form-group"><label>শহর</label><input id="coCity" value="ঢাকা"></div>
         </div>
         <div class="form-group"><label>ঠিকানা</label><textarea id="coAddr" rows="2"></textarea></div>
-        <div class="form-group"><label>কুপন কোড (ঐচ্ছিক)</label>
+        <div class="form-group"><label>কুপন (ঐচ্ছিক)</label>
           <div style="display:flex;gap:8px"><input id="coCoupon" placeholder="ECO10"><button class="btn btn-outline" onclick="Checkout.applyCoupon()">অ্যাপ্লাই</button></div>
         </div>
         <div style="background:var(--surface-2);padding:14px;border-radius:10px;margin-top:12px">
@@ -1207,13 +1331,13 @@ const Checkout = {
   applyCoupon(){
     const code = document.getElementById('coCoupon').value.trim().toUpperCase();
     const c = DB.coupons.find(x=>x.code===code);
-    if(!c){ Toast.show('কুপন কোড সঠিক নয়','error'); return; }
+    if(!c){ Toast.show('কুপন সঠিক নয়','error'); return; }
     this.coupon = c;
-    let sub = Cart.subtotal() + 60;
-    let off = c.type==='percent' ? Math.round(sub * c.value/100) : c.value;
+    const sub = Cart.subtotal() + 60;
+    const off = c.type==='percent' ? Math.round(sub * c.value/100) : c.value;
     document.getElementById('coCouponShow').textContent = `-৳${off} (${c.code})`;
     document.getElementById('coTotal').textContent = '৳' + Math.max(0, sub-off);
-    Toast.show('কুপন অ্যাপ্লাই হয়েছে','success');
+    Toast.show('কুপন অ্যাপ্লাই','success');
   },
   async place(){
     const name = document.getElementById('coName').value.trim();
@@ -1221,28 +1345,27 @@ const Checkout = {
     const city = document.getElementById('coCity').value.trim();
     const address = document.getElementById('coAddr').value.trim();
     if(!name || !phone || !address){ Toast.show('সব তথ্য পূরণ করুন','error'); return; }
-    let sub = Cart.subtotal() + 60;
-    let off = 0;
-    if(this.coupon) off = this.coupon.type==='percent' ? Math.round(sub*this.coupon.value/100) : this.coupon.value;
+    const sub = Cart.subtotal() + 60;
+    const off = this.coupon ? (this.coupon.type==='percent' ? Math.round(sub*this.coupon.value/100) : this.coupon.value) : 0;
     const total = Math.max(0, sub - off);
     const items = Cart.items().map(i=>{
       const p = DB.products.find(x=>x.id===i.id);
-      return {id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty};
+      return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty };
     });
     const btn = document.getElementById('coSubmit'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> প্রসেসিং...`;
-    try{
-      const order = await Orders.create({name, phone, city, address}, items, total, this.coupon?.code);
+    try {
+      const order = await Orders.create({ name, phone, city, address }, items, total, this.coupon?.code);
       Modal.close();
       Toast.show('অর্ডার সফল! ID: '+order.id,'success',4000);
       App.go('orders');
     } catch(e){
-      console.error(e); Toast.show('অর্ডার ব্যর্থ: '+e.message,'error');
+      console.error(e);
+      Toast.show('অর্ডার ব্যর্থ: '+e.message,'error');
       btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check"></i> অর্ডার কনফার্ম`;
     }
   }
 };
 
-/* ───────── PROFILE ───────── */
 const Profile = {
   async save(){
     const u = Auth.user(); if(!u) return;
@@ -1250,14 +1373,16 @@ const Profile = {
     const pass = document.getElementById('pfPass').value.trim();
     if(!name || !pass) return Toast.show('তথ্য পূরণ করুন','error');
     const patch = { name, password: pass, avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff` };
-    await DB.updateUser(u.id, patch);
-    Session.set({...u, ...patch});
-    Toast.show('প্রোফাইল আপডেট হয়েছে','success'); App.render();
+    try {
+      await DB.updateUser(u.id, patch);
+      Session.set({ ...u, ...patch });
+      Toast.show('প্রোফাইল আপডেট','success'); App.render();
+    } catch(e){ Toast.show('ব্যর্থ','error'); }
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   THEME / LANG / UI INIT
+   INIT
    ═══════════════════════════════════════════════════════════ */
 function applyTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
@@ -1268,7 +1393,7 @@ function applyTheme(mode){
 }
 function applyLang(lang){
   LANG = lang; localStorage.setItem('eco_lang', lang);
-  document.getElementById('langChip').textContent = lang.toUpperCase();
+  const lc = document.getElementById('langChip'); if(lc) lc.textContent = lang.toUpperCase();
   document.querySelectorAll('[data-set-lang]').forEach(b=>b.classList.toggle('active', b.dataset.setLang===lang));
   App.render();
 }
@@ -1280,35 +1405,48 @@ function setFbStatus(ok, text){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  console.log('🚀 App starting...');
   applyTheme(localStorage.getItem('eco_theme') || 'light');
   LANG = localStorage.getItem('eco_lang') || 'bn';
-  document.getElementById('langChip').textContent = LANG.toUpperCase();
+  const lc = document.getElementById('langChip'); if(lc) lc.textContent = LANG.toUpperCase();
 
-  /* Splash + Firebase connect */
+  /* Splash animation */
   let p = 0;
   const statuses = ['Firebase-এ সংযুক্ত হচ্ছে...','ডেটা সিঙ্ক হচ্ছে...','প্রায় শেষ...','স্বাগতম!'];
-  const si = setInterval(()=>{
+  const splashTimer = setInterval(()=>{
     p += 25;
-    document.getElementById('splashBar').style.width = p+'%';
-    document.getElementById('splashStatus').textContent = statuses[Math.min(3,Math.floor(p/25)-1)] || statuses[0];
+    const bar = document.getElementById('splashBar');
+    const st = document.getElementById('splashStatus');
+    if(bar) bar.style.width = p+'%';
+    if(st) st.textContent = statuses[Math.min(3, Math.floor(p/25)-1)] || statuses[0];
     if(p>=100){
-      clearInterval(si);
-      setTimeout(()=>document.getElementById('splash').classList.add('hidden'), 500);
+      clearInterval(splashTimer);
+      // Splash hide হবে শুধু App.hideSplash() থেকে, কিন্তু 5s এ backup force hide
     }
-  }, 400);
+  }, 350);
 
-  /* Firebase init */
-  db.ref('.info/connected').on('value', snap=>{
-    setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: সংযুক্ত' : 'Firebase: অফলাইন');
-  });
-  DB.init();
+  /* Backup splash hide after 5s */
+  setTimeout(()=>App.hideSplash(), 5000);
 
-  /* Events */
+  /* Firebase connect status */
+  if(fbReady){
+    setFbStatus(false, 'Firebase: সংযোগ হচ্ছে...');
+    db.ref('.info/connected').on('value', snap=>{
+      setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: ✅ সংযুক্ত' : 'Firebase: ⚠️ অফলাইন');
+    });
+    DB.init();
+  } else {
+    setFbStatus(false, 'Firebase: ❌ ব্যর্থ');
+    Toast.show('Firebase init failed: '+fbError, 'error', 8000);
+    App.hideSplash();
+  }
+
+  /* Nav events */
   window.addEventListener('scroll', ()=>{
-    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY>10);
-    document.getElementById('backToTop').classList.toggle('show', window.scrollY>400);
+    const nb = document.getElementById('navbar'); if(nb) nb.classList.toggle('scrolled', window.scrollY>10);
+    const btt = document.getElementById('backToTop'); if(btt) btt.classList.toggle('show', window.scrollY>400);
   });
-  document.getElementById('backToTop').onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
+  const btt = document.getElementById('backToTop'); if(btt) btt.onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
 
   document.querySelectorAll('[data-nav]').forEach(a=>{
     a.onclick = ()=>{
@@ -1321,39 +1459,49 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   const openPM = ()=>{ document.getElementById('powerMenu').classList.add('active'); document.getElementById('backdrop').classList.add('active'); };
   const closePM = ()=>{ document.getElementById('powerMenu').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); };
-  document.getElementById('menuToggle').onclick = openPM;
-  document.getElementById('pmClose').onclick = closePM;
+  const menuToggle = document.getElementById('menuToggle'); if(menuToggle) menuToggle.onclick = openPM;
+  const pmClose = document.getElementById('pmClose'); if(pmClose) pmClose.onclick = closePM;
 
   const openCart = ()=>{ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); };
   const closeCart = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); };
-  document.getElementById('cartBtn').onclick = openCart;
-  document.getElementById('cartClose').onclick = closeCart;
-  document.getElementById('checkoutBtn').onclick = ()=>{ closeCart(); Checkout.open(); };
+  const cartBtn = document.getElementById('cartBtn'); if(cartBtn) cartBtn.onclick = openCart;
+  const cartClose = document.getElementById('cartClose'); if(cartClose) cartClose.onclick = closeCart;
+  const checkoutBtn = document.getElementById('checkoutBtn'); if(checkoutBtn) checkoutBtn.onclick = ()=>{ closeCart(); Checkout.open(); };
 
   const openNotif = ()=>{ document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); };
   const closeNotif = ()=>{ document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); };
-  document.getElementById('notifBtn').onclick = openNotif;
-  document.getElementById('notifClose').onclick = closeNotif;
+  const notifBtn = document.getElementById('notifBtn'); if(notifBtn) notifBtn.onclick = openNotif;
+  const notifClose = document.getElementById('notifClose'); if(notifClose) notifClose.onclick = closeNotif;
 
-  document.getElementById('backdrop').onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
+  const backdrop = document.getElementById('backdrop');
+  if(backdrop) backdrop.onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
 
-  document.getElementById('loginBtn').onclick = ()=>{ closePM(); App.go('auth'); };
-  document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App.go('auth'); };
-  document.getElementById('pmLogoutBtn').onclick = ()=>{ closePM(); Auth.logout(); };
+  const loginBtn = document.getElementById('loginBtn'); if(loginBtn) loginBtn.onclick = ()=>{ closePM(); App._authRedirect='home'; App.go('auth'); };
+  const pmLoginBtn = document.getElementById('pmLoginBtn'); if(pmLoginBtn) pmLoginBtn.onclick = ()=>{ closePM(); App._authRedirect='home'; App.go('auth'); };
+  const pmLogoutBtn = document.getElementById('pmLogoutBtn'); if(pmLogoutBtn) pmLogoutBtn.onclick = ()=>{ closePM(); Auth.logout(); };
 
   const av = document.getElementById('userAvatarBtn');
   const dd = document.getElementById('userDropdown');
-  av.onclick = (e)=>{ e.stopPropagation(); dd.classList.toggle('active'); };
-  document.addEventListener('click', ()=> dd.classList.remove('active'));
+  if(av && dd){
+    av.onclick = (e)=>{ e.stopPropagation(); dd.classList.toggle('active'); };
+    document.addEventListener('click', ()=> dd.classList.remove('active'));
+  }
 
-  document.getElementById('themeBtn').onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
-  document.getElementById('langBtn').onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
+  const themeBtn = document.getElementById('themeBtn');
+  if(themeBtn) themeBtn.onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  const langBtn = document.getElementById('langBtn');
+  if(langBtn) langBtn.onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
   document.querySelectorAll('[data-set-theme]').forEach(b=> b.onclick = ()=> applyTheme(b.dataset.setTheme));
   document.querySelectorAll('[data-set-lang]').forEach(b=> b.onclick = ()=> applyLang(b.dataset.setLang));
 
-  document.getElementById('globalSearch').oninput = (e)=>{
-    App._shopQ = e.target.value; App._shopCat='all'; App.go('shop');
+  const gs = document.getElementById('globalSearch');
+  if(gs) gs.oninput = (e)=>{
+    App._shopQ = e.target.value; App._shopCat='all';
+    if(App.route!=='shop') App.go('shop');
+    else App.render();
   };
 
+  /* Initial render */
   App.render();
+  console.log('✅ App ready');
 });
