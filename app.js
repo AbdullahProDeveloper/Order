@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   EcoShop Pro MAX v7.0 — Enterprise + EmailJS OTP Registration
+   EcoShop Pro MAX v7.1 — Firebase Realtime OTP Registration
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ───────── Firebase Config ───────── */
@@ -89,7 +89,8 @@ const I18N = {
     logoutSuccess:'লগআউট সফল', saveSuccess:'সেভ হয়েছে', deleteSuccess:'ডিলিট হয়েছে',
     adminOnly:'শুধুমাত্র অ্যাডমিন',
     invalidCredentials:'ভুল ইমেইল বা পাসওয়ার্ড', accountBlocked:'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে',
-    emailExists:'এই ইমেইল ইতিমধ্যেই ব্যবহৃত', passwordMismatch:'পাসওয়ার্ড মিলছে না',
+    emailExists:'এই ইমেইল দিয়ে আগেই রেজিস্ট্রেশন করা হয়েছে। লগইন করুন।',
+    passwordMismatch:'পাসওয়ার্ড মিলছে না',
     weakPassword:'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে',
     fillAllFields:'সব তথ্য পূরণ করুন', orderPlaced:'অর্ডার সফল হয়েছে', orderFailed:'অর্ডার ব্যর্থ',
     couponApplied:'কুপন প্রয়োগ হয়েছে', invalidCoupon:'কুপন কোড সঠিক নয়',
@@ -128,16 +129,19 @@ const I18N = {
     paymentInfo:'পেমেন্ট তথ্য', paymentNumberConfig:'পেমেন্ট নাম্বার সেটআপ', settingsSaved:'সেটিংস সেভ হয়েছে',
     numberCopied:'নাম্বার কপি হয়েছে', dialCodeCopied:'ডায়াল কোড কপি হয়েছে',
     invalidTxnId:'সঠিক ট্রানজেকশন আইডি দিন (কমপক্ষে ৬ অক্ষর)',
-    // OTP
-    sendOTP:'OTP পাঠান', verifyOTP:'যাচাই করুন', resendOTP:'আবার পাঠান', resendIn:'আবার পাঠান',
+    sendOTP:'OTP পাঠান', verifyOTP:'যাচাই করুন', resendOTP:'আবার পাঠান',
     verifyEmail:'ইমেইল যাচাই করুন', weSentCode:'আমরা ৬-ডিজিটের কোড পাঠিয়েছি',
     otpValidTime:'১০ মিনিট পর্যন্ত বৈধ', changeInfo:'তথ্য পরিবর্তন',
     otpSent:'✅ OTP পাঠানো হয়েছে, ইমেইল চেক করুন', otpSending:'পাঠানো হচ্ছে...',
     otpVerifying:'যাচাই হচ্ছে...', emailAvailable:'✓ ইমেইল ব্যবহারযোগ্য',
-    emailTaken:'❌ এই ইমেইল আগেই রেজিস্ট্রেশন করা হয়েছে',
+    emailTaken:'❌ এই ইমেইল আগেই রেজিস্ট্রেশন করা হয়েছে। লগইন করুন।',
     invalidEmail:'সঠিক ইমেইল দিন', agreeToTerms:'শর্তাবলীতে সম্মতি দিন',
     enterFullCode:'৬-ডিজিটের সম্পূর্ণ কোড দিন', registrationSuccess:'🎉 রেজিস্ট্রেশন সফল!',
-    otpFailed:'ইমেইল পাঠানো যায়নি'
+    otpFailed:'ইমেইল পাঠানো যায়নি',
+    checkingEmail:'ইমেইল চেক হচ্ছে...',
+    dataLoadingWait:'ডেটা লোড হচ্ছে, একটু অপেক্ষা করুন...',
+    redirectingToLogin:'লগইন পেজে নিয়ে যাওয়া হচ্ছে...',
+    emailAlreadyRegisteredTitle:'ইমেইল আগেই রেজিস্ট্রেশন করা আছে'
   },
   en: {
     home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
@@ -175,7 +179,8 @@ const I18N = {
     logoutSuccess:'Logged out', saveSuccess:'Saved', deleteSuccess:'Deleted',
     adminOnly:'Admin only',
     invalidCredentials:'Invalid credentials', accountBlocked:'Account is blocked',
-    emailExists:'Email already exists', passwordMismatch:'Passwords do not match',
+    emailExists:'This email is already registered. Please login.',
+    passwordMismatch:'Passwords do not match',
     weakPassword:'Password must be at least 6 characters',
     fillAllFields:'Please fill all fields', orderPlaced:'Order placed', orderFailed:'Order failed',
     couponApplied:'Coupon applied', invalidCoupon:'Invalid coupon',
@@ -214,15 +219,19 @@ const I18N = {
     paymentInfo:'Payment Info', paymentNumberConfig:'Payment Number Setup', settingsSaved:'Settings saved',
     numberCopied:'Number copied', dialCodeCopied:'Dial code copied',
     invalidTxnId:'Enter valid Transaction ID (min 6 chars)',
-    sendOTP:'Send OTP', verifyOTP:'Verify', resendOTP:'Resend', resendIn:'Resend',
+    sendOTP:'Send OTP', verifyOTP:'Verify', resendOTP:'Resend',
     verifyEmail:'Verify Email', weSentCode:'We sent a 6-digit code to',
     otpValidTime:'Valid for 10 minutes', changeInfo:'Change info',
     otpSent:'✅ OTP sent, check your email', otpSending:'Sending...',
     otpVerifying:'Verifying...', emailAvailable:'✓ Email available',
-    emailTaken:'❌ This email is already registered',
+    emailTaken:'❌ This email is already registered. Please login.',
     invalidEmail:'Enter a valid email', agreeToTerms:'Agree to terms',
     enterFullCode:'Enter complete 6-digit code', registrationSuccess:'🎉 Registration successful!',
-    otpFailed:'Failed to send email'
+    otpFailed:'Failed to send email',
+    checkingEmail:'Checking email...',
+    dataLoadingWait:'Data loading, please wait...',
+    redirectingToLogin:'Redirecting to login...',
+    emailAlreadyRegisteredTitle:'Email already registered'
   }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
@@ -255,7 +264,7 @@ const RecentStore = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   DB
+   DB — Firebase Realtime
    ═══════════════════════════════════════════════════════════ */
 const DB = {
   products: [], users: [], orders: [], categories: [], coupons: [], notifs: [], reviews: [],
@@ -319,8 +328,7 @@ const DB = {
       p6:{id:'p6',name:'সানগ্লাস প্রিমিয়াম',nameEn:'Premium Sunglass',cat:'ফ্যাশন',catEn:'Fashion',price:950,oldPrice:1400,discount:32,stock:0,img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80',desc:'UV400 সানগ্লাস।',featured:false,createdAt:Date.now()+5,tags:['সানগ্লাস'],rating:4.2,reviewCount:15}
     };
     const users = {
-      u_admin:{id:'u_admin',name:'Admin',email:'admin@eco.pro',password:'admin123',role:'admin',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff',phone:'01700000000'},
-      u_rahim:{id:'u_rahim',name:'Rahim Uddin',email:'rahim@mail.com',password:'123456',role:'customer',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Rahim&background=10b981&color=fff',phone:'01711111111'}
+      u_admin:{id:'u_admin',name:'Admin',email:'admin@eco.pro',password:'admin123',role:'admin',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff',phone:'01700000000'}
     };
     const cats = { c1:'ইলেকট্রনিকস', c2:'গ্যাজেট', c3:'ফ্যাশন', c4:'ফটোগ্রাফি', c5:'হোম ও লিভিং', c6:'বিউটি' };
     const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10}, cp2:{id:'cp2',code:'FLAT100',type:'flat',value:100} };
@@ -423,28 +431,35 @@ const OTP = {
     if(!this.init()){
       return { ok:false, msg: LANG==='bn'?'EmailJS লোড হয়নি, পেজ রিফ্রেশ করুন':'EmailJS not loaded, refresh' };
     }
-    if(Auth.isEmailTaken(email)){
-      return { ok:false, msg: LANG==='bn'?'এই ইমেইল দিয়ে আগেই রেজিস্ট্রেশন করা হয়েছে':'Email already registered' };
-    }
+
     const code = this.generate();
-    this.currentEmail = email.trim().toLowerCase();
+    this.currentEmail = Auth.normalizeEmail(email);
     this.currentCode = code;
     this.expiresAt = Date.now() + 10 * 60 * 1000;
     this.attempts = 0;
     this.verified = false;
 
+    const payload = {
+      to_email: this.currentEmail,
+      email: this.currentEmail,
+      user_email: this.currentEmail,
+      reply_to: this.currentEmail,
+      otp_code: code,
+      code: code,
+      otp: code,
+      user_name: name || 'User',
+      name: name || 'User',
+      site_name: 'EcoShop Pro MAX',
+      expiry: '10 minutes'
+    };
+
     try {
       const result = await emailjs.send(
         EmailJSConfig.serviceId,
         EmailJSConfig.templateId,
-        {
-          to_email: this.currentEmail,
-          otp_code: code,
-          user_name: name || 'User',
-          site_name: 'EcoShop Pro MAX'
-        }
+        payload
       );
-      console.log('✅ OTP sent:', result);
+      console.log('✅ OTP sent to', this.currentEmail, result);
       return { ok:true };
     } catch(err){
       console.error('❌ OTP send failed:', err);
@@ -455,7 +470,7 @@ const OTP = {
 
   async verify(inputCode){
     if(!this.currentCode) return { ok:false, msg: LANG==='bn'?'আগে কোড পাঠান':'Send code first' };
-    if(Date.now() > this.expiresAt) return { ok:false, msg: LANG==='bn'?'কোডের মেয়াদ শেষ, আবার পাঠান':'Code expired' };
+    if(Date.now() > this.expiresAt) return { ok:false, msg: LANG==='bn'?'কোডের মেয়াদ শেষ':'Code expired' };
     if(this.attempts >= 5) return { ok:false, msg: LANG==='bn'?'অনেকবার ভুল, আবার কোড পাঠান':'Too many attempts' };
     if(String(inputCode).trim() !== this.currentCode){
       this.attempts++;
@@ -622,21 +637,48 @@ function starHTML(rating, size){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Auth
+   Auth — Firebase-based email uniqueness
    ═══════════════════════════════════════════════════════════ */
 const Auth = {
   user(){ return Session.get(); },
   isAdmin(){ const u=this.user(); return u && u.role==='admin'; },
 
+  /* Normalize email — lowercase + trim, used everywhere */
+  normalizeEmail(email){
+    if(!email) return '';
+    return String(email).trim().toLowerCase();
+  },
+
+  /* Check if email exists in Firebase Realtime DB
+     Returns:
+     { status: 'taken' }  — Firebase-এ আছে
+     { status: 'free' }   — Firebase-এ নেই
+     { status: 'unknown' } — DB এখনো লোড হয়নি
+  */
+  checkEmailStatus(email){
+    const target = this.normalizeEmail(email);
+    if(!target) return { status: 'free' };
+
+    // DB users লোড না হলে অনিশ্চিত
+    if(!DB.ready.users){
+      return { status: 'unknown' };
+    }
+
+    const exists = (DB.users || []).some(u => this.normalizeEmail(u.email) === target);
+    return { status: exists ? 'taken' : 'free' };
+  },
+
+  /* Convenience boolean — only reliable when DB is ready */
   isEmailTaken(email){
-    if(!email) return false;
-    const n = email.trim().toLowerCase();
-    return DB.users.some(u => (u.email||'').toLowerCase() === n);
+    return this.checkEmailStatus(email).status === 'taken';
   },
 
   async login(email, password){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
-    const u = DB.users.find(x=>x.email===email && x.password===password);
+    const target = this.normalizeEmail(email);
+    const u = DB.users.find(x =>
+      this.normalizeEmail(x.email) === target && x.password === password
+    );
     if(!u) return { ok:false, msg:t('invalidCredentials') };
     if(u.blocked) return { ok:false, msg:t('accountBlocked') };
     Session.set(u);
@@ -645,19 +687,40 @@ const Auth = {
 
   async register(data){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
-    if(this.isEmailTaken(data.email)) return { ok:false, msg:t('emailExists') };
+
+    const target = this.normalizeEmail(data.email);
+
+    // Final gate — Firebase-এ আগে থেকেই আছে কি না
+    if(this.isEmailTaken(target)){
+      return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
+    }
+
     const u = {
-      id:'u_'+Date.now(),
-      name:data.name,
-      email:data.email.trim().toLowerCase(),
-      password:data.password,
-      phone:data.phone||'',
-      role:'customer', blocked:false, joined:Date.now(), emailVerified:true,
-      avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff`
+      id: 'u_' + Date.now() + '_' + Math.floor(Math.random()*1000),
+      name: data.name,
+      email: target,
+      password: data.password,
+      phone: data.phone || '',
+      role: 'customer',
+      blocked: false,
+      joined: Date.now(),
+      emailVerified: true,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff`
     };
-    try { await DB.saveUser(u); Session.set(u); return { ok:true, user:u }; }
-    catch(e){ return { ok:false, msg:'Save failed: '+e.message }; }
+
+    try {
+      // Absolute last check right before write
+      if(this.isEmailTaken(target)){
+        return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
+      }
+      await DB.saveUser(u);
+      Session.set(u);
+      return { ok:true, user:u };
+    } catch(e){
+      return { ok:false, msg:'Save failed: ' + e.message };
+    }
   },
+
   logout(){ Session.clear(); Toast.show(t('logoutSuccess'),'success'); App.go('home'); }
 };
 
@@ -817,7 +880,7 @@ const Notifs = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   QuickView / Share / Invoice
+   QuickView / Invoice
    ═══════════════════════════════════════════════════════════ */
 const QuickView = {
   open(productId){
@@ -1267,7 +1330,7 @@ const Pages = {
             <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
             <div class="admin-header-title">
               <h1>${Admin.titles[tab]||t('dashboard')}</h1>
-              <p>EcoShop Pro MAX v7.0</p>
+              <p>EcoShop Pro MAX v7.1</p>
             </div>
             <div class="admin-header-actions">
               <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i><span> ${t('shop')}</span></button>
@@ -1359,7 +1422,7 @@ const Pages = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Checkout
+   Checkout Logic
    ═══════════════════════════════════════════════════════════ */
 const Checkout = {
   coupon: null,
@@ -2145,12 +2208,12 @@ const Admin = {
   },
   async saveUser(id){
     const name = document.getElementById('uName').value.trim();
-    const email = document.getElementById('uEmail').value.trim();
+    const email = Auth.normalizeEmail(document.getElementById('uEmail').value);
     const password = document.getElementById('uPass').value.trim();
     const phone = document.getElementById('uPhone').value.trim();
     const role = document.getElementById('uRole').value;
     if(!name || !email || !password){ Toast.show(t('fillAllFields'),'error'); return; }
-    if(!id && DB.users.find(x=>x.email===email)){ Toast.show(t('emailExists'),'error'); return; }
+    if(!id && DB.users.find(x=>Auth.normalizeEmail(x.email)===email)){ Toast.show(t('emailExists'),'error'); return; }
     const existing = id ? DB.users.find(x=>x.id===id) : null;
     const data = { id, name, email, phone, password, role,
       blocked: existing?.blocked || false,
@@ -2299,18 +2362,25 @@ const Admin = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   AuthUI (with OTP)
+   AuthUI — OTP Flow with Firebase-based email check
    ═══════════════════════════════════════════════════════════ */
 const AuthUI = {
   tab(which){
     App._authTab = which;
     App._otpStep = null;
+    App._pendingReg = null;
     OTP.reset();
+
     document.getElementById('tabLogin').classList.toggle('active', which==='login');
     document.getElementById('tabReg').classList.toggle('active', which==='reg');
     document.getElementById('authForm').innerHTML = which==='login'
-      ? this.loginForm(App._authRedirect||'home')
-      : this.regForm(App._authRedirect||'home');
+      ? this.loginForm(App._authRedirect || 'home')
+      : this.regForm(App._authRedirect || 'home');
+
+    // If switching to register, auto-check email field
+    if(which==='reg'){
+      setTimeout(()=>{ const e = document.getElementById('regEmail'); if(e && e.value) this.checkEmailAvailability(e.value); }, 100);
+    }
   },
 
   loginForm(redirect='home'){
@@ -2355,7 +2425,7 @@ const AuthUI = {
       <div class="form-group">
         <label>${t('email')} <span class="req">*</span></label>
         <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i>
-          <input type="email" id="regEmail" required autocomplete="email" placeholder="you@example.com" oninput="AuthUI.checkEmailAvailability(this.value)">
+          <input type="email" id="regEmail" required autocomplete="email" placeholder="you@example.com" oninput="AuthUI.onEmailInput(this.value)" onblur="AuthUI.checkEmailAvailability(this.value)">
         </div>
         <div class="form-hint" id="emailCheckHint"></div>
       </div>
@@ -2446,17 +2516,67 @@ const AuthUI = {
     </form>`;
   },
 
+  /* ── Live email input handler ── */
+  onEmailInput(email){
+    const hint = document.getElementById('emailCheckHint');
+    if(!hint) return;
+    hint.textContent = '';
+    hint.style.color = '';
+
+    const target = Auth.normalizeEmail(email);
+    if(!target || target.length < 5 || !target.includes('@')){
+      return;
+    }
+
+    // If DB isn't loaded yet — say so instead of showing false positive
+    if(!DB.ready.users){
+      hint.textContent = t('dataLoadingWait');
+      hint.style.color = 'var(--text-dim)';
+      return;
+    }
+
+    // Immediate feedback (no debounce here to keep it snappy)
+    const status = Auth.checkEmailStatus(target);
+    if(status.status === 'taken'){
+      hint.textContent = t('emailTaken');
+      hint.style.color = 'var(--danger)';
+    } else if(status.status === 'free'){
+      hint.textContent = t('emailAvailable');
+      hint.style.color = 'var(--success)';
+    } else {
+      hint.textContent = t('dataLoadingWait');
+      hint.style.color = 'var(--text-dim)';
+    }
+  },
+
+  /* Debounced blur-check */
   checkEmailAvailability(email){
     const hint = document.getElementById('emailCheckHint');
     if(!hint) return;
     if(!email || !email.includes('@')){ hint.textContent=''; return; }
-    if(Auth.isEmailTaken(email)){
-      hint.textContent = t('emailTaken');
-      hint.style.color = 'var(--danger)';
-    } else {
-      hint.textContent = t('emailAvailable');
-      hint.style.color = 'var(--success)';
+
+    // Safe fallback when DB not ready
+    if(!DB.ready.users){
+      hint.textContent = t('dataLoadingWait');
+      hint.style.color = 'var(--text-dim)';
+      return;
     }
+
+    clearTimeout(window._emailCheckTimer);
+    window._emailCheckTimer = setTimeout(()=>{
+      const target = Auth.normalizeEmail(email);
+      const status = Auth.checkEmailStatus(target);
+      if(status.status === 'taken'){
+        hint.textContent = t('emailTaken');
+        hint.style.color = 'var(--danger)';
+      } else if(status.status === 'free'){
+        hint.textContent = t('emailAvailable');
+        hint.style.color = 'var(--success)';
+      } else {
+        hint.textContent = t('dataLoadingWait');
+        hint.style.color = 'var(--text-dim)';
+      }
+    }, 250);
   },
 
   otpInput(el){
@@ -2501,26 +2621,74 @@ const AuthUI = {
     document.querySelector('.otp-inputs input[data-idx="0"]')?.focus();
   },
 
+  /* ── Send OTP with strict Firebase check ── */
   async sendOTP(e, redirect){
     if(e) e.preventDefault();
+
     const name = document.getElementById('regName').value.trim();
-    const email = document.getElementById('regEmail').value.trim().toLowerCase();
+    const emailInput = document.getElementById('regEmail');
+    const email = Auth.normalizeEmail(emailInput.value);
     const phone = document.getElementById('regPhone').value.trim();
     const pass = document.getElementById('regPass').value;
     const pass2 = document.getElementById('regPass2').value;
     const terms = document.getElementById('regTerms').checked;
     const err = document.getElementById('passError');
 
-    if(!name || !email || !pass){ Toast.show(t('fillAllFields'),'error'); return; }
+    // ── Basic validation ──
+    if(!name){ Toast.show(t('fillAllFields'),'error'); return; }
+    if(!email){ Toast.show(t('invalidEmail'),'error'); return; }
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ Toast.show(t('invalidEmail'),'error'); return; }
-    if(pass !== pass2){ err.classList.add('show'); Toast.show(t('passwordMismatch'),'error'); return; }
+    if(!pass){ Toast.show(t('fillAllFields'),'error'); return; }
+
+    if(pass !== pass2){
+      err.classList.add('show');
+      Toast.show(t('passwordMismatch'),'error');
+      return;
+    }
     err.classList.remove('show');
+
     if(pass.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
     if(!terms){ Toast.show(t('agreeToTerms'),'warning'); return; }
-    if(Auth.isEmailTaken(email)){ Toast.show(t('emailExists'),'error'); return; }
 
+    // ── Wait for DB to load ──
+    if(!DB.ready.users){
+      Toast.show(t('dataLoadingWait'),'warning',3000);
+      return;
+    }
+
+    // ── Firebase email uniqueness check (STRICT) ──
+    const status = Auth.checkEmailStatus(email);
+    if(status.status === 'unknown'){
+      Toast.show(t('dataLoadingWait'),'warning',3000);
+      return;
+    }
+    if(status.status === 'taken'){
+      // Show inline hint + toast + redirect to LOGIN tab
+      const hint = document.getElementById('emailCheckHint');
+      if(hint){ hint.textContent = t('emailTaken'); hint.style.color = 'var(--danger)'; }
+
+      Toast.show(t('emailExists'),'error',4000);
+
+      // Prefill login email & switch to login tab
+      setTimeout(()=>{
+        App._authTab = 'login';
+        App._otpStep = null;
+        App._pendingReg = null;
+        OTP.reset();
+        App._authRedirect = redirect;
+        App.render();
+        setTimeout(()=>{
+          const eInp = document.getElementById('authEmail');
+          if(eInp){ eInp.value = email; eInp.focus(); }
+        }, 80);
+      }, 500);
+      return;
+    }
+
+    // ── Save pending data ──
     App._pendingReg = { name, email, phone, password: pass };
 
+    // ── Send OTP via EmailJS ──
     const btn = document.getElementById('regSendBtn');
     btn.disabled = true;
     btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
@@ -2561,6 +2729,7 @@ const AuthUI = {
     });
   },
 
+  /* ── Verify OTP and register ── */
   async verifyOTP(e, redirect){
     if(e) e.preventDefault();
     const code = this.getOTPValue();
@@ -2570,6 +2739,7 @@ const AuthUI = {
     btn.disabled = true;
     btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpVerifying')}`;
 
+    // ── Verify OTP ──
     const result = await OTP.verify(code);
     if(!result.ok){
       Toast.show(result.msg, 'error');
@@ -2588,6 +2758,22 @@ const AuthUI = {
       return;
     }
 
+    // ── Re-check Firebase email right before register ──
+    if(Auth.isEmailTaken(pending.email)){
+      Toast.show(t('emailExists'),'error');
+      OTP.reset();
+      App._otpStep = null;
+      App._pendingReg = null;
+      App._authTab = 'login';
+      App.render();
+      setTimeout(()=>{
+        const eInp = document.getElementById('authEmail');
+        if(eInp){ eInp.value = pending.email; eInp.focus(); }
+      }, 80);
+      return;
+    }
+
+    // ── Register ──
     const reg = await Auth.register(pending);
     if(!reg.ok){
       Toast.show(reg.msg, 'error');
@@ -2596,13 +2782,15 @@ const AuthUI = {
       return;
     }
 
+    // ── Success ──
     OTP.reset();
     App._pendingReg = null;
     App._otpStep = null;
     App._authRedirect = null;
 
     Toast.show(t('registrationSuccess') + ' ' + reg.user.name, 'success', 4000);
-    PushNotif.localNotif(LANG==='bn'?'রেজিস্ট্রেশন সফল':'Registration successful', LANG==='bn'?'স্বাগতম '+reg.user.name:'Welcome '+reg.user.name);
+    PushNotif.localNotif(LANG==='bn'?'রেজিস্ট্রেশন সফল':'Registration successful',
+                         LANG==='bn'?'স্বাগতম '+reg.user.name:'Welcome '+reg.user.name);
 
     setTimeout(()=>{ App.go(redirect && redirect !== 'home' ? redirect : 'home'); }, 600);
   },
@@ -2614,6 +2802,18 @@ const AuthUI = {
     btn.disabled = true;
     const txt = document.getElementById('otpResendText');
     txt.textContent = LANG==='bn'?'পাঠানো হচ্ছে...':'Sending...';
+
+    // Before resend, re-check Firebase (in case email got registered somewhere else)
+    if(Auth.isEmailTaken(pending.email)){
+      Toast.show(t('emailExists'),'error');
+      OTP.reset();
+      App._otpStep = null;
+      App._pendingReg = null;
+      App._authTab = 'login';
+      App.render();
+      return;
+    }
+
     OTP.attempts = 0;
     const result = await OTP.send(pending.email, pending.name);
     if(!result.ok){
@@ -2668,7 +2868,7 @@ const AuthUI = {
     e.preventDefault();
     const btn = document.getElementById('loginSubmit');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-    const r = await Auth.login(document.getElementById('authEmail').value.trim().toLowerCase(), document.getElementById('authPass').value);
+    const r = await Auth.login(document.getElementById('authEmail').value, document.getElementById('authPass').value);
     if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `${t('login')} <i class="fa-solid fa-arrow-right"></i>`; return; }
     Toast.show(t('loginSuccess') + ', ' + r.user.name,'success');
     const target = r.user.role==='admin' ? 'admin' : (redirect && redirect!=='home' ? redirect : 'home');
@@ -2737,7 +2937,7 @@ function initOfflineDetect(){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-  console.log('🚀 App v7.0 starting...');
+  console.log('🚀 App v7.1 starting...');
 
   const savedTheme = localStorage.getItem('eco_theme');
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -2824,8 +3024,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
   document.getElementById('backdrop').onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
 
-  document.getElementById('loginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; OTP.reset(); App.go('auth'); };
-  document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; OTP.reset(); App.go('auth'); };
+  document.getElementById('loginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
+  document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
   document.getElementById('pmLogoutBtn').onclick = ()=>{ closePM(); Auth.logout(); };
 
   const av = document.getElementById('userAvatarBtn');
@@ -2861,5 +3061,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.addEventListener('touchmove', (e)=>{ if(e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
   App.render();
-  console.log('✅ App ready v7.0');
+  console.log('✅ App ready v7.1');
 });
+       
