@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   EcoShop Pro MAX v5.0 — Ultra Premium Edition
-   Firebase Realtime + ImgBB + Full i18n + Advanced Admin + Animations
+   EcoShop Pro MAX v6.0 — Enterprise Edition
+   Firebase + ImgBB + PWA + 4 Payment Methods + Smart Delivery
    ═══════════════════════════════════════════════════════════════════════ */
 
 /* ───────── Firebase Config ───────── */
@@ -24,7 +24,24 @@ try {
   try { firebase.analytics(); } catch(e){}
   fbReady = true;
   console.log('✅ Firebase initialized');
-} catch(e){ fbError = e.message; console.error('❌ Firebase init failed:', e); }
+} catch(e){ fbError = e.message; console.error('❌ Firebase init:', e); }
+
+/* ───────── Default Settings ───────── */
+const DEFAULT_SETTINGS = {
+  siteName:'EcoShop Pro MAX',
+  shippingInsideDhaka: 100,
+  shippingOutsideDhaka: 120,
+  supportPhone: '+880 1700-000000',
+  supportEmail: 'support@ecoshop.pro',
+  bkashNumber: '01700000000',
+  nagadNumber: '01700000000',
+  rocketNumber: '01700000000',
+  paymentInstructions: 'সেন্ড মানি করার পর ট্রানজেকশন আইডি দিন',
+  enableCOD: true,
+  enableBkash: true,
+  enableNagad: true,
+  enableRocket: true
+};
 
 /* ═══════════════════════════════════════════════════════════
    i18n — Full বাংলা / English
@@ -92,7 +109,34 @@ const I18N = {
     exportData:'এক্সপোর্ট JSON', resetAll:'সব ডেটা রিসেট', resetConfirm:'সমস্ত ডেটা মুছে যাবে!',
     noData:'কোনো ডেটা নেই', showing:'দেখাচ্ছে', of:'এর মধ্যে', items:'আইটেম',
     search:'সার্চ', filters:'ফিল্টার', allCategories:'সব ক্যাটাগরি',
-    quickView:'দ্রুত দেখুন', share:'শেয়ার', printInvoice:'ইনভয়েস প্রিন্ট', outOfStockLabel:'স্টক নেই'
+    quickView:'দ্রুত দেখুন', share:'শেয়ার', printInvoice:'ইনভয়েস প্রিন্ট',
+    installApp:'অ্যাপ ইনস্টল করুন', installHint:'হোম স্ক্রিনে যোগ করে দ্রুত অ্যাক্সেস করুন', install:'ইনস্টল',
+    offlineMode:'অফলাইন — কিছু ফিচার সীমিত',
+    pushNotif:'পুশ নোটিফিকেশন', enable:'চালু', pushEnabled:'পুশ চালু হয়েছে',
+    // Payment
+    paymentMethod:'পেমেন্ট পদ্ধতি', selectPayment:'পেমেন্ট পদ্ধতি নির্বাচন করুন',
+    cod:'ক্যাশ অন ডেলিভারি', codDesc:'পণ্য হাতে পেয়ে পেমেন্ট',
+    bkash:'বিকাশ', nagad:'নগদ', rocket:'রকেট',
+    mobilePayment:'মোবাইল পেমেন্ট', paymentNumber:'পেমেন্ট নাম্বার',
+    copyNumber:'নাম্বার কপি করুন', copied:'কপি হয়েছে', copy:'কপি',
+    howToSendMoney:'কিভাবে সেন্ড মানি করবেন', sendMoneySteps:'সেন্ড মানি করার ধাপ',
+    dialCode:'ডায়াল কোড', useDialCode:'ডায়াল কোড দিয়ে সেন্ড মানি',
+    dialCodeHint:'আপনার ফোনের ডায়াল প্যাডে লিখুন',
+    txnId:'ট্রানজেকশন আইডি', txnIdPlaceholder:'যেমন: 8AB1C2D3E4', txnIdRequired:'ট্রানজেকশন আইডি দিন',
+    screenshot:'স্ক্রিনশট', screenshotOptional:'(ঐচ্ছিক — দিলে দ্রুত প্রসেস হবে)',
+    uploadScreenshot:'স্ক্রিনশট আপলোড করুন', confirmOrder:'অর্ডার কনফার্ম করুন',
+    orderSuccessCOD:'অর্ডার সফল! ক্যাশ অন ডেলিভারিতে পেমেন্ট হবে',
+    orderSuccessPaid:'অর্ডার সফল! পেমেন্ট ভেরিফিকেশনের অপেক্ষায়',
+    // Delivery
+    deliveryZone:'ডেলিভারি এলাকা', insideDhaka:'ঢাকার ভিতরে', outsideDhaka:'ঢাকার বাইরে',
+    deliveryCharge:'ডেলিভারি চার্জ', deliveryChargeEdit:'ডেলিভারি চার্জ পরিবর্তন',
+    // Admin extras
+    adminComment:'অ্যাডমিন কমেন্ট', adminCommentOptional:'(ঐচ্ছিক)', commentPlaceholder:'এখানে কমেন্ট লিখুন...',
+    statusUpdate:'স্ট্যাটাস আপডেট', paymentInfo:'পেমেন্ট তথ্য',
+    paymentNumberConfig:'পেমেন্ট নাম্বার সেটআপ', settingsSaved:'সেটিংস সেভ হয়েছে',
+    // General messages
+    numberCopied:'নাম্বার কপি হয়েছে', dialCodeCopied:'ডায়াল কোড কপি হয়েছে',
+    invalidTxnId:'সঠিক ট্রানজেকশন আইডি দিন (কমপক্ষে ৬ অক্ষর)'
   },
   en: {
     home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
@@ -102,7 +146,7 @@ const I18N = {
     management:'Management', settings:'Settings', theme:'Theme', language:'Language',
     light:'Light', dark:'Dark', searchPlaceholder:'Search products...',
     splashTagline:'Premium e-commerce experience',
-    footerDesc:"Bangladesh's best premium online shopping platform. Powered by Firebase Realtime Database.",
+    footerDesc:"Bangladesh's best premium online shopping. Powered by Firebase.",
     quickLinks:'Quick Links', support:'Support', allRights:'All Rights Reserved',
     subtotal:'Subtotal', shipping:'Shipping', discount:'Discount', total:'Total', checkout:'Checkout',
     addToCart:'Add to Cart', buyNow:'Buy Now', outOfStock:'Out of Stock', inStock:'In Stock',
@@ -117,7 +161,7 @@ const I18N = {
     dontHaveAccount:"Don't have an account?", alreadyHaveAccount:'Already have an account?',
     welcomeBack:'Welcome back', createAccount:'Create Account',
     yourProfile:'Your Profile', editProfile:'Edit Profile', updateProfile:'Update Profile',
-    newPassword:'New Password (leave blank to keep)',
+    newPassword:'New Password (blank = keep current)',
     orderId:'Order ID', orderDate:'Order Date', orderStatus:'Order Status', orderTotal:'Order Total',
     tracking:'Tracking', viewDetails:'View Details',
     productName:'Product Name', productNameEn:'Product Name (English)',
@@ -126,8 +170,8 @@ const I18N = {
     productDetails:'Product Details', specifications:'Specifications', reviews:'Reviews',
     writeReview:'Write Review', submitReview:'Submit Review', yourRating:'Your Rating',
     relatedProducts:'Related Products', addToWishlist:'Add to Wishlist', removeFromWishlist:'Remove from Wishlist',
-    outOfStockMsg:'This product is currently out of stock',
-    minPrice:'Min Price', maxPrice:'Max Price', applyFilter:'Apply Filter',
+    outOfStockMsg:'This product is out of stock',
+    minPrice:'Min Price', maxPrice:'Max Price', applyFilter:'Apply',
     clearFilters:'Clear Filters', sortBy:'Sort By', defaultSort:'Default',
     priceLowHigh:'Price: Low to High', priceHighLow:'Price: High to Low', newest:'Newest First',
     popular:'Popular', searchResults:'Search Results',
@@ -156,14 +200,37 @@ const I18N = {
     exportData:'Export JSON', resetAll:'Reset All Data', resetConfirm:'All data will be deleted!',
     noData:'No data found', showing:'Showing', of:'of', items:'items',
     search:'Search', filters:'Filters', allCategories:'All Categories',
-    quickView:'Quick View', share:'Share', printInvoice:'Print Invoice', outOfStockLabel:'Out of Stock'
+    quickView:'Quick View', share:'Share', printInvoice:'Print Invoice',
+    installApp:'Install App', installHint:'Add to home screen for quick access', install:'Install',
+    offlineMode:'Offline — some features limited',
+    pushNotif:'Push Notifications', enable:'Enable', pushEnabled:'Push enabled',
+    paymentMethod:'Payment Method', selectPayment:'Select payment method',
+    cod:'Cash on Delivery', codDesc:'Pay when you receive',
+    bkash:'bKash', nagad:'Nagad', rocket:'Rocket',
+    mobilePayment:'Mobile Payment', paymentNumber:'Payment Number',
+    copyNumber:'Copy Number', copied:'Copied', copy:'Copy',
+    howToSendMoney:'How to send money', sendMoneySteps:'Steps to send money',
+    dialCode:'Dial Code', useDialCode:'Send via dial code',
+    dialCodeHint:'Enter on your phone dialpad',
+    txnId:'Transaction ID', txnIdPlaceholder:'e.g. 8AB1C2D3E4', txnIdRequired:'Transaction ID required',
+    screenshot:'Screenshot', screenshotOptional:'(optional — faster processing)',
+    uploadScreenshot:'Upload Screenshot', confirmOrder:'Confirm Order',
+    orderSuccessCOD:'Order placed! Pay on delivery',
+    orderSuccessPaid:'Order placed! Awaiting payment verification',
+    deliveryZone:'Delivery Zone', insideDhaka:'Inside Dhaka', outsideDhaka:'Outside Dhaka',
+    deliveryCharge:'Delivery Charge', deliveryChargeEdit:'Edit Delivery Charge',
+    adminComment:'Admin Comment', adminCommentOptional:'(optional)', commentPlaceholder:'Write a comment...',
+    statusUpdate:'Status Update', paymentInfo:'Payment Info',
+    paymentNumberConfig:'Payment Number Setup', settingsSaved:'Settings saved',
+    numberCopied:'Number copied', dialCodeCopied:'Dial code copied',
+    invalidTxnId:'Enter a valid Transaction ID (min 6 chars)'
   }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
 const t = k => (I18N[LANG] && I18N[LANG][k]) || k;
 
 /* ═══════════════════════════════════════════════════════════
-   Storage — Session, Cart, Wish, Recent
+   Storage
    ═══════════════════════════════════════════════════════════ */
 const Session = {
   get(){ try{ return JSON.parse(localStorage.getItem('eco_session')) || null; }catch(e){ return null; } },
@@ -189,11 +256,11 @@ const RecentStore = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   DB — Firebase Realtime Layer
+   DB Layer
    ═══════════════════════════════════════════════════════════ */
 const DB = {
   products: [], users: [], orders: [], categories: [], coupons: [], notifs: [], reviews: [],
-  settings: {}, catRaw: {}, reviewRaw: {},
+  settings: { ...DEFAULT_SETTINGS }, catRaw: {}, reviewRaw: {},
   ready: { products:false, users:false, orders:false, categories:false, coupons:false, notifs:false, reviews:false },
   seeded: false, error: null,
 
@@ -206,11 +273,10 @@ const DB = {
     this.watch('coupons', d => { this.coupons = this._toArray(d); this._markReady('coupons'); });
     this.watch('notifications', d => { this.notifs = this._toArray(d).sort((a,b)=>(b.time||0)-(a.time||0)); this._markReady('notifs'); });
     this.watch('reviews', d => { this.reviewRaw = d || {}; this.reviews = this._toArray(d); this._markReady('reviews'); });
-    this.watch('settings', d => { this.settings = d || {}; });
+    this.watch('settings', d => { this.settings = { ...DEFAULT_SETTINGS, ...(d || {}) }; });
 
     setTimeout(()=>{
       if(!(this.ready.products && this.ready.users && this.ready.orders)){
-        console.warn('⚠️ Firebase timeout — forcing ready');
         this.ready.products = true; this.ready.users = true; this.ready.orders = true;
         App.hideSplash();
       }
@@ -260,7 +326,6 @@ const DB = {
     const cats = { c1:'ইলেকট্রনিকস', c2:'গ্যাজেট', c3:'ফ্যাশন', c4:'ফটোগ্রাফি', c5:'হোম ও লিভিং', c6:'বিউটি' };
     const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10}, cp2:{id:'cp2',code:'FLAT100',type:'flat',value:100}, cp3:{id:'cp3',code:'WELCOME5',type:'percent',value:5} };
     const notifs = { n1:{id:'n1',title:'স্বাগতম!',body:'EcoShop Pro MAX-এ আপনাকে স্বাগতম',time:Date.now(),read:false,type:'info'} };
-    const settings = { siteName:'EcoShop Pro MAX', shipping:60, supportPhone:'+880 1700-000000', supportEmail:'support@ecoshop.pro', freeShippingMin:2000 };
     try {
       await Promise.all([
         db.ref('products').set(products),
@@ -268,7 +333,7 @@ const DB = {
         db.ref('categories').set(cats),
         db.ref('coupons').set(coupons),
         db.ref('notifications').set(notifs),
-        db.ref('settings').set(settings)
+        db.ref('settings').set(DEFAULT_SETTINGS)
       ]);
       console.log('✅ Seed complete');
       Toast.show(LANG==='bn'?'প্রাথমিক ডেটা লোড হয়েছে':'Initial data loaded','success');
@@ -309,17 +374,19 @@ const DB = {
     const oldTotal = (p.rating||0) * (p.reviewCount||0);
     const newRating = (oldTotal + rating) / count;
     return db.ref('products/'+productId).update({ rating: parseFloat(newRating.toFixed(2)), reviewCount: count });
-  }
+  },
+
+  async saveSettings(s){ return db.ref('settings').set(s); }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   ImgBB Image Upload
+   ImageUpload
    ═══════════════════════════════════════════════════════════ */
 const ImageUpload = {
   async upload(file){
     if(!file) throw new Error('No file');
     if(file.size > 32*1024*1024) throw new Error('File too large (max 32MB)');
-    if(!file.type.startsWith('image/')) throw new Error('Only images allowed');
+    if(!file.type.startsWith('image/')) throw new Error('Only images');
     const form = new FormData();
     form.append('key', IMGBB_API_KEY);
     form.append('image', file);
@@ -331,7 +398,93 @@ const ImageUpload = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Toast & Modal & Utilities
+   PWA Install
+   ═══════════════════════════════════════════════════════════ */
+const PWA = {
+  deferredPrompt: null,
+  registerSW(){
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('✅ SW registered:', reg.scope))
+        .catch(err => console.warn('SW registration failed:', err));
+    }
+  },
+  initInstallPrompt(){
+    const banner = document.getElementById('installBanner');
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault();
+      this.deferredPrompt = e;
+      if(banner && !localStorage.getItem('eco_install_dismissed')){
+        setTimeout(()=>banner.classList.add('show'), 2500);
+      }
+    });
+    const installBtn = document.getElementById('installBtn');
+    const installClose = document.getElementById('installClose');
+    if(installBtn){
+      installBtn.onclick = async ()=>{
+        if(!this.deferredPrompt) return;
+        this.deferredPrompt.prompt();
+        const result = await this.deferredPrompt.userChoice;
+        if(result.outcome === 'accepted') Toast.show(LANG==='bn'?'অ্যাপ ইনস্টল হচ্ছে...':'Installing app...','success');
+        this.deferredPrompt = null;
+        banner?.classList.remove('show');
+      };
+    }
+    if(installClose){
+      installClose.onclick = ()=>{
+        banner?.classList.remove('show');
+        localStorage.setItem('eco_install_dismissed', '1');
+      };
+    }
+    window.addEventListener('appinstalled', ()=> {
+      Toast.show(LANG==='bn'?'✅ অ্যাপ ইনস্টল হয়েছে':'✅ App installed','success');
+      banner?.classList.remove('show');
+    });
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Push Notifications (FCM-ready)
+   ═══════════════════════════════════════════════════════════ */
+const PushNotif = {
+  async requestPermission(){
+    if(!('Notification' in window)){ Toast.show('Notifications not supported','error'); return false; }
+    try {
+      const perm = await Notification.requestPermission();
+      if(perm === 'granted'){
+        Toast.show(t('pushEnabled'),'success');
+        // Save a token placeholder to Firebase for admin push
+        const u = Auth.user();
+        if(u){
+          try { await db.ref('fcm_tokens/'+u.id).set({ token: 'web-'+Date.now(), time: Date.now(), user: u.email }); } catch(e){}
+        }
+        return true;
+      } else {
+        Toast.show('Permission denied','warning');
+        return false;
+      }
+    } catch(e){ return false; }
+  },
+  init(){
+    const btn = document.getElementById('pushNotifBtn');
+    if(btn){
+      btn.onclick = async ()=>{
+        const ok = await this.requestPermission();
+        if(ok) btn.textContent = '✓';
+      };
+    }
+  },
+  async localNotif(title, body){
+    if(!('Notification' in window)) return;
+    if(Notification.permission !== 'granted') return;
+    try {
+      new Notification(title, { body, icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PC9zdmc+' });
+    } catch(e){}
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   UI Helpers
    ═══════════════════════════════════════════════════════════ */
 const Toast = {
   show(msg, type='info', ms=2800){
@@ -389,6 +542,7 @@ function starHTML(rating, size){
   }
   return `<span class="stars" style="${size?`font-size:${size}`:''}">${s}</span>`;
 }
+function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 /* ═══════════════════════════════════════════════════════════
    Auth
@@ -446,8 +600,12 @@ const Cart = {
   count(){ return this.items().reduce((s,i)=>s+i.qty,0); },
   subtotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); return s+(p?p.price*i.qty:0); },0); },
   discountTotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); if(!p||!p.oldPrice) return s; return s+((p.oldPrice-p.price)*i.qty); },0); },
-  shippingCharge(){ return this.count()>0 ? (DB.settings?.shipping || 60) : 0; },
-  total(){ return this.subtotal() + this.shippingCharge(); },
+  shippingCharge(zone){
+    if(this.count()<=0) return 0;
+    const inside = zone === 'inside' || zone === undefined;
+    return inside ? (DB.settings.shippingInsideDhaka || 100) : (DB.settings.shippingOutsideDhaka || 120);
+  },
+  total(zone){ return this.subtotal() + this.shippingCharge(zone); },
   refresh(){
     const c = this.count();
     const setT = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
@@ -455,9 +613,9 @@ const Cart = {
     const bnBadge = document.getElementById('bnCartBadge'); if(bnBadge) bnBadge.textContent = c>0?c:'';
     setT('cartCount', `${c} ${t('items')}`);
     setT('cartSubtotal', money(this.subtotal()));
-    setT('cartShipping', money(this.shippingCharge()));
+    setT('cartShipping', money(this.shippingCharge('inside')));
     setT('cartDiscount', '-'+money(this.discountTotal()));
-    setT('cartTotal', money(this.total()));
+    setT('cartTotal', money(this.total('inside')));
     this.renderDrawer();
   },
   renderDrawer(){
@@ -478,9 +636,9 @@ const Cart = {
             <button class="icon-btn-sm danger" onclick="Cart.remove('${p.id}')"><i class="fa-solid fa-trash"></i></button>
           </div>
           <div class="qty-ctrl">
-            <button onclick="Cart.setQty('${p.id}', ${i.qty-1})" aria-label="Decrease">−</button>
+            <button onclick="Cart.setQty('${p.id}', ${i.qty-1})">−</button>
             <span>${i.qty}</span>
-            <button onclick="Cart.setQty('${p.id}', ${i.qty+1})" aria-label="Increase">+</button>
+            <button onclick="Cart.setQty('${p.id}', ${i.qty+1})">+</button>
           </div>
         </div>
       </div>`;
@@ -497,8 +655,8 @@ const Wish = {
   toggle(id){
     const list = this.all();
     const idx = list.indexOf(id);
-    if(idx>-1){ list.splice(idx,1); Toast.show(LANG==='bn'?'উইশলিস্ট থেকে সরানো':'Removed from wishlist','info'); }
-    else { list.push(id); Toast.show(LANG==='bn'?'উইশলিস্টে যোগ হয়েছে':'Added to wishlist','success'); }
+    if(idx>-1){ list.splice(idx,1); Toast.show(LANG==='bn'?'উইশলিস্ট থেকে সরানো':'Removed','info'); }
+    else { list.push(id); Toast.show(LANG==='bn'?'উইশলিস্টে যোগ হয়েছে':'Added','success'); }
     WishStore.set(list);
     if(['wishlist','shop','home','product'].includes(App.route)) App.render();
     else App.syncUI();
@@ -506,33 +664,70 @@ const Wish = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Orders
+   Orders (with payment + comment support)
    ═══════════════════════════════════════════════════════════ */
 const Orders = {
   all(){ return DB.orders; },
   mine(){ const u=Auth.user(); if(!u) return []; return DB.orders.filter(o=>o.userId===u.id); },
-  async create(customer, items, total, coupon){
+
+  async create(data){
     const u = Auth.user();
     const order = {
       id:'ORD-'+Date.now().toString().slice(-8),
-      userId: u?u.id:0, customer, items, total, coupon:coupon||null,
-      status:'pending', date: Date.now(),
-      history:[{ status:'pending', time:Date.now() }]
+      userId: u?u.id:0,
+      customer: data.customer,
+      items: data.items,
+      subtotal: data.subtotal,
+      deliveryCharge: data.deliveryCharge,
+      deliveryZone: data.deliveryZone,
+      discount: data.discount || 0,
+      total: data.total,
+      coupon: data.coupon || null,
+      paymentMethod: data.paymentMethod,
+      paymentNumber: data.paymentNumber || null,
+      txnId: data.txnId || null,
+      screenshot: data.screenshot || null,
+      status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending',
+      paymentStatus: data.paymentMethod === 'cod' ? 'pending' : 'awaiting_verification',
+      date: Date.now(),
+      history: [{
+        status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending',
+        time: Date.now(),
+        comment: data.paymentMethod === 'cod' ? 'COD order — auto confirmed' : 'Awaiting payment verification'
+      }]
     };
     const saved = await DB.saveOrder(order);
-    items.forEach(async i=>{
+    // Deduct stock
+    data.items.forEach(async i=>{
       const p = DB.products.find(x=>x.id===i.id);
       if(p) try { await DB.updateStock(p.id, Math.max(0, p.stock - i.qty)); } catch(e){}
     });
-    try { await DB.pushNotif({ title:LANG==='bn'?'নতুন অর্ডার!':'New Order!', body:`${customer.name} — ${money(total)}`, type:'order' }); } catch(e){}
+    // Notify admin
+    try {
+      await DB.pushNotif({
+        title: LANG==='bn'?'নতুন অর্ডার!':'New Order!',
+        body: `${data.customer.name} — ${money(data.total)} — ${data.paymentMethod.toUpperCase()}`,
+        type: 'order'
+      });
+    } catch(e){}
     Cart.save([]);
     return saved;
   },
-  async updateStatus(id, status){
+
+  async updateStatus(id, status, comment){
     const o = DB.orders.find(x=>x.id===id);
-    const history = (o?.history || []).concat([{ status, time: Date.now() }]);
+    const history = (o?.history || []).concat([{ status, time: Date.now(), comment: comment||'' }]);
     return DB.updateOrder(id, { status, history });
   },
+
+  async updateDeliveryCharge(id, newCharge){
+    const o = DB.orders.find(x=>x.id===id);
+    if(!o) return;
+    const newTotal = (o.subtotal || 0) + newCharge - (o.discount || 0);
+    const history = (o.history || []).concat([{ status: o.status, time: Date.now(), comment: `Delivery charge updated: ${money(o.deliveryCharge)} → ${money(newCharge)}` }]);
+    return DB.updateOrder(id, { deliveryCharge: newCharge, total: newTotal, history });
+  },
+
   remove(id){ return DB.deleteOrder(id); }
 };
 
@@ -542,9 +737,7 @@ const Orders = {
 const Notifs = {
   all(){ return DB.notifs; },
   unread(){ return this.all().filter(n=>!n.read).length; },
-  markAllRead(){
-    this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true).catch(()=>{}); });
-  },
+  markAllRead(){ this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true).catch(()=>{}); }); },
   refresh(){
     const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread()||'';
     const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} ${LANG==='bn'?'অপঠিত':'unread'}`;
@@ -559,12 +752,11 @@ const Notifs = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Quick View
+   Quick View / Share / Invoice
    ═══════════════════════════════════════════════════════════ */
 const QuickView = {
   open(productId){
-    const p = DB.products.find(x=>x.id===productId);
-    if(!p) return;
+    const p = DB.products.find(x=>x.id===productId); if(!p) return;
     const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
     const root = document.getElementById('quickViewRoot');
     root.innerHTML = `
@@ -585,7 +777,6 @@ const QuickView = {
               <p class="detail-desc">${LANG==='bn'?p.desc:(p.descEn||p.desc||'')}</p>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 0">
                 <span class="chip ${p.stock<=0?'blocked':'active-status'}"><i class="fa-solid fa-box"></i> ${p.stock<=0?t('outOfStock'):t('inStock')}</span>
-                <span class="chip"><i class="fa-solid fa-truck"></i> ${DB.settings?.shipping||60}৳</span>
               </div>
               <div class="detail-actions" style="margin-top:16px">
                 <button class="btn btn-primary btn-block" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}');QuickView.close()">
@@ -601,64 +792,49 @@ const QuickView = {
       </div>`;
     document.body.style.overflow='hidden';
   },
-  close(){
-    document.getElementById('quickViewRoot').innerHTML = '';
-    document.body.style.overflow='';
-  }
+  close(){ document.getElementById('quickViewRoot').innerHTML = ''; document.body.style.overflow=''; }
 };
 
-/* ═══════════════════════════════════════════════════════════
-   Share / Invoice
-   ═══════════════════════════════════════════════════════════ */
 const Share = {
   async product(p){
     const data = { title: p.name, text: `${p.name} — ${money(p.price)}`, url: location.href };
     try {
       if(navigator.share){ await navigator.share(data); }
-      else {
-        await navigator.clipboard.writeText(`${data.text} ${data.url}`);
-        Toast.show(LANG==='bn'?'লিংক কপি হয়েছে':'Link copied','success');
-      }
+      else { await navigator.clipboard.writeText(`${data.text} ${data.url}`); Toast.show(LANG==='bn'?'লিংক কপি হয়েছে':'Link copied','success'); }
     } catch(e){}
   }
 };
 
 const Invoice = {
   print(orderId){
-    const o = DB.orders.find(x=>x.id===orderId);
-    if(!o) return;
+    const o = DB.orders.find(x=>x.id===orderId); if(!o) return;
     const w = window.open('', '_blank', 'width=800,height=900');
     w.document.write(`
       <html><head><title>Invoice ${o.id}</title>
       <style>
         body{font-family:'Hind Siliguri',sans-serif;padding:32px;color:#0f1021;max-width:720px;margin:auto;}
-        h1{color:#6366f1;margin-bottom:6px;}
-        .head{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:16px;margin-bottom:20px;}
-        .box{background:#f8f9fd;padding:16px;border-radius:12px;margin-bottom:20px;}
+        h1{color:#6366f1;margin-bottom:6px;} .head{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:16px;margin-bottom:20px;}
+        .box{background:#f8f9fd;padding:16px;border-radius:12px;margin-bottom:16px;}
         table{width:100%;border-collapse:collapse;margin:16px 0;}
         th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e8f0;font-size:13px;}
-        th{background:#f1f3fa;font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
-        .total{font-size:18px;font-weight:800;text-align:right;margin-top:12px;color:#6366f1;}
+        th{background:#f1f3fa;font-size:11px;text-transform:uppercase;}
+        .totals{text-align:right;margin-top:12px;} .totals div{margin:4px 0;font-size:14px;}
+        .grand{font-size:20px;font-weight:800;color:#6366f1;}
         .foot{text-align:center;color:#64748b;font-size:12px;margin-top:32px;padding-top:20px;border-top:1px solid #e5e8f0;}
       </style></head><body>
         <h1>EcoShop Pro MAX</h1>
-        <div class="head">
-          <div><b>Invoice #${o.id}</b><br><small>Date: ${new Date(o.date).toLocaleDateString('en-US')}</small></div>
-          <div style="text-align:right"><b>Status: ${o.status.toUpperCase()}</b></div>
+        <div class="head"><div><b>Invoice #${o.id}</b><br><small>Date: ${new Date(o.date).toLocaleDateString('en-US')}</small></div>
+        <div style="text-align:right"><b>Status: ${o.status.toUpperCase()}</b><br><small>Payment: ${o.paymentMethod.toUpperCase()}</small></div></div>
+        <div class="box"><b>Customer</b><br>${o.customer.name}<br>${o.customer.phone||''}<br>${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</div>
+        ${o.txnId?`<div class="box"><b>Txn ID:</b> ${o.txnId}</div>`:''}
+        <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+        <tbody>${(o.items||[]).map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>৳${i.price}</td><td>৳${i.price*i.qty}</td></tr>`).join('')}</tbody></table>
+        <div class="totals">
+          <div>Subtotal: ৳${o.subtotal||0}</div>
+          <div>Delivery: ৳${o.deliveryCharge||0}</div>
+          ${o.discount?`<div>Discount: -৳${o.discount}</div>`:''}
+          <div class="grand">Total: ৳${o.total}</div>
         </div>
-        <div class="box">
-          <b>Customer</b><br>
-          ${o.customer.name}<br>
-          ${o.customer.phone||''}<br>
-          ${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}
-        </div>
-        <table>
-          <thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-          <tbody>
-            ${(o.items||[]).map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>৳${i.price}</td><td>৳${i.price*i.qty}</td></tr>`).join('')}
-          </tbody>
-        </table>
-        <div class="total">Grand Total: ৳${o.total}</div>
         <div class="foot">Thank you for shopping with EcoShop Pro MAX!</div>
       </body></html>
     `);
@@ -668,7 +844,7 @@ const Invoice = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Search Suggest & Voice
+   Search + Voice
    ═══════════════════════════════════════════════════════════ */
 const SearchSuggest = {
   init(){
@@ -678,19 +854,14 @@ const SearchSuggest = {
     inp.addEventListener('input', ()=>{
       const q = inp.value.trim().toLowerCase();
       if(!q){ box.classList.remove('active'); return; }
-      const results = DB.products.filter(p=>
-        (p.name+(p.nameEn||'')+(p.cat||'')).toLowerCase().includes(q)
-      ).slice(0, 6);
+      const results = DB.products.filter(p=>(p.name+(p.nameEn||'')+(p.cat||'')).toLowerCase().includes(q)).slice(0, 6);
       if(!results.length){
         box.innerHTML = `<div class="suggest-empty">${LANG==='bn'?'কোনো পণ্য পাওয়া যায়নি':'No products found'}</div>`;
       } else {
         box.innerHTML = results.map(p=>`
           <div class="suggest-item" onclick="App.go('product','${p.id}');SearchSuggest.hide()">
             <img src="${p.img}" onerror="this.src='https://via.placeholder.com/42'">
-            <div class="suggest-info">
-              <h5>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h5>
-              <p>${LANG==='bn'?p.cat:(p.catEn||p.cat)}</p>
-            </div>
+            <div class="suggest-info"><h5>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h5><p>${LANG==='bn'?p.cat:(p.catEn||p.cat)}</p></div>
             <span class="price">${money(p.price)}</span>
           </div>`).join('');
       }
@@ -715,7 +886,6 @@ const VoiceSearch = {
       try { rec = new SR(); } catch(e){ return; }
       rec.lang = LANG === 'bn' ? 'bn-BD' : 'en-US';
       rec.continuous = false;
-      rec.interimResults = false;
       rec.onstart = ()=>{ listening = true; btn.classList.add('listening'); };
       rec.onend = ()=>{ listening = false; btn.classList.remove('listening'); };
       rec.onerror = ()=>{ Toast.show(LANG==='bn'?'ভয়েস শোনা যায়নি':'Voice not recognized','error'); };
@@ -731,13 +901,14 @@ const VoiceSearch = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   APP — Router
+   APP Router
    ═══════════════════════════════════════════════════════════ */
 const App = {
   route:'home',
   _shopCat:'all', _shopSort:'default', _shopQ:'', _shopMinPrice:'', _shopMaxPrice:'',
   _adminTab:'dashboard', _pQuery:'', _uQuery:'', _oQuery:'', _selectedUsers:[],
   _authTab:'login', _authRedirect:null, _lastRoute:'home', _param:null,
+  _checkoutState: null,
 
   hideSplash(){
     const s = document.getElementById('splash');
@@ -749,7 +920,7 @@ const App = {
   },
 
   rerenderIfVisible(){
-    if(['home','shop','admin','orders','wishlist','profile','auth','product'].includes(this.route)) this.render();
+    if(['home','shop','admin','orders','wishlist','profile','auth','product','checkout'].includes(this.route)) this.render();
     else { Cart.refresh(); Notifs.refresh(); this.syncUI(); }
   },
 
@@ -853,7 +1024,7 @@ const App = {
       loginBtn.style.display='inline-flex';
       avatarBtn.classList.remove('show');
       document.getElementById('pmName').textContent = LANG==='bn'?'অতিথি':'Guest';
-      document.getElementById('pmEmail').textContent = LANG==='bn'?'লগইন করুন':'Login to continue';
+      document.getElementById('pmEmail').textContent = LANG==='bn'?'লগইন করুন':'Login';
       document.getElementById('pmRole').textContent = 'GUEST';
       document.getElementById('pmAdminSection').style.display='none';
       document.getElementById('pmLoginBtn').style.display='flex';
@@ -880,9 +1051,9 @@ const Pages = {
       <section class="hero">
         <div class="hero-inner">
           <div class="hero-content">
-            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> ${LANG==='bn'?'প্রিমিয়াম কলেকশন ২০২৬':'Premium Collection 2026'}</div>
-            <h1 class="hero-title">${LANG==='bn'?'সেরা <span class="grad">প্রিমিয়াম</span> পণ্য<br>এখন হাতের মুঠোয়':'Best <span class="grad">Premium</span> products<br>right at your fingertips'}</h1>
-            <p class="hero-sub">${LANG==='bn'?'সারাদেশে দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট এবং ১০০% অরিজিনাল পণ্যের নিশ্চয়তা।':'Fast nationwide delivery, secure payment and 100% original product guarantee.'}</p>
+            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> ${LANG==='bn'?'প্রিমিয়াম কলেকশন ২০২৬':'Premium 2026'}</div>
+            <h1 class="hero-title">${LANG==='bn'?'সেরা <span class="grad">প্রিমিয়াম</span> পণ্য<br>এখন হাতের মুঠোয়':'Best <span class="grad">Premium</span> products<br>at your fingertips'}</h1>
+            <p class="hero-sub">${LANG==='bn'?'সারাদেশে দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট এবং ১০০% অরিজিনাল পণ্যের নিশ্চয়তা।':'Fast delivery, secure payment and 100% original products.'}</p>
             <div class="hero-btns">
               <button class="btn btn-primary btn-lg" onclick="App.go('shop')"><i class="fa-solid fa-store"></i> ${t('shop')}</button>
               <button class="btn btn-outline btn-lg" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff" onclick="App.go('orders')"><i class="fa-solid fa-box"></i> ${t('myOrders')}</button>
@@ -894,19 +1065,10 @@ const Pages = {
         ${DB.error?`<div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Firebase:</b> ${DB.error}</div></div>`:''}
         <div class="section-head"><h2><i class="fa-solid fa-fire" style="color:var(--accent)"></i> ${t('featured')}</h2><span class="count-chip">${featured.length} ${t('items')}</span></div>
         <div class="product-grid">${featured.length ? featured.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${t('empty')}</h3></div>`}</div>
-
-        ${bestDeals.length?`
-          <div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-tags" style="color:var(--danger)"></i> ${LANG==='bn'?'সেরা অফার':'Best Deals'}</h2></div>
-          <div class="product-grid">${bestDeals.map(Components.productCard).join('')}</div>
-        `:''}
-
+        ${bestDeals.length?`<div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-tags" style="color:var(--danger)"></i> ${LANG==='bn'?'সেরা অফার':'Best Deals'}</h2></div><div class="product-grid">${bestDeals.map(Components.productCard).join('')}</div>`:''}
         <div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-star" style="color:var(--brand)"></i> ${t('newArrivals')}</h2><button class="btn btn-outline btn-sm" onclick="App.go('shop')">${LANG==='bn'?'সব দেখুন':'View All'} <i class="fa-solid fa-arrow-right"></i></button></div>
         <div class="product-grid">${newArr.map(Components.productCard).join('')}</div>
-
-        ${recent.length?`
-          <div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-clock-rotate-left"></i> ${LANG==='bn'?'সম্প্রতি দেখা':'Recently Viewed'}</h2></div>
-          <div class="product-grid">${recent.map(Components.productCard).join('')}</div>
-        `:''}
+        ${recent.length?`<div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-clock-rotate-left"></i> ${LANG==='bn'?'সম্প্রতি দেখা':'Recently Viewed'}</h2></div><div class="product-grid">${recent.map(Components.productCard).join('')}</div>`:''}
       </div>`;
   },
 
@@ -940,12 +1102,7 @@ const Pages = {
           <input type="number" placeholder="${t('minPrice')}" value="${App._shopMinPrice}" oninput="App._shopMinPrice=this.value;clearTimeout(window._mf);window._mf=setTimeout(()=>App.render(),400)">
           <input type="number" placeholder="${t('maxPrice')}" value="${App._shopMaxPrice}" oninput="App._shopMaxPrice=this.value;clearTimeout(window._xf);window._xf=setTimeout(()=>App.render(),400)">
         </div>
-        ${(App._shopQ||App._shopCat!=='all'||App._shopMinPrice||App._shopMaxPrice)?`
-          <div class="section-head" style="margin-bottom:12px">
-            <span class="count-chip">${t('searchResults')}: ${list.length}</span>
-            <button class="btn btn-outline btn-sm" onclick="App._shopCat='all';App._shopQ='';App._shopMinPrice='';App._shopMaxPrice='';App.render()"><i class="fa-solid fa-xmark"></i> ${t('clearFilters')}</button>
-          </div>`:''}
-        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3><button class="btn btn-primary" onclick="App._shopCat='all';App._shopQ='';App._shopMinPrice='';App._shopMaxPrice='';App.render()">${t('clearFilters')}</button></div>`}</div>
+        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3></div>`}</div>
       </div>`;
   },
 
@@ -979,39 +1136,26 @@ const Pages = {
             <p class="detail-desc">${LANG==='bn'?p.desc:(p.descEn||p.desc||'')}</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
               <span class="chip ${stockCls==='out'?'blocked':'active-status'}"><i class="fa-solid fa-box"></i> ${p.stock<=0?t('outOfStock'):`${t('stock')}: ${p.stock}`}</span>
-              <span class="chip"><i class="fa-solid fa-truck"></i> ${DB.settings?.shipping||60}৳</span>
+              <span class="chip"><i class="fa-solid fa-truck"></i> ${money(DB.settings.shippingInsideDhaka)} / ${money(DB.settings.shippingOutsideDhaka)}</span>
             </div>
             ${p.tags && p.tags.length ? `<div class="chips-wrap" style="margin:12px 0">${p.tags.map(tag=>`<span class="chip">#${tag}</span>`).join('')}</div>` : ''}
             <div class="detail-actions">
               <button class="btn btn-primary btn-lg" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}</button>
               <button class="btn btn-outline btn-lg" onclick="Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart" style="${Wish.has(p.id)?'color:var(--danger)':''}"></i></button>
-              <button class="btn btn-outline btn-lg" onclick='Share.product(${JSON.stringify(p).replace(/'/g,"&#39;")})'><i class="fa-solid fa-share-nodes"></i></button>
             </div>
           </div>
         </div>
-
         <div class="admin-card" style="margin-top:20px">
-          <div class="admin-card-head">
-            <h3><i class="fa-solid fa-comments"></i> ${t('reviews')} (${reviews.length})</h3>
-            ${Auth.user()?`<button class="btn btn-primary btn-sm" onclick="Components.openReviewModal('${p.id}')"><i class="fa-solid fa-pen"></i> ${t('writeReview')}</button>`:''}
-          </div>
+          <div class="admin-card-head"><h3><i class="fa-solid fa-comments"></i> ${t('reviews')} (${reviews.length})</h3>${Auth.user()?`<button class="btn btn-primary btn-sm" onclick="Components.openReviewModal('${p.id}')"><i class="fa-solid fa-pen"></i> ${t('writeReview')}</button>`:''}</div>
           ${reviews.length ? reviews.map(r=>{
             const u = DB.users.find(x=>x.id===r.userId);
             return `<div class="review-item">
-              <img class="review-avatar" src="${u?.avatar||'https://ui-avatars.com/api/?name=U'}" alt="">
-              <div class="review-body">
-                <div class="review-head"><h5>${r.userName||'User'}</h5><span class="rating">${starHTML(r.rating,'14px')}</span></div>
-                <p>${r.text}</p>
-                <small style="font-size:11px;color:var(--text-soft)">${timeAgo(r.date)}</small>
-              </div>
+              <img class="review-avatar" src="${u?.avatar||'https://ui-avatars.com/api/?name=U'}">
+              <div class="review-body"><div class="review-head"><h5>${r.userName||'User'}</h5><span class="rating">${starHTML(r.rating,'14px')}</span></div><p>${r.text}</p><small style="font-size:11px;color:var(--text-soft)">${timeAgo(r.date)}</small></div>
             </div>`;
-          }).join('') : `<p class="muted">${LANG==='bn'?'এখনো কোনো রিভিউ নেই। প্রথম রিভিউ দিন!':'No reviews yet. Be the first!'}</p>`}
+          }).join('') : `<p class="muted">${LANG==='bn'?'এখনো কোনো রিভিউ নেই।':'No reviews yet.'}</p>`}
         </div>
-
-        ${related.length?`
-          <div class="section-head" style="margin-top:26px"><h2><i class="fa-solid fa-layer-group"></i> ${t('relatedProducts')}</h2></div>
-          <div class="product-grid">${related.map(Components.productCard).join('')}</div>
-        `:''}
+        ${related.length?`<div class="section-head" style="margin-top:26px"><h2><i class="fa-solid fa-layer-group"></i> ${t('relatedProducts')}</h2></div><div class="product-grid">${related.map(Components.productCard).join('')}</div>`:''}
       </div>`;
   },
 
@@ -1025,11 +1169,16 @@ const Pages = {
           const statuses = ['pending','confirmed','shipped','delivered'];
           const currentIdx = statuses.indexOf(o.status);
           const cancelled = o.status==='cancelled';
+          const payment = o.paymentMethod || 'cod';
           return `<div class="order-row" style="flex-direction:column;align-items:stretch">
             <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;width:100%">
               <div class="order-info">
                 <h4>${o.id}</h4>
                 <p>${new Date(o.date).toLocaleString(LANG==='bn'?'bn-BD':'en-US')} • ${o.items?.length||0} ${t('items')}</p>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+                  <span class="payment-badge ${payment}">${payment==='cod'?'COD':payment.toUpperCase()}</span>
+                  ${o.txnId?`<span class="chip" style="font-size:10.5px">TXN: ${o.txnId}</span>`:''}
+                </div>
               </div>
               <div class="order-right">
                 <span class="price">${money(o.total)}</span>
@@ -1037,14 +1186,13 @@ const Pages = {
                 <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')" title="${t('printInvoice')}"><i class="fa-solid fa-print"></i></button>
               </div>
             </div>
-            ${!cancelled?`<div class="order-timeline">
-              ${statuses.map((s,i)=>`
-                <div class="timeline-step ${i<currentIdx?'done':''} ${i===currentIdx?'current':''}">
-                  ${i<statuses.length-1?'<div class="timeline-line"></div>':''}
-                  <div class="dot"><i class="fa-solid ${i<=currentIdx?'fa-check':'fa-circle'}"></i></div>
-                  <div class="label">${t(s)}</div>
-                </div>`).join('')}
-            </div>`:''}
+            ${!cancelled?`<div class="order-timeline">${statuses.map((s,i)=>`
+              <div class="timeline-step ${i<currentIdx?'done':''} ${i===currentIdx?'current':''}">
+                ${i<statuses.length-1?'<div class="timeline-line"></div>':''}
+                <div class="dot"><i class="fa-solid ${i<=currentIdx?'fa-check':'fa-circle'}"></i></div>
+                <div class="label">${t(s)}</div>
+              </div>`).join('')}</div>`:''}
+            ${o.history && o.history.filter(h=>h.comment).length ? `<div class="order-comment-box"><b><i class="fa-solid fa-comment"></i> ${t('adminComment')}</b>${o.history.filter(h=>h.comment).slice(-1)[0].comment}</div>` : ''}
           </div>`;
         }).join('')}</div>` : `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${LANG==='bn'?'কোনো অর্ডার নেই':'No orders yet'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}
       </div>`;
@@ -1056,7 +1204,7 @@ const Pages = {
     return `
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-heart" style="color:var(--danger)"></i> ${t('wishlist')}</h2><span class="count-chip">${list.length}</span></div>
-        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-regular fa-heart"></i><h3>${LANG==='bn'?'উইশলিস্ট খালি':'Wishlist is empty'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}</div>
+        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-regular fa-heart"></i><h3>${LANG==='bn'?'উইশলিস্ট খালি':'Wishlist empty'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}</div>
       </div>`;
   },
 
@@ -1073,7 +1221,7 @@ const Pages = {
             <h2>${u.name}</h2>
             <p><i class="fa-solid fa-envelope"></i> ${u.email}</p>
             ${u.phone?`<p><i class="fa-solid fa-phone"></i> ${u.phone}</p>`:''}
-            <p><i class="fa-solid fa-user-tag"></i> ${u.role==='admin'?t('adminRole'):t('customer')} • <i class="fa-solid fa-calendar"></i> ${new Date(u.joined).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</p>
+            <p><i class="fa-solid fa-user-tag"></i> ${u.role==='admin'?t('adminRole'):t('customer')}</p>
           </div>
         </div>
         <div class="dash-grid">
@@ -1126,10 +1274,10 @@ const Pages = {
         ${Components.adminSidebar(tab)}
         <div class="admin-main">
           <div class="admin-header">
-            <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+            <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
             <div class="admin-header-title">
               <h1>${Admin.titles[tab]||t('dashboard')}</h1>
-              <p>EcoShop Pro MAX</p>
+              <p>EcoShop Pro MAX v6.0</p>
             </div>
             <div class="admin-header-actions">
               <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i><span> ${t('shop')}</span></button>
@@ -1145,30 +1293,306 @@ const Pages = {
     const u = Auth.user();
     if(!u) return this.authPage('checkout');
     if(!Cart.count()) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>${t('emptyCart')}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
+
+    const s = DB.settings;
+    const methods = [];
+    if(s.enableCOD) methods.push({id:'cod', label:t('cod'), desc:t('codDesc'), icon:'fa-money-bill-wave', cls:'cod'});
+    if(s.enableBkash) methods.push({id:'bkash', label:t('bkash'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'bkash'});
+    if(s.enableNagad) methods.push({id:'nagad', label:t('nagad'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'nagad'});
+    if(s.enableRocket) methods.push({id:'rocket', label:t('rocket'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'rocket'});
+
+    const zone = App._checkoutState?.zone || 'inside';
+    const selectedPay = App._checkoutState?.payment || 'cod';
+    const ship = zone==='inside' ? (s.shippingInsideDhaka||100) : (s.shippingOutsideDhaka||120);
+    const subtotal = Cart.subtotal();
+    const discount = App._checkoutState?.couponDiscount || 0;
+    const total = subtotal + ship - discount;
+
     return `
-      <div class="page" style="max-width:720px">
+      <div class="page" style="max-width:760px">
         <div class="section-head"><h2><i class="fa-solid fa-credit-card"></i> ${t('checkout')}</h2></div>
+
         <div class="admin-card">
-          <div class="admin-card-head"><h3>${LANG==='bn'?'শিপিং তথ্য':'Shipping Info'}</h3></div>
-          <div class="form-group"><label>${t('fullName')}</label><input id="coName" value="${u.name}"></div>
+          <div class="admin-card-head"><h3><i class="fa-solid fa-location-dot"></i> ${LANG==='bn'?'শিপিং তথ্য':'Shipping Info'}</h3></div>
+          <div class="form-group"><label>${t('fullName')} <span class="req">*</span></label><input id="coName" value="${u.name}"></div>
           <div class="form-row">
-            <div class="form-group"><label>${t('phone')}</label><input id="coPhone" value="${u.phone||''}" placeholder="017XXXXXXXX"></div>
+            <div class="form-group"><label>${t('phone')} <span class="req">*</span></label><input id="coPhone" value="${u.phone||''}" placeholder="017XXXXXXXX"></div>
             <div class="form-group"><label>${t('city')}</label><input id="coCity" value="ঢাকা" placeholder="ঢাকা"></div>
           </div>
-          <div class="form-group"><label>${t('address')}</label><textarea id="coAddr" rows="3" placeholder="${LANG==='bn'?'সম্পূর্ণ ঠিকানা...':'Full address...'}"></textarea></div>
-          <div class="form-group"><label>${t('couponCode')}</label>
+          <div class="form-group"><label>${t('address')} <span class="req">*</span></label><textarea id="coAddr" rows="3" placeholder="${LANG==='bn'?'সম্পূর্ণ ঠিকানা...':'Full address...'}"></textarea></div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-head"><h3><i class="fa-solid fa-truck"></i> ${t('deliveryZone')}</h3></div>
+          <div class="delivery-zones">
+            <div class="delivery-zone ${zone==='inside'?'active':''}" onclick="Checkout.setZone('inside')">
+              <b>${t('insideDhaka')}</b>
+              <div class="zone-price">${money(s.shippingInsideDhaka||100)}</div>
+              <small>${LANG==='bn'?'১-২ দিন':'1-2 days'}</small>
+            </div>
+            <div class="delivery-zone ${zone==='outside'?'active':''}" onclick="Checkout.setZone('outside')">
+              <b>${t('outsideDhaka')}</b>
+              <div class="zone-price">${money(s.shippingOutsideDhaka||120)}</div>
+              <small>${LANG==='bn'?'২-৪ দিন':'2-4 days'}</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-head"><h3><i class="fa-solid fa-wallet"></i> ${t('selectPayment')}</h3></div>
+          <div class="payment-methods">
+            ${methods.map(m=>`
+              <div class="payment-method ${selectedPay===m.id?'active':''}" onclick="Checkout.setPayment('${m.id}')">
+                <div class="pm-logo ${m.cls}"><i class="fa-solid ${m.icon}"></i></div>
+                <b>${m.label}</b>
+                <small>${m.desc}</small>
+              </div>
+            `).join('')}
+          </div>
+          <div id="paymentDetail">${Checkout.renderPaymentDetail(selectedPay)}</div>
+        </div>
+
+        <div class="admin-card">
+          <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${LANG==='bn'?'অর্ডার সারাংশ':'Order Summary'}</h3></div>
+          <div class="form-group">
+            <label>${t('couponCode')}</label>
             <div style="display:flex;gap:8px"><input id="coCoupon" placeholder="ECO10"><button class="btn btn-outline" onclick="Checkout.applyCoupon()">${t('applyFilter')}</button></div>
             <div id="couponStatus" class="form-hint"></div>
           </div>
-        </div>
-        <div class="admin-card">
-          <div class="cart-summary-row"><span>${t('subtotal')}</span><span>${money(Cart.subtotal())}</span></div>
-          <div class="cart-summary-row"><span>${t('shipping')}</span><span>${money(Cart.shippingCharge())}</span></div>
-          <div class="cart-summary-row"><span>${t('discount')}</span><span id="coDiscount">-${money(0)}</span></div>
-          <div class="cart-summary-row total"><span>${t('total')}</span><span id="coTotal">${money(Cart.total())}</span></div>
-          <button class="btn btn-primary btn-block btn-lg" id="coSubmit" style="margin-top:14px" onclick="Checkout.place()"><i class="fa-solid fa-check"></i> ${LANG==='bn'?'অর্ডার কনফার্ম করুন':'Confirm Order'}</button>
+          <div class="cart-summary-row"><span>${t('subtotal')}</span><span>${money(subtotal)}</span></div>
+          <div class="cart-summary-row"><span>${t('deliveryCharge')}</span><span id="coShip">${money(ship)}</span></div>
+          <div class="cart-summary-row"><span>${t('discount')}</span><span id="coDiscount">-${money(discount)}</span></div>
+          <div class="cart-summary-row total"><span>${t('total')}</span><span id="coTotal">${money(total)}</span></div>
+          <button class="btn btn-primary btn-block btn-lg" id="coSubmit" style="margin-top:14px" onclick="Checkout.place()"><i class="fa-solid fa-check"></i> ${t('confirmOrder')}</button>
         </div>
       </div>`;
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   CHECKOUT LOGIC
+   ═══════════════════════════════════════════════════════════ */
+const Checkout = {
+  coupon: null,
+
+  ensureState(){
+    if(!App._checkoutState) App._checkoutState = { zone:'inside', payment:'cod', couponDiscount:0, couponCode:null };
+    return App._checkoutState;
+  },
+
+  setZone(zone){
+    const s = this.ensureState();
+    s.zone = zone;
+    const shipping = zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
+    const sub = Cart.subtotal();
+    const total = sub + shipping - s.couponDiscount;
+    const shipEl = document.getElementById('coShip'); if(shipEl) shipEl.textContent = money(shipping);
+    const totEl = document.getElementById('coTotal'); if(totEl) totEl.textContent = money(total);
+    document.querySelectorAll('.delivery-zone').forEach(el=>el.classList.remove('active'));
+    document.querySelector(`.delivery-zone:nth-child(${zone==='inside'?1:2})`)?.classList.add('active');
+  },
+
+  setPayment(method){
+    const s = this.ensureState();
+    s.payment = method;
+    document.querySelectorAll('.payment-method').forEach(el=>el.classList.remove('active'));
+    const idx = ['cod','bkash','nagad','rocket'].indexOf(method);
+    document.querySelectorAll('.payment-method')[idx]?.classList.add('active');
+    const detail = document.getElementById('paymentDetail');
+    if(detail) detail.innerHTML = this.renderPaymentDetail(method);
+  },
+
+  renderPaymentDetail(method){
+    const s = DB.settings;
+    if(method === 'cod'){
+      return `
+        <div class="payment-info" style="background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(16,185,129,.03));border-color:rgba(16,185,129,.3)">
+          <h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${LANG==='bn'?'ক্যাশ অন ডেলিভারি':'Cash on Delivery'}</h4>
+          <p style="font-size:13.5px;color:var(--text-dim);line-height:1.65">
+            ${LANG==='bn'?'পণ্য হাতে পেয়ে সম্পূর্ণ টাকা পরিশোধ করবেন। অর্ডার এখনই কনফার্ম হয়ে যাবে।':'Pay full amount when you receive the product. Order will be confirmed immediately.'}
+          </p>
+        </div>`;
+    }
+
+    const num = method==='bkash' ? (s.bkashNumber||'01700000000') : method==='nagad' ? (s.nagadNumber||'01700000000') : (s.rocketNumber||'01700000000');
+    const brandCls = method;
+    const brandName = method==='bkash' ? 'বিকাশ' : method==='nagad' ? 'নগদ' : 'রকেট';
+    const ussd = method==='bkash' ? `*247#` : method==='nagad' ? `*167#` : `*322#`;
+    const dialFull = method==='bkash' ? `*247*${num}*` : method==='nagad' ? `*167*${num}*` : `*322*1*${num}*`;
+
+    return `
+      <div class="payment-info">
+        <h4>
+          <span class="pm-brand ${brandCls}">${brandName}</span>
+          ${LANG==='bn'?'সেন্ড মানি করুন':'Send Money'}
+        </h4>
+
+        <div class="copy-number-box">
+          <div>
+            <small style="font-size:11.5px;color:var(--text-dim);display:block;margin-bottom:2px">${t('paymentNumber')} (${LANG==='bn'?'পার্সোনাল':'Personal'})</small>
+            <span class="number" id="payNum">${num}</span>
+          </div>
+          <button class="copy-btn" id="copyNumBtn" onclick="Checkout.copyNumber('${num}')">
+            <i class="fa-solid fa-copy"></i> ${t('copy')}
+          </button>
+        </div>
+
+        <h5 style="font-size:13px;font-weight:800;margin:12px 0 8px;color:var(--text)">📋 ${t('sendMoneySteps')}:</h5>
+        <ol class="steps-list">
+          <li>${LANG==='bn'?`আপনার <b>${brandName}</b> অ্যাপ খুলুন বা ডায়াল করুন`:`Open your <b>${brandName}</b> app or dial`}</li>
+          <li>${LANG==='bn'?'<b>Send Money</b> অপশন বেছে নিন':'Choose <b>Send Money</b>'}</li>
+          <li>${LANG==='bn'?`উপরের নাম্বারে <b>৳${money(Cart.total(App._checkoutState?.zone||'inside')).replace('৳','')}</b> সেন্ড করুন`:`Send <b>৳${Cart.total(App._checkoutState?.zone||'inside')}</b> to the number above`}</li>
+          <li>${LANG==='bn'?'সফল হলে <b>Transaction ID</b> নিচে লিখুন':'Enter the <b>Transaction ID</b> below'}</li>
+        </ol>
+
+        <div class="dial-code-box">
+          <div style="flex:1">
+            <small style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">${t('useDialCode')}</small>
+            <code id="dialCode">${dialFull}</code>
+          </div>
+          <button onclick="Checkout.copyDial('${dialFull}')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button>
+        </div>
+
+        <div class="txn-input-group">
+          <label>${t('txnId')} <span class="req">*</span></label>
+          <input id="txnIdInput" placeholder="${t('txnIdPlaceholder')}" autocomplete="off">
+        </div>
+
+        <div class="txn-input-group">
+          <label>${t('screenshot')} <span class="optional">${t('screenshotOptional')}</span></label>
+          <div class="payment-screenshot">
+            <div class="img-preview" id="ssPreview"><i class="fa-solid fa-image"></i></div>
+            <div class="upload-btn-wrap">
+              <button type="button" class="upload-btn" id="ssUploadBtn">
+                <i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}
+              </button>
+              <input type="file" id="ssFile" accept="image/*" style="display:none">
+              <div class="upload-progress" id="ssProgress"><span></span></div>
+            </div>
+          </div>
+          <input type="hidden" id="ssUrl" value="">
+        </div>
+      </div>
+      <script>
+        setTimeout(function(){
+          var btn = document.getElementById('ssUploadBtn');
+          var file = document.getElementById('ssFile');
+          var prev = document.getElementById('ssPreview');
+          var hidden = document.getElementById('ssUrl');
+          var prog = document.getElementById('ssProgress');
+          if(!btn || btn._bound) return; btn._bound = true;
+          btn.onclick = function(){ file.click(); };
+          file.onchange = async function(){
+            var f = file.files[0]; if(!f) return;
+            var reader = new FileReader();
+            reader.onload = function(e){ prev.innerHTML = '<img src="'+e.target.result+'">'; };
+            reader.readAsDataURL(f);
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner"></i> Uploading...';
+            if(prog){ prog.style.display='block'; prog.firstElementChild.style.width='40%'; }
+            try {
+              var res = await ImageUpload.upload(f);
+              hidden.value = res.url;
+              prev.innerHTML = '<img src="'+res.url+'">';
+              if(prog) prog.firstElementChild.style.width='100%';
+              Toast.show('${LANG==='bn'?'স্ক্রিনশট আপলোড হয়েছে':'Screenshot uploaded'}','success');
+            } catch(err){
+              Toast.show('Upload failed: '+err.message,'error');
+              prev.innerHTML = '<i class="fa-solid fa-image"></i>';
+            } finally {
+              btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}';
+              if(prog) setTimeout(function(){ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
+            }
+          };
+        }, 200);
+      <\/script>`;
+  },
+
+  copyNumber(num){
+    navigator.clipboard.writeText(num).then(()=>{
+      Toast.show(t('numberCopied'),'success');
+      const btn = document.getElementById('copyNumBtn');
+      if(btn){ btn.classList.add('copied'); btn.innerHTML = `<i class="fa-solid fa-check"></i> ${t('copied')}`;
+        setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = `<i class="fa-solid fa-copy"></i> ${t('copy')}`; }, 2000); }
+    });
+  },
+
+  copyDial(code){
+    navigator.clipboard.writeText(code).then(()=> Toast.show(t('dialCodeCopied'),'success'));
+  },
+
+  applyCoupon(){
+    const code = document.getElementById('coCoupon').value.trim().toUpperCase();
+    const c = DB.coupons.find(x=>x.code===code);
+    const status = document.getElementById('couponStatus');
+    if(!c){ Toast.show(t('invalidCoupon'),'error'); if(status){ status.textContent=''; } return; }
+    this.coupon = c;
+    const s = this.ensureState();
+    const ship = s.zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
+    const subtotal = Cart.subtotal();
+    let off = c.type==='percent' ? Math.round(subtotal * c.value/100) : c.value;
+    s.couponDiscount = off;
+    s.couponCode = c.code;
+    const total = subtotal + ship - off;
+    if(status){ status.textContent = `✓ ${c.code} — ${LANG==='bn'?'ছাড়':'Save'} ${money(off)}`; status.style.color='var(--success)'; }
+    const dEl = document.getElementById('coDiscount'); if(dEl) dEl.textContent = '-'+money(off);
+    const tEl = document.getElementById('coTotal'); if(tEl) tEl.textContent = money(total);
+    Toast.show(t('couponApplied'),'success');
+  },
+
+  async place(){
+    const name = document.getElementById('coName').value.trim();
+    const phone = document.getElementById('coPhone').value.trim();
+    const city = document.getElementById('coCity').value.trim();
+    const address = document.getElementById('coAddr').value.trim();
+    if(!name || !phone || !address){ Toast.show(t('fillAllFields'),'error'); return; }
+
+    const s = this.ensureState();
+    const method = s.payment;
+
+    let txnId = null, screenshot = null;
+    if(method !== 'cod'){
+      const inp = document.getElementById('txnIdInput');
+      txnId = inp ? inp.value.trim() : '';
+      if(!txnId || txnId.length < 6){ Toast.show(t('invalidTxnId'),'error'); return; }
+      const ss = document.getElementById('ssUrl');
+      screenshot = ss ? ss.value.trim() : '';
+    }
+
+    const ship = s.zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
+    const subtotal = Cart.subtotal();
+    const total = subtotal + ship - (s.couponDiscount||0);
+    const items = Cart.items().map(i=>{
+      const p = DB.products.find(x=>x.id===i.id);
+      return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty, img:p?.img||'' };
+    });
+
+    const btn = document.getElementById('coSubmit');
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
+
+    try {
+      const order = await Orders.create({
+        customer: { name, phone, city, address },
+        items, subtotal,
+        deliveryCharge: ship,
+        deliveryZone: s.zone,
+        discount: s.couponDiscount||0,
+        total,
+        coupon: s.couponCode,
+        paymentMethod: method,
+        paymentNumber: method==='cod' ? null : (DB.settings[method+'Number'] || ''),
+        txnId, screenshot
+      });
+
+      App._checkoutState = null;
+      this.coupon = null;
+
+      Toast.show(method==='cod' ? t('orderSuccessCOD') : t('orderSuccessPaid'),'success',4000);
+      PushNotif.localNotif(LANG==='bn'?'অর্ডার সফল':'Order placed', order.id);
+      App.go('orders');
+    } catch(e){
+      Toast.show(t('orderFailed') + ': ' + e.message,'error');
+      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check"></i> ${t('confirmOrder')}`;
+    }
   }
 };
 
@@ -1192,34 +1616,26 @@ const Components = {
           <img src="${p.img}" alt="${name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
           ${badge}
           <span class="stock-badge ${stockCls}">${stockTxt}</span>
-          <button class="wish-btn ${Wish.has(p.id)?'active':''}" onclick="event.stopPropagation();Wish.toggle('${p.id}')" aria-label="Wishlist">
-            <i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart"></i>
-          </button>
-          <button class="quick-view-btn" onclick="event.stopPropagation();QuickView.open('${p.id}')">
-            <i class="fa-solid fa-eye"></i> ${t('quickView')}
-          </button>
+          <button class="wish-btn ${Wish.has(p.id)?'active':''}" onclick="event.stopPropagation();Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart"></i></button>
+          <button class="quick-view-btn" onclick="event.stopPropagation();QuickView.open('${p.id}')"><i class="fa-solid fa-eye"></i> ${t('quickView')}</button>
         </div>
         <div class="product-body">
           <span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span>
           <h3 class="product-name">${name}</h3>
           <div class="rating">${starHTML(p.rating||0,'11px')} <span>${p.reviewCount?`(${p.reviewCount})`:''}</span></div>
-          <div class="product-price">
-            <span class="price">${money(p.price)}</span>
-            ${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}
-          </div>
-          <button class="btn btn-primary btn-block btn-sm" ${p.stock<=0?'disabled':''} onclick="event.stopPropagation();Cart.add('${p.id}')">
-            <i class="fa-solid fa-cart-plus"></i> ${p.stock<=0?t('outOfStock'):t('addToCart')}
-          </button>
+          <div class="product-price"><span class="price">${money(p.price)}</span>${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}</div>
+          <button class="btn btn-primary btn-block btn-sm" ${p.stock<=0?'disabled':''} onclick="event.stopPropagation();Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${p.stock<=0?t('outOfStock'):t('addToCart')}</button>
         </div>
       </div>`;
   },
 
   adminSidebar(tab){
+    const pendingCount = DB.orders.filter(o=>o.status==='pending').length;
     const items = [
       {sec:LANG==='bn'?'মেইন':'Main', list:[
         {id:'dashboard', icon:'fa-chart-line', label:t('dashboard')},
         {id:'products', icon:'fa-box', label:t('products')},
-        {id:'orders', icon:'fa-receipt', label:t('ordersTab')},
+        {id:'orders', icon:'fa-receipt', label:t('ordersTab'), badge: pendingCount},
         {id:'users', icon:'fa-users', label:t('users')},
       ]},
       {sec:LANG==='bn'?'অতিরিক্ত':'Extras', list:[
@@ -1238,7 +1654,10 @@ const Components = {
         ${items.map(g=>`
           <div class="nav-section">
             <div class="nav-section-title">${g.sec}</div>
-            ${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')"><i class="fa-solid ${i.icon}"></i> ${i.label}</a>`).join('')}
+            ${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')">
+              <i class="fa-solid ${i.icon}"></i> ${i.label}
+              ${i.badge ? `<span class="nav-count">${i.badge}</span>` : ''}
+            </a>`).join('')}
           </div>`).join('')}
       </nav>
       <div class="admin-footer">
@@ -1351,14 +1770,15 @@ const Admin = {
         <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${t('recentOrders')}</h3><button class="btn btn-outline btn-sm" onclick="Admin.switchTab('orders')">${LANG==='bn'?'সব দেখুন':'View All'}</button></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('orderStatus')}</th><th>${t('orderDate')}</th></tr></thead>
+            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th>${t('orderDate')}</th></tr></thead>
             <tbody>${recent.length ? recent.map(o=>`<tr>
               <td><b>${o.id}</b></td>
               <td>${o.customer?.name||'—'}</td>
               <td>${money(o.total)}</td>
+              <td><span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span></td>
               <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
               <td>${new Date(o.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</td>
-            </tr>`).join('') : `<tr><td colspan="5" class="muted">${t('noData')}</td></tr>`}</tbody>
+            </tr>`).join('') : `<tr><td colspan="6" class="muted">${t('noData')}</td></tr>`}</tbody>
           </table>
         </div>
       </div>
@@ -1424,23 +1844,18 @@ const Admin = {
           <button data-tab="pricing"><i class="fa-solid fa-tag"></i> ${t('price')}</button>
           <button data-tab="extra"><i class="fa-solid fa-list"></i> ${LANG==='bn'?'অতিরিক্ত':'Extra'}</button>
         </div>
-
         <div class="form-tab-content active" data-content="basic">
           <div class="form-row">
             <div class="form-group"><label>${t('productName')} <span class="req">*</span></label><input id="pName" value="${p.name}"></div>
             <div class="form-group"><label>${t('productNameEn')}</label><input id="pNameEn" value="${p.nameEn||''}"></div>
           </div>
           <div class="form-row">
-            <div class="form-group">
-              <label>${t('category')} <span class="req">*</span></label>
-              <select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select>
-            </div>
+            <div class="form-group"><label>${t('category')} <span class="req">*</span></label><select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
             <div class="form-group"><label>Category (English)</label><input id="pCatEn" value="${p.catEn||''}"></div>
           </div>
           <div class="form-group"><label>${t('description')}</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
           <div class="form-group"><label>${t('descriptionEn')}</label><textarea id="pDescEn" rows="3">${p.descEn||''}</textarea></div>
         </div>
-
         <div class="form-tab-content" data-content="images">
           <div class="form-group">
             <label>${t('images')}</label>
@@ -1456,8 +1871,8 @@ const Admin = {
             <input type="hidden" id="pImg" value="${p.img||''}">
           </div>
           <div class="form-group">
-            <label>${LANG==='bn'?'অতিরিক্ত ছবি (গ্যালারি)':'Additional Images (Gallery)'}</label>
-            <button type="button" class="upload-btn" id="uploadMultiBtn"><i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি আপলোড':'Upload Multiple Images'}</button>
+            <label>${LANG==='bn'?'অতিরিক্ত ছবি (গ্যালারি)':'Additional Images'}</label>
+            <button type="button" class="upload-btn" id="uploadMultiBtn"><i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি আপলোড':'Upload Multiple'}</button>
             <input type="file" id="imgMultiFile" accept="image/*" multiple style="display:none">
             <div class="img-thumbs" id="imgThumbs">
               ${images.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button>${i===0?'<span class="primary-tag">MAIN</span>':''}</div>`).join('')}
@@ -1465,7 +1880,6 @@ const Admin = {
             <input type="hidden" id="pImages" value='${JSON.stringify(images)}'>
           </div>
         </div>
-
         <div class="form-tab-content" data-content="pricing">
           <div class="form-row">
             <div class="form-group"><label>${t('price')} (৳) <span class="req">*</span></label><input id="pPrice" type="number" value="${p.price}" min="0"></div>
@@ -1476,20 +1890,18 @@ const Admin = {
             <div class="form-group"><label>${t('stock')} <span class="req">*</span></label><input id="pStock" type="number" value="${p.stock}" min="0"></div>
           </div>
         </div>
-
         <div class="form-tab-content" data-content="extra">
           <div class="form-group">
             <label>${t('tags')}</label>
             <div class="tag-input-wrap" id="tagWrap">
               ${tags.map(t2=>`<span class="tag-pill" data-tag="${t2}">${t2}<button type="button" onclick="Admin.removeTag('${t2}')"><i class="fa-solid fa-xmark"></i></button></span>`).join('')}
-              <input id="tagInput" placeholder="${LANG==='bn'?'ট্যাগ লিখে Enter চাপুন':'Type tag and press Enter'}">
+              <input id="tagInput" placeholder="${LANG==='bn'?'ট্যাগ লিখে Enter':'Type and Enter'}">
             </div>
             <input type="hidden" id="pTags" value='${JSON.stringify(tags)}'>
           </div>
           <div class="form-group">
             <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-              <input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto">
-              <span>${t('featured_product')}</span>
+              <input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto"><span>${t('featured_product')}</span>
             </label>
           </div>
         </div>
@@ -1511,7 +1923,6 @@ const Admin = {
         document.querySelector(`.form-tab-content[data-content="${btn.dataset.tab}"]`)?.classList.add('active');
       };
     });
-
     const btn = document.getElementById('uploadBtn');
     const file = document.getElementById('imgFile');
     const prev = document.getElementById('imgPreview');
@@ -1532,15 +1943,13 @@ const Admin = {
           prev.innerHTML = `<img src="${res.url}">`;
           prog.firstElementChild.style.width='100%';
           Toast.show(t('imageUploadSuccess'),'success');
-        } catch(err){
-          Toast.show(t('imageUploadFailed')+': '+err.message,'error');
-        } finally {
-          btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি আপলোড':'Upload Main Image'}`;
+        } catch(err){ Toast.show(t('imageUploadFailed')+': '+err.message,'error'); }
+        finally {
+          btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি আপলোড':'Upload Main'}`;
           setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
         }
       };
     }
-
     const mBtn = document.getElementById('uploadMultiBtn');
     const mFile = document.getElementById('imgMultiFile');
     const thumbs = document.getElementById('imgThumbs');
@@ -1548,28 +1957,24 @@ const Admin = {
     if(mBtn){
       mBtn.onclick = ()=> mFile.click();
       mFile.onchange = async ()=>{
-        const files = Array.from(mFile.files);
-        if(!files.length) return;
+        const files = Array.from(mFile.files); if(!files.length) return;
         mBtn.disabled = true;
-        mBtn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${LANG==='bn'?'আপলোড হচ্ছে':'Uploading'} (0/${files.length})`;
         let current = JSON.parse(mHidden.value || '[]');
         let done = 0;
         for(const f of files){
           try {
             const res = await ImageUpload.upload(f);
-            current.push(res.url);
-            done++;
-            mBtn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${LANG==='bn'?'আপলোড হচ্ছে':'Uploading'} (${done}/${files.length})`;
-            thumbs.innerHTML = current.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button>${i===0?'<span class="primary-tag">MAIN</span>':''}</div>`).join('');
+            current.push(res.url); done++;
+            mBtn.innerHTML = `<i class="fa-solid fa-spinner"></i> (${done}/${files.length})`;
+            thumbs.innerHTML = current.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
             mHidden.value = JSON.stringify(current);
-          } catch(e){ Toast.show('Failed: '+f.name,'error'); }
+          } catch(e){}
         }
         mBtn.disabled = false;
-        mBtn.innerHTML = `<i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি আপলোড':'Upload Multiple Images'}`;
-        if(done) Toast.show(`${done} ${LANG==='bn'?'ছবি আপলোড হয়েছে':'images uploaded'}`,'success');
+        mBtn.innerHTML = `<i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি আপলোড':'Upload Multiple'}`;
+        if(done) Toast.show(`${done} uploaded`,'success');
       };
     }
-
     const tagInput = document.getElementById('tagInput');
     const tagWrap = document.getElementById('tagWrap');
     const tagsHidden = document.getElementById('pTags');
@@ -1577,15 +1982,12 @@ const Admin = {
       tagInput.onkeydown = (e)=>{
         if(e.key==='Enter' || e.key===','){
           e.preventDefault();
-          const val = tagInput.value.trim();
-          if(!val) return;
+          const val = tagInput.value.trim(); if(!val) return;
           let tags = JSON.parse(tagsHidden.value || '[]');
           if(!tags.includes(val)){
-            tags.push(val);
-            tagsHidden.value = JSON.stringify(tags);
+            tags.push(val); tagsHidden.value = JSON.stringify(tags);
             const pill = document.createElement('span');
-            pill.className = 'tag-pill';
-            pill.dataset.tag = val;
+            pill.className = 'tag-pill'; pill.dataset.tag = val;
             pill.innerHTML = `${val}<button type="button" onclick="Admin.removeTag('${val}')"><i class="fa-solid fa-xmark"></i></button>`;
             tagWrap.insertBefore(pill, tagInput);
           }
@@ -1601,7 +2003,7 @@ const Admin = {
     imgs.splice(index, 1);
     hidden.value = JSON.stringify(imgs);
     const thumbs = document.getElementById('imgThumbs');
-    if(thumbs) thumbs.innerHTML = imgs.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button>${i===0?'<span class="primary-tag">MAIN</span>':''}</div>`).join('');
+    if(thumbs) thumbs.innerHTML = imgs.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
   },
 
   removeTag(tag){
@@ -1634,21 +2036,12 @@ const Admin = {
     if(!data.img || data.img.includes('placeholder')) data.img = data.images[0] || data.img;
     const btn = document.getElementById('pSaveBtn');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-    try {
-      await DB.saveProduct(data);
-      Modal.close();
-      Toast.show(t('saveSuccess'),'success');
-    } catch(e){
-      Toast.show('Failed: '+e.message,'error');
-      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('save')}`;
-    }
+    try { await DB.saveProduct(data); Modal.close(); Toast.show(t('saveSuccess'),'success'); }
+    catch(e){ Toast.show('Failed: '+e.message,'error'); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('save')}`; }
   },
 
   deleteProduct(id){
-    Modal.confirm(t('deleteConfirm'), async ()=>{
-      try { await DB.deleteProduct(id); Toast.show(t('deleteSuccess'),'success'); }
-      catch(e){ Toast.show('Failed','error'); }
-    });
+    Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteProduct(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } });
   },
 
   orders(){
@@ -1662,34 +2055,95 @@ const Admin = {
         <div class="admin-card-head"><h3>${t('totalOrders')} (${list.length})</h3></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('phone')}</th><th>${t('items')}</th><th>${t('total')}</th><th>${t('orderStatus')}</th><th></th></tr></thead>
+            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th></th></tr></thead>
             <tbody>${list.length ? list.map(o=>`<tr>
               <td><b>${o.id}</b><br><small style="color:var(--text-dim)">${new Date(o.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</small></td>
-              <td>${o.customer?.name||'—'}<br><small style="color:var(--text-dim)">${o.customer?.address||''}</small></td>
-              <td>${o.customer?.phone||'—'}</td>
-              <td>${o.items?.length||0}</td>
-              <td><b>${money(o.total)}</b></td>
+              <td>${o.customer?.name||'—'}<br><small style="color:var(--text-dim)">${o.customer?.phone||''}</small></td>
+              <td><b>${money(o.total)}</b><br><small style="color:var(--text-dim)">Delivery: ${money(o.deliveryCharge||0)}</small></td>
               <td>
-                <select onchange="Admin.changeOrderStatus('${o.id}', this.value)" style="padding:6px 10px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface);font-size:12.5px">
-                  ${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}
-                </select>
+                <span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span>
+                ${o.txnId?`<br><small style="color:var(--text-dim);font-size:11px">${o.txnId}</small>`:''}
               </td>
-              <td>
-                <div class="actions">
-                  <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')" title="${t('printInvoice')}"><i class="fa-solid fa-print"></i></button>
-                  <button class="icon-btn-sm danger" onclick="Admin.deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
-                </div>
-              </td>
-            </tr>`).join('') : `<tr><td colspan="7" class="muted">${t('noData')}</td></tr>`}</tbody>
+              <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
+              <td><div class="actions">
+                <button class="icon-btn-sm" onclick="Admin.openOrderModal('${o.id}')" title="View"><i class="fa-solid fa-eye"></i></button>
+                <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')" title="${t('printInvoice')}"><i class="fa-solid fa-print"></i></button>
+                <button class="icon-btn-sm danger" onclick="Admin.deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+              </div></td>
+            </tr>`).join('') : `<tr><td colspan="6" class="muted">${t('noData')}</td></tr>`}</tbody>
           </table>
         </div>
       </div>`;
   },
 
-  async changeOrderStatus(id, status){
-    try { await Orders.updateStatus(id, status); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed','error'); }
+  openOrderModal(id){
+    const o = DB.orders.find(x=>x.id===id); if(!o) return;
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-receipt"></i> ${o.id}</h3></div>
+      <div class="modal-body">
+        <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-bottom:14px">
+          <b style="font-size:14px">${o.customer.name}</b>
+          <p style="font-size:12.5px;color:var(--text-dim);margin-top:4px">${o.customer.phone||''} • ${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</p>
+        </div>
+
+        <div class="form-group">
+          <label>${t('orderStatus')}</label>
+          <select id="aoStatus">
+            ${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>${t('adminComment')} <span class="optional">${t('adminCommentOptional')}</span></label>
+          <textarea id="aoComment" rows="2" placeholder="${t('commentPlaceholder')}"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>${t('deliveryChargeEdit')} (৳)</label>
+          <input id="aoDelivery" type="number" value="${o.deliveryCharge||0}" min="0">
+          <div class="delivery-edit-hint"><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন করলে সর্বমোট দাম অটো আপডেট হবে':'Total will auto-update'}</div>
+        </div>
+
+        <div class="form-group">
+          <label>${t('paymentInfo')}</label>
+          <div style="background:var(--surface-2);padding:12px;border-radius:10px;font-size:13px">
+            <div><b>Method:</b> ${(o.paymentMethod||'cod').toUpperCase()}</div>
+            ${o.txnId?`<div style="margin-top:4px"><b>Txn ID:</b> ${o.txnId}</div>`:''}
+            ${o.screenshot?`<div style="margin-top:8px"><b>Screenshot:</b><br><img src="${o.screenshot}" style="max-width:120px;margin-top:6px;border-radius:8px;cursor:pointer" onclick="window.open('${o.screenshot}','_blank')"></div>`:''}
+          </div>
+        </div>
+
+        ${o.history && o.history.length ? `<div class="form-group"><label>History</label><div style="font-size:12px;line-height:1.8">${o.history.map(h=>`<div>• ${new Date(h.time).toLocaleString(LANG==='bn'?'bn-BD':'en-US')} — <b>${t(h.status)}</b>${h.comment?` <i style="color:var(--text-dim)">— ${h.comment}</i>`:''}</div>`).join('')}</div></div>`:''}
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-primary btn-block" onclick="Admin.saveOrderChanges('${o.id}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
+      </div>
+    `, 'lg');
   },
+
+  async saveOrderChanges(id){
+    const status = document.getElementById('aoStatus').value;
+    const comment = document.getElementById('aoComment').value.trim();
+    const delivery = +document.getElementById('aoDelivery').value || 0;
+    const o = DB.orders.find(x=>x.id===id); if(!o) return;
+
+    try {
+      if(delivery !== (o.deliveryCharge||0)){
+        await Orders.updateDeliveryCharge(id, delivery);
+      }
+      const o2 = DB.orders.find(x=>x.id===id);
+      if(status !== o2.status || comment){
+        await Orders.updateStatus(id, status, comment);
+      }
+      Modal.close();
+      Toast.show(t('saveSuccess'),'success');
+      Admin.refreshContent();
+    } catch(e){ Toast.show('Failed: '+e.message,'error'); }
+  },
+
+  async changeOrderStatus(id, status){ try { await Orders.updateStatus(id, status, ''); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } },
   deleteOrder(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await Orders.remove(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
 
   users(){
@@ -1740,24 +2194,16 @@ const Admin = {
     else if(!checked) sel.splice(sel.indexOf(id),1);
     App._selectedUsers = sel; this.refreshContent();
   },
-  toggleAllUsers(checked){
-    App._selectedUsers = checked ? DB.users.map(u=>u.id) : [];
-    this.refreshContent();
-  },
+  toggleAllUsers(checked){ App._selectedUsers = checked ? DB.users.map(u=>u.id) : []; this.refreshContent(); },
   bulkAction(type){
-    const ids = App._selectedUsers || [];
-    if(!ids.length) return;
-    Modal.confirm(`${ids.length} ${t('selected')} — ${type==='delete'?t('delete'):type==='block'?t('block'):t('unblock')}?`, async ()=>{
+    const ids = App._selectedUsers || []; if(!ids.length) return;
+    Modal.confirm(`${ids.length} ${t('selected')}?`, async ()=>{
       for(const id of ids){
         const u = DB.users.find(x=>x.id===id);
         if(!u || u.role==='admin') continue;
-        try {
-          if(type==='delete') await DB.deleteUser(id);
-          else await DB.updateUser(id, { blocked: type==='block' });
-        } catch(e){}
+        try { if(type==='delete') await DB.deleteUser(id); else await DB.updateUser(id, { blocked: type==='block' }); } catch(e){}
       }
-      App._selectedUsers = [];
-      Toast.show(t('saveSuccess'),'success');
+      App._selectedUsers = []; Toast.show(t('saveSuccess'),'success');
     });
   },
 
@@ -1804,8 +2250,7 @@ const Admin = {
 
   async toggleBlock(id){
     const u = DB.users.find(x=>x.id===id); if(!u || u.role==='admin') return;
-    try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed','error'); }
+    try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
 
   deleteUser(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteUser(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
@@ -1827,12 +2272,9 @@ const Admin = {
   async addCat(){
     const v = document.getElementById('newCat').value.trim(); if(!v) return;
     if(DB.categories.includes(v)) return Toast.show(t('emailExists'),'warning');
-    try { await DB.saveCategory(v); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed: '+e.message,'error'); }
+    try { await DB.saveCategory(v); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
-  delCat(key){
-    Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteCategory(key); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } });
-  },
+  delCat(key){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteCategory(key); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
 
   coupons(){
     const list = DB.coupons;
@@ -1864,22 +2306,60 @@ const Admin = {
     const value = +document.getElementById('cVal').value;
     if(!code || !value) return Toast.show(t('fillAllFields'),'error');
     if(DB.coupons.find(c=>c.code===code)) return Toast.show(t('emailExists'),'warning');
-    try { await DB.saveCoupon({ code, type, value }); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed','error'); }
+    try { await DB.saveCoupon({ code, type, value }); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
   async delCoupon(id){ try { await DB.deleteCoupon(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } },
 
   settings(){
-    const s = DB.settings || {};
+    const s = DB.settings;
     return `
       <div class="admin-card">
-        <div class="admin-card-head"><h3><i class="fa-solid fa-gear"></i> ${t('settings')}</h3></div>
-        <div class="form-group"><label>${t('siteName')}</label><input id="stName" value="${s.siteName||'EcoShop Pro MAX'}"></div>
-        <div class="form-group"><label>${t('shippingCharge')}</label><input id="stShip" type="number" value="${s.shipping||60}"></div>
-        <div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${s.supportPhone||'+880 1700-000000'}"></div>
-        <div class="form-group"><label>${t('email')}</label><input id="stEmail" value="${s.supportEmail||'support@ecoshop.pro'}"></div>
-        <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
+        <div class="settings-section">
+          <h4><i class="fa-solid fa-globe"></i> ${LANG==='bn'?'সাইট তথ্য':'Site Info'}</h4>
+          <div class="form-group"><label>${t('siteName')}</label><input id="stName" value="${s.siteName||''}"></div>
+          <div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${s.supportPhone||''}"></div>
+          <div class="form-group"><label>${t('email')}</label><input id="stEmail" value="${s.supportEmail||''}"></div>
+        </div>
+
+        <div class="settings-section">
+          <h4><i class="fa-solid fa-truck"></i> ${LANG==='bn'?'ডেলিভারি চার্জ':'Delivery Charges'}</h4>
+          <div class="form-row">
+            <div class="form-group"><label>${t('insideDhaka')} (৳)</label><input id="stShipIn" type="number" value="${s.shippingInsideDhaka||100}"></div>
+            <div class="form-group"><label>${t('outsideDhaka')} (৳)</label><input id="stShipOut" type="number" value="${s.shippingOutsideDhaka||120}"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h4><i class="fa-solid fa-mobile-screen"></i> ${t('paymentNumberConfig')}</h4>
+          <div class="form-group"><label>${t('bkash')} ${t('paymentNumber')}</label><input id="stBkash" value="${s.bkashNumber||''}"></div>
+          <div class="form-group"><label>${t('nagad')} ${t('paymentNumber')}</label><input id="stNagad" value="${s.nagadNumber||''}"></div>
+          <div class="form-group"><label>${t('rocket')} ${t('paymentNumber')}</label><input id="stRocket" value="${s.rocketNumber||''}"></div>
+        </div>
+
+        <div class="settings-section">
+          <h4><i class="fa-solid fa-toggle-on"></i> ${LANG==='bn'?'পেমেন্ট অপশন চালু/বন্ধ':'Enable Payment Options'}</h4>
+          <div style="display:grid;gap:10px">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
+              <input type="checkbox" id="stCOD" ${s.enableCOD?'checked':''} style="width:auto"><b>${t('cod')}</b>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
+              <input type="checkbox" id="stBkashEn" ${s.enableBkash?'checked':''} style="width:auto"><b>${t('bkash')}</b>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
+              <input type="checkbox" id="stNagadEn" ${s.enableNagad?'checked':''} style="width:auto"><b>${t('nagad')}</b>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px">
+              <input type="checkbox" id="stRocketEn" ${s.enableRocket?'checked':''} style="width:auto"><b>${t('rocket')}</b>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-save-bar">
+          <span><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন সেভ করুন':'Save changes'}</span>
+          <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
+        </div>
       </div>
+
       <div class="admin-card">
         <div class="admin-card-head"><h3><i class="fa-solid fa-database"></i> ${t('exportData')}</h3></div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -1888,26 +2368,38 @@ const Admin = {
         </div>
       </div>`;
   },
+
   async saveSettings(){
     const settings = {
       siteName: document.getElementById('stName').value.trim(),
-      shipping: +document.getElementById('stShip').value || 60,
       supportPhone: document.getElementById('stPhone').value.trim(),
-      supportEmail: document.getElementById('stEmail').value.trim()
+      supportEmail: document.getElementById('stEmail').value.trim(),
+      shippingInsideDhaka: +document.getElementById('stShipIn').value || 100,
+      shippingOutsideDhaka: +document.getElementById('stShipOut').value || 120,
+      bkashNumber: document.getElementById('stBkash').value.trim(),
+      nagadNumber: document.getElementById('stNagad').value.trim(),
+      rocketNumber: document.getElementById('stRocket').value.trim(),
+      enableCOD: document.getElementById('stCOD').checked,
+      enableBkash: document.getElementById('stBkashEn').checked,
+      enableNagad: document.getElementById('stNagadEn').checked,
+      enableRocket: document.getElementById('stRocketEn').checked
     };
-    try { await db.ref('settings').set(settings); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed','error'); }
+    try {
+      await DB.saveSettings(settings);
+      Toast.show(t('settingsSaved'),'success');
+    } catch(e){ Toast.show('Failed: '+e.message,'error'); }
   },
+
   resetAll(){
     Modal.confirm(t('resetConfirm'), async ()=>{
-      try { await db.ref().set({ settings:{siteName:'EcoShop Pro MAX', shipping:60} }); localStorage.clear(); location.reload(); }
+      try { await db.ref().set({ settings: DEFAULT_SETTINGS }); localStorage.clear(); location.reload(); }
       catch(e){ Toast.show('Failed','error'); }
     });
   },
   exportData(){
-    const data = { products:DB.products, users:DB.users, orders:DB.orders, categories:DB.categories, coupons:DB.coupons, reviews:DB.reviews };
+    const data = { products:DB.products, users:DB.users, orders:DB.orders, categories:DB.categories, coupons:DB.coupons, reviews:DB.reviews, settings:DB.settings };
     const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ecoshop-data.json'; a.click();
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ecoshop-backup-${Date.now()}.json`; a.click();
     Toast.show(t('saveSuccess'),'success');
   },
 
@@ -1994,8 +2486,7 @@ const AuthUI = {
     </form>`;
   },
   togglePass(id, btn){
-    const input = document.getElementById(id);
-    if(!input) return;
+    const input = document.getElementById(id); if(!input) return;
     const show = input.type === 'password';
     input.type = show ? 'text' : 'password';
     btn.innerHTML = `<i class="fa-solid fa-eye${show?'-slash':''}"></i>`;
@@ -2008,17 +2499,10 @@ const AuthUI = {
     if(/\d/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
     const bars = [1,2,3,4].map(i=>document.getElementById('pwdBar'+i));
     const cls = score<=1 ? 'weak' : score<=3 ? 'medium' : 'strong';
-    bars.forEach((b,i)=>{
-      if(!b) return;
-      b.className = 'pwd-bar' + (i < score ? ' ' + cls : '');
-    });
+    bars.forEach((b,i)=>{ if(b) b.className = 'pwd-bar' + (i < score ? ' ' + cls : ''); });
     const txt = document.getElementById('pwdText');
     if(txt){
-      const labels = {
-        weak: LANG==='bn'?'দুর্বল':'Weak',
-        medium: LANG==='bn'?'মাঝারি':'Medium',
-        strong: LANG==='bn'?'শক্তিশালী':'Strong'
-      };
+      const labels = { weak: LANG==='bn'?'দুর্বল':'Weak', medium: LANG==='bn'?'মাঝারি':'Medium', strong: LANG==='bn'?'শক্তিশালী':'Strong' };
       txt.textContent = score ? labels[cls] : (LANG==='bn'?'পাসওয়ার্ড শক্তি':'Password strength');
     }
   },
@@ -2027,11 +2511,7 @@ const AuthUI = {
     const btn = document.getElementById('loginSubmit');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
     const r = await Auth.login(document.getElementById('authEmail').value.trim(), document.getElementById('authPass').value);
-    if(!r.ok){
-      Toast.show(r.msg,'error');
-      btn.disabled = false; btn.innerHTML = `${t('login')} <i class="fa-solid fa-arrow-right"></i>`;
-      return;
-    }
+    if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `${t('login')} <i class="fa-solid fa-arrow-right"></i>`; return; }
     Toast.show(t('loginSuccess') + ', ' + r.user.name,'success');
     const target = r.user.role==='admin' ? 'admin' : (redirect && redirect!=='home' ? redirect : 'home');
     App._authRedirect = null;
@@ -2045,76 +2525,16 @@ const AuthUI = {
     const pass = document.getElementById('regPass').value;
     const pass2 = document.getElementById('regPass2').value;
     const err = document.getElementById('passError');
-    if(pass !== pass2){
-      err.classList.add('show');
-      Toast.show(t('passwordMismatch'),'error');
-      return;
-    }
+    if(pass !== pass2){ err.classList.add('show'); Toast.show(t('passwordMismatch'),'error'); return; }
     err.classList.remove('show');
-    if(pass.length < 6){
-      Toast.show(t('weakPassword'),'error');
-      return;
-    }
+    if(pass.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
     const btn = document.getElementById('regSubmit');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
     const r = await Auth.register({ name, email, phone, password: pass });
-    if(!r.ok){
-      Toast.show(r.msg,'error');
-      btn.disabled = false; btn.innerHTML = `${t('register')} <i class="fa-solid fa-user-plus"></i>`;
-      return;
-    }
+    if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `${t('register')} <i class="fa-solid fa-user-plus"></i>`; return; }
     Toast.show(t('registerSuccess'),'success');
     App._authRedirect = null;
     App.go(redirect && redirect!=='home' ? redirect : 'home');
-  }
-};
-
-/* ═══════════════════════════════════════════════════════════
-   CHECKOUT
-   ═══════════════════════════════════════════════════════════ */
-const Checkout = {
-  coupon: null,
-  applyCoupon(){
-    const code = document.getElementById('coCoupon').value.trim().toUpperCase();
-    const c = DB.coupons.find(x=>x.code===code);
-    const status = document.getElementById('couponStatus');
-    if(!c){
-      Toast.show(t('invalidCoupon'),'error');
-      if(status){ status.textContent=''; status.style.color=''; }
-      return;
-    }
-    this.coupon = c;
-    const sub = Cart.total();
-    const off = c.type==='percent' ? Math.round(sub * c.value/100) : c.value;
-    if(status){ status.textContent = `${c.code} — ${LANG==='bn'?'ছাড়':'Save'} ${money(off)}`; status.style.color = 'var(--success)'; }
-    const dEl = document.getElementById('coDiscount'); if(dEl) dEl.textContent = '-'+money(off);
-    const tEl = document.getElementById('coTotal'); if(tEl) tEl.textContent = money(Math.max(0, sub - off));
-    Toast.show(t('couponApplied'),'success');
-  },
-  async place(){
-    const name = document.getElementById('coName').value.trim();
-    const phone = document.getElementById('coPhone').value.trim();
-    const city = document.getElementById('coCity').value.trim();
-    const address = document.getElementById('coAddr').value.trim();
-    if(!name || !phone || !address){ Toast.show(t('fillAllFields'),'error'); return; }
-    const sub = Cart.total();
-    const off = this.coupon ? (this.coupon.type==='percent' ? Math.round(sub*this.coupon.value/100) : this.coupon.value) : 0;
-    const total = Math.max(0, sub - off);
-    const items = Cart.items().map(i=>{
-      const p = DB.products.find(x=>x.id===i.id);
-      return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty, img:p?.img||'' };
-    });
-    const btn = document.getElementById('coSubmit');
-    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-    try {
-      const order = await Orders.create({ name, phone, city, address }, items, total, this.coupon?.code);
-      Toast.show(t('orderPlaced') + ' — ' + order.id,'success',4000);
-      this.coupon = null;
-      App.go('orders');
-    } catch(e){
-      Toast.show(t('orderFailed') + ': ' + e.message,'error');
-      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check"></i> ${LANG==='bn'?'অর্ডার কনফার্ম করুন':'Confirm Order'}`;
-    }
   }
 };
 
@@ -2140,7 +2560,7 @@ const Profile = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   THEME / LANG / INIT
+   THEME / LANG / OFFLINE / INIT
    ═══════════════════════════════════════════════════════════ */
 function applyTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
@@ -2166,8 +2586,24 @@ function setFbStatus(ok, text){
   if(txt) txt.textContent = text;
 }
 
+function initOfflineDetect(){
+  const bar = document.getElementById('offlineBar');
+  const txt = document.getElementById('offlineText');
+  function update(){
+    if(navigator.onLine){
+      bar?.classList.remove('show');
+    } else {
+      if(txt) txt.textContent = t('offlineMode');
+      bar?.classList.add('show');
+    }
+  }
+  window.addEventListener('online', ()=>{ update(); Toast.show(LANG==='bn'?'✅ অনলাইনে ফিরে এসেছেন':'✅ Back online','success'); });
+  window.addEventListener('offline', ()=>{ update(); Toast.show(LANG==='bn'?'⚠️ অফলাইন মোড':'⚠️ Offline mode','warning'); });
+  update();
+}
+
 document.addEventListener('DOMContentLoaded', ()=>{
-  console.log('🚀 App starting...');
+  console.log('🚀 App starting v6.0...');
 
   const savedTheme = localStorage.getItem('eco_theme');
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -2204,6 +2640,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
     App.hideSplash();
   }
 
+  /* PWA */
+  PWA.registerSW();
+  PWA.initInstallPrompt();
+
+  /* Push Notifications */
+  PushNotif.init();
+
+  /* Offline detection */
+  initOfflineDetect();
+
   /* Scroll */
   window.addEventListener('scroll', ()=>{
     const nb = document.getElementById('navbar'); if(nb) nb.classList.toggle('scrolled', window.scrollY>10);
@@ -2218,10 +2664,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
       let mx = 0, my = 0, cx = 0, cy = 0;
       document.addEventListener('mousemove', (e)=>{ mx = e.clientX; my = e.clientY; }, { passive:true });
       (function animate(){
-        cx += (mx - cx) * 0.12;
-        cy += (my - cy) * 0.12;
-        glow.style.left = cx+'px';
-        glow.style.top = cy+'px';
+        cx += (mx - cx) * 0.12; cy += (my - cy) * 0.12;
+        glow.style.left = cx+'px'; glow.style.top = cy+'px';
         requestAnimationFrame(animate);
       })();
     }
@@ -2275,7 +2719,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.querySelectorAll('[data-set-theme]').forEach(b=> b.onclick = ()=> applyTheme(b.dataset.setTheme));
   document.querySelectorAll('[data-set-lang]').forEach(b=> b.onclick = ()=> applyLang(b.dataset.setLang));
 
-  /* Global search + suggest + voice */
+  /* Search */
   const gs = document.getElementById('globalSearch');
   const searchClear = document.getElementById('searchClear');
   if(gs){
@@ -2290,24 +2734,16 @@ document.addEventListener('DOMContentLoaded', ()=>{
   SearchSuggest.init();
   VoiceSearch.init();
 
-  /* Keyboard shortcuts */
+  /* Keyboard */
   document.addEventListener('keydown', (e)=>{
-    if((e.ctrlKey || e.metaKey) && e.key === 'k'){
-      e.preventDefault();
-      document.getElementById('globalSearch')?.focus();
-    }
-    if(e.key === 'Escape'){
-      Modal.close(); QuickView.close();
-      document.getElementById('searchSuggest')?.classList.remove('active');
-    }
+    if((e.ctrlKey || e.metaKey) && e.key === 'k'){ e.preventDefault(); document.getElementById('globalSearch')?.focus(); }
+    if(e.key === 'Escape'){ Modal.close(); QuickView.close(); document.getElementById('searchSuggest')?.classList.remove('active'); }
   });
 
-  /* Prevent horizontal scroll */
-  document.addEventListener('touchmove', (e)=>{
-    if(e.touches.length > 1) e.preventDefault();
-  }, { passive: false });
+  /* Prevent pinch zoom */
+  document.addEventListener('touchmove', (e)=>{ if(e.touches.length > 1) e.preventDefault(); }, { passive: false });
 
   /* Initial render */
   App.render();
-  console.log('✅ App ready');
+  console.log('✅ App ready v6.0');
 });
