@@ -4,13 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#6366f1" />
-<meta name="description" content="EcoShop Pro MAX — Premium E-Commerce Platform" />
+<meta name="description" content="EcoShop Pro MAX — প্রফেশনাল ই-কমার্স প্ল্যাটফর্ম" />
 <title>EcoShop Pro MAX — Premium Store</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-<script src="https://unpkg.com/@phosphor-icons/web@2.1.1"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 <link rel="stylesheet" href="style.css" />
 </head>
@@ -22,13 +21,10 @@
   <div class="splash-content">
     <div class="splash-logo">
       <div class="splash-icon-wrap">
-        <div class="splash-icon"><i class="ph-fill ph-storefront"></i></div>
+        <div class="splash-icon"><i class="fa-solid fa-shop"></i></div>
         <span class="splash-ring"></span>
       </div>
-      <h1 class="splash-title">
-        <span class="t-eco">Eco</span><span class="t-shop">Shop</span>
-        <span class="t-pro">MAX</span>
-      </h1>
+      <h1 class="splash-title"><span class="t-eco">Eco</span><span class="t-shop">Shop</span><span class="t-pro">MAX</span></h1>
       <p class="splash-tagline">Premium Shopping Experience</p>
     </div>
     <div class="splash-progress">
@@ -48,55 +44,42 @@
       <span class="bar"></span><span class="bar"></span><span class="bar"></span>
     </button>
 
-    <a class="nav-logo" onclick="router.go('home')">
-      <div class="logo-icon"><i class="ph-fill ph-storefront"></i></div>
-      <div class="logo-text">
-        <span class="t-eco">Eco</span><span class="t-shop">Shop</span>
-        <span class="t-pro">MAX</span>
-      </div>
+    <a class="nav-logo" data-go="home">
+      <div class="logo-icon"><i class="fa-solid fa-shop"></i></div>
+      <div class="logo-text"><span class="t-eco">Eco</span><span class="t-shop">Shop</span><span class="t-pro">MAX</span></div>
     </a>
 
     <div class="nav-search" id="navSearchWrap">
-      <i class="ph-bold ph-magnifying-glass search-icon"></i>
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
       <input type="text" id="globalSearchInput" placeholder="পণ্য খুঁজুন..." autocomplete="off" />
     </div>
 
     <nav class="nav-menu">
-      <a onclick="router.go('home')" data-page="home"><i class="ph-bold ph-house"></i> <span>হোম</span></a>
-      <a onclick="router.go('products')" data-page="products"><i class="ph-bold ph-shopping-bag"></i> <span>পণ্য</span></a>
-      <a onclick="router.go('orders')" data-page="orders"><i class="ph-bold ph-receipt"></i> <span>অর্ডার</span></a>
+      <a data-go="home" data-page="home"><i class="fa-solid fa-house"></i><span>হোম</span></a>
+      <a data-go="products" data-page="products"><i class="fa-solid fa-bag-shopping"></i><span>পণ্য</span></a>
+      <a data-go="orders" data-page="orders"><i class="fa-solid fa-receipt"></i><span>অর্ডার</span></a>
     </nav>
 
     <div class="nav-actions">
-      <button class="icon-btn" id="themeToggle" title="থিম"><i class="ph-bold ph-moon"></i></button>
-      <button class="icon-btn" id="langToggle" title="ভাষা">
-        <i class="ph-bold ph-globe"></i><span class="lang-chip" id="currentLangLabel">বাং</span>
-      </button>
-      <button class="icon-btn" id="wishlistBtn" title="উইশলিস্ট">
-        <i class="ph-bold ph-heart"></i><span class="badge" id="wishlistBadge">0</span>
-      </button>
-      <button class="icon-btn" id="cartBtn" title="কার্ট">
-        <i class="ph-bold ph-shopping-cart-simple"></i><span class="badge" id="cartBadge">0</span>
-      </button>
-      <button class="icon-btn" id="notifBtn" title="নোটিফিকেশন">
-        <i class="ph-bold ph-bell"></i><span class="badge" id="notifBadge">0</span>
-      </button>
+      <button class="icon-btn" id="themeToggle" title="থিম"><i class="fa-solid fa-moon"></i></button>
+      <button class="icon-btn" id="langToggle" title="ভাষা"><i class="fa-solid fa-globe"></i><span class="lang-chip" id="currentLangLabel">বাং</span></button>
+      <button class="icon-btn" id="wishlistBtn" title="উইশলিস্ট"><i class="fa-solid fa-heart"></i><span class="badge" id="wishlistBadge">0</span></button>
+      <button class="icon-btn" id="cartBtn" title="কার্ট"><i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartBadge">0</span></button>
+      <button class="icon-btn" id="notifBtn" title="নোটিফিকেশন"><i class="fa-solid fa-bell"></i><span class="badge" id="notifBadge">0</span></button>
+
       <div class="user-menu" id="userMenu">
-        <button class="avatar-btn" id="userMenuBtn">
-          <img id="userAvatar" src="https://ui-avatars.com/api/?name=U&background=6366f1&color=fff" alt="user" />
-        </button>
+        <button class="avatar-btn" id="userMenuBtn"><img id="userAvatar" src="https://ui-avatars.com/api/?name=U&background=6366f1&color=fff" alt="user" /></button>
         <div class="dropdown" id="userDropdown">
           <div class="dropdown-header" id="dropdownUserHeader"></div>
-          <a onclick="router.go('profile')"><i class="ph-bold ph-user"></i> <span>প্রোফাইল</span></a>
-          <a onclick="router.go('dashboard')"><i class="ph-bold ph-gauge"></i> <span>ড্যাশবোর্ড</span></a>
-          <a onclick="router.go('settings')"><i class="ph-bold ph-gear"></i> <span>সেটিংস</span></a>
+          <a data-go="profile"><i class="fa-solid fa-user"></i><span>প্রোফাইল</span></a>
+          <a data-go="dashboard"><i class="fa-solid fa-gauge"></i><span>ড্যাশবোর্ড</span></a>
+          <a data-go="settings"><i class="fa-solid fa-gear"></i><span>সেটিংস</span></a>
           <div class="dropdown-divider"></div>
-          <a id="logoutBtn" class="danger"><i class="ph-bold ph-sign-out"></i> <span>লগআউট</span></a>
+          <a id="logoutBtn" class="danger"><i class="fa-solid fa-right-from-bracket"></i><span>লগআউট</span></a>
         </div>
       </div>
-      <button class="btn btn-primary login-btn" id="loginBtn" onclick="router.go('auth')">
-        <i class="ph-bold ph-sign-in"></i><span>লগইন</span>
-      </button>
+
+      <button class="btn btn-primary login-btn" id="loginBtn" data-go="auth"><i class="fa-solid fa-right-to-bracket"></i><span>লগইন</span></button>
     </div>
   </div>
 </header>
@@ -105,46 +88,42 @@
 <aside class="power-menu" id="powerMenu">
   <div class="pm-header">
     <div class="pm-profile">
-      <div class="pm-avatar-wrap">
-        <img id="pmAvatar" src="https://ui-avatars.com/api/?name=G&background=6366f1&color=fff&size=120" />
-      </div>
+      <div class="pm-avatar-wrap"><img id="pmAvatar" src="https://ui-avatars.com/api/?name=G&background=6366f1&color=fff&size=120" /></div>
       <div class="pm-profile-info">
         <h3 id="pmName">Guest User</h3>
         <p id="pmEmail">লগইন করুন</p>
         <span class="pm-role-badge" id="pmRoleBadge">GUEST</span>
       </div>
     </div>
-    <button class="pm-close" id="pmClose" type="button"><i class="ph-bold ph-x"></i></button>
+    <button class="pm-close" id="pmClose" type="button"><i class="fa-solid fa-xmark"></i></button>
   </div>
 
   <nav class="pm-nav">
     <div class="pm-section">
       <div class="pm-section-title">নেভিগেশন</div>
-      <a onclick="router.go('home');closePowerMenu()"><i class="ph-bold ph-house"></i><span>হোম</span></a>
-      <a onclick="router.go('products');closePowerMenu()"><i class="ph-bold ph-shopping-bag"></i><span>সকল পণ্য</span></a>
-      <a onclick="router.go('wishlist');closePowerMenu()"><i class="ph-bold ph-heart"></i><span>উইশলিস্ট</span><span class="pm-badge" id="pmWishBadge">0</span></a>
-      <a onclick="router.go('orders');closePowerMenu()"><i class="ph-bold ph-receipt"></i><span>আমার অর্ডার</span></a>
+      <a data-go="home" data-close="1"><i class="fa-solid fa-house"></i><span>হোম</span></a>
+      <a data-go="products" data-close="1"><i class="fa-solid fa-bag-shopping"></i><span>সকল পণ্য</span></a>
+      <a data-go="wishlist" data-close="1"><i class="fa-solid fa-heart"></i><span>উইশলিস্ট</span><span class="pm-badge" id="pmWishBadge">0</span></a>
+      <a data-go="orders" data-close="1"><i class="fa-solid fa-receipt"></i><span>আমার অর্ডার</span></a>
     </div>
     <div class="pm-section">
       <div class="pm-section-title">অ্যাকাউন্ট</div>
-      <a onclick="router.go('profile');closePowerMenu()"><i class="ph-bold ph-user"></i><span>প্রোফাইল</span></a>
-      <a onclick="router.go('dashboard');closePowerMenu()"><i class="ph-bold ph-gauge"></i><span>ড্যাশবোর্ড</span></a>
-      <a onclick="router.go('settings');closePowerMenu()"><i class="ph-bold ph-gear"></i><span>সেটিংস</span></a>
-      <a id="pmAdminBtn" style="display:none;" onclick="router.go('admin');closePowerMenu()">
-        <i class="ph-bold ph-shield-check"></i><span>এডমিন প্যানেল</span><span class="pm-badge pm-badge-admin">ADMIN</span>
-      </a>
+      <a data-go="profile" data-close="1"><i class="fa-solid fa-user"></i><span>প্রোফাইল</span></a>
+      <a data-go="dashboard" data-close="1"><i class="fa-solid fa-gauge"></i><span>ড্যাশবোর্ড</span></a>
+      <a data-go="settings" data-close="1"><i class="fa-solid fa-gear"></i><span>সেটিংস</span></a>
+      <a id="pmAdminBtn" style="display:none;" data-go="admin" data-close="1"><i class="fa-solid fa-shield-halved"></i><span>এডমিন প্যানেল</span><span class="pm-badge pm-badge-admin">ADMIN</span></a>
     </div>
     <div class="pm-section">
       <div class="pm-section-title">প্রেফারেন্স</div>
       <div class="pm-row">
-        <div class="pm-row-label"><i class="ph-bold ph-translate"></i><span>ভাষা</span></div>
+        <div class="pm-row-label"><i class="fa-solid fa-language"></i><span>ভাষা</span></div>
         <div class="pm-seg" id="pmLangSeg">
           <button type="button" data-lang="bn" class="active">বাংলা</button>
           <button type="button" data-lang="en">English</button>
         </div>
       </div>
       <div class="pm-row">
-        <div class="pm-row-label"><i class="ph-bold ph-moon-stars"></i><span>থিম</span></div>
+        <div class="pm-row-label"><i class="fa-solid fa-moon"></i><span>থিম</span></div>
         <div class="pm-seg" id="pmThemeSeg">
           <button type="button" data-theme="light">☀️</button>
           <button type="button" data-theme="dark">🌙</button>
@@ -155,25 +134,19 @@
   </nav>
 
   <div class="pm-footer">
-    <button class="pm-login-btn" id="pmLoginBtn" onclick="router.go('auth');closePowerMenu()">
-      <i class="ph-bold ph-sign-in"></i><span>লগইন করুন</span>
-    </button>
-    <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none;" onclick="authUI.doLogout()">
-      <i class="ph-bold ph-sign-out"></i><span>লগআউট</span>
-    </button>
-    <p class="pm-version">EcoShop Pro MAX · v3.0</p>
+    <button class="pm-login-btn" id="pmLoginBtn" data-go="auth" data-close="1"><i class="fa-solid fa-right-to-bracket"></i><span>লগইন করুন</span></button>
+    <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none;"><i class="fa-solid fa-right-from-bracket"></i><span>লগআউট</span></button>
+    <p class="pm-version">EcoShop Pro MAX · v4.0</p>
   </div>
 </aside>
+
 <div class="backdrop" id="backdrop"></div>
 
 <!-- NOTIFICATION PANEL -->
 <aside class="notif-panel" id="notifPanel">
   <div class="panel-header">
-    <div>
-      <h3><i class="ph-fill ph-bell"></i> নোটিফিকেশন</h3>
-      <p class="panel-sub">সকল আপডেট</p>
-    </div>
-    <button class="panel-close" id="closeNotif" type="button"><i class="ph-bold ph-x"></i></button>
+    <div><h3><i class="fa-solid fa-bell"></i> নোটিফিকেশন</h3><p class="panel-sub">সকল আপডেট</p></div>
+    <button class="panel-close" id="closeNotif" type="button"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="notif-list" id="notifList"></div>
 </aside>
@@ -181,11 +154,8 @@
 <!-- CART DRAWER -->
 <aside class="cart-drawer" id="cartDrawer">
   <div class="panel-header">
-    <div>
-      <h3><i class="ph-fill ph-shopping-cart-simple"></i> আপনার কার্ট</h3>
-      <p class="panel-sub" id="cartSubtitle">0 টি পণ্য</p>
-    </div>
-    <button class="panel-close" id="closeCart" type="button"><i class="ph-bold ph-x"></i></button>
+    <div><h3><i class="fa-solid fa-cart-shopping"></i> আপনার কার্ট</h3><p class="panel-sub" id="cartSubtitle">0 টি পণ্য</p></div>
+    <button class="panel-close" id="closeCart" type="button"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="cart-body" id="cartDrawerBody"></div>
   <div class="cart-foot" id="cartDrawerFoot"></div>
@@ -195,52 +165,43 @@
 <div class="admin-layout" id="adminLayout" style="display:none;">
   <aside class="admin-sidebar" id="adminSidebar">
     <div class="admin-brand">
-      <div class="logo-icon"><i class="ph-fill ph-storefront"></i></div>
+      <div class="logo-icon"><i class="fa-solid fa-shop"></i></div>
       <div class="logo-text"><span class="t-eco">Eco</span><span class="t-shop">Shop</span></div>
       <span class="admin-pill">ADMIN</span>
     </div>
     <nav class="admin-nav">
       <div class="nav-section">
         <div class="nav-section-title">ড্যাশবোর্ড</div>
-        <a data-admin="overview" class="active"><i class="ph-bold ph-chart-line-up"></i> <span>ওভারভিউ</span></a>
+        <a data-admin="overview" class="active"><i class="fa-solid fa-chart-line"></i><span>ওভারভিউ</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">কমার্স</div>
-        <a data-admin="orders"><i class="ph-bold ph-receipt"></i> <span>অর্ডার</span></a>
-        <a data-admin="products"><i class="ph-bold ph-package"></i> <span>পণ্য</span></a>
-        <a data-admin="categories"><i class="ph-bold ph-tag"></i> <span>ক্যাটাগরি</span></a>
-        <a data-admin="coupons"><i class="ph-bold ph-ticket"></i> <span>কুপন</span></a>
+        <a data-admin="orders"><i class="fa-solid fa-receipt"></i><span>অর্ডার</span></a>
+        <a data-admin="products"><i class="fa-solid fa-box"></i><span>পণ্য</span></a>
+        <a data-admin="categories"><i class="fa-solid fa-tags"></i><span>ক্যাটাগরি</span></a>
+        <a data-admin="coupons"><i class="fa-solid fa-ticket"></i><span>কুপন</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">ইউজার</div>
-        <a data-admin="users"><i class="ph-bold ph-users"></i> <span>ইউজার</span></a>
+        <a data-admin="users"><i class="fa-solid fa-users"></i><span>ইউজার</span></a>
       </div>
       <div class="nav-section">
         <div class="nav-section-title">সিস্টেম</div>
-        <a data-admin="settings"><i class="ph-bold ph-sliders"></i> <span>সেটিংস</span></a>
+        <a data-admin="settings"><i class="fa-solid fa-sliders"></i><span>সেটিংস</span></a>
       </div>
     </nav>
     <div class="admin-footer">
-      <button class="admin-exit" onclick="router.go('home')">
-        <i class="ph-bold ph-arrow-left"></i> দোকানে ফিরে যান
-      </button>
+      <button class="admin-exit" data-go="home"><i class="fa-solid fa-arrow-left"></i> দোকানে ফিরে যান</button>
     </div>
   </aside>
 
   <main class="admin-main">
     <header class="admin-header">
-      <button class="admin-sidebar-toggle" id="adminSidebarToggle" type="button">
-        <i class="ph-bold ph-list"></i>
-      </button>
-      <div class="admin-header-title">
-        <h1 id="adminPageTitle">ড্যাশবোর্ড</h1>
-        <p id="adminPageSubtitle">স্বাগতম, এডমিন</p>
-      </div>
+      <button class="admin-sidebar-toggle" id="adminSidebarToggle" type="button"><i class="fa-solid fa-bars"></i></button>
+      <div class="admin-header-title"><h1 id="adminPageTitle">ওভারভিউ</h1><p id="adminPageSubtitle">স্বাগতম, এডমিন</p></div>
       <div class="admin-header-actions">
-        <button class="icon-btn" onclick="router.go('home')" title="দোকান"><i class="ph-bold ph-storefront"></i></button>
-        <button class="avatar-btn" onclick="authUI.doLogout()">
-          <img id="adminAvatar" src="https://ui-avatars.com/api/?name=A&background=6366f1&color=fff" />
-        </button>
+        <button class="icon-btn" data-go="home" title="দোকান"><i class="fa-solid fa-shop"></i></button>
+        <button class="avatar-btn" id="adminLogoutBtn"><img id="adminAvatar" src="https://ui-avatars.com/api/?name=A&background=6366f1&color=fff" /></button>
       </div>
     </header>
     <div class="admin-content" id="adminContent"></div>
@@ -249,13 +210,11 @@
 
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="bottomNav">
-  <a onclick="router.go('home')" data-nav="home"><div class="bn-icon"><i class="ph-bold ph-house"></i></div><span>হোম</span></a>
-  <a onclick="router.go('products')" data-nav="products"><div class="bn-icon"><i class="ph-bold ph-shopping-bag"></i></div><span>পণ্য</span></a>
-  <a class="bn-center" onclick="router.go('products')"><div class="bn-center-btn"><i class="ph-bold ph-magnifying-glass"></i></div></a>
-  <a onclick="router.go('wishlist')" data-nav="wishlist">
-    <div class="bn-icon"><i class="ph-bold ph-heart"></i><span class="mini-badge" id="bnWishlistBadge">0</span></div><span>উইশ</span>
-  </a>
-  <a onclick="router.go('dashboard')" data-nav="dashboard"><div class="bn-icon"><i class="ph-bold ph-user"></i></div><span>প্রোফাইল</span></a>
+  <a data-go="home" data-nav="home"><div class="bn-icon"><i class="fa-solid fa-house"></i></div><span>হোম</span></a>
+  <a data-go="products" data-nav="products"><div class="bn-icon"><i class="fa-solid fa-bag-shopping"></i></div><span>পণ্য</span></a>
+  <a class="bn-center" data-go="products"><div class="bn-center-btn"><i class="fa-solid fa-magnifying-glass"></i></div></a>
+  <a data-go="wishlist" data-nav="wishlist"><div class="bn-icon"><i class="fa-solid fa-heart"></i><span class="mini-badge" id="bnWishlistBadge">0</span></div><span>উইশ</span></a>
+  <a data-go="dashboard" data-nav="dashboard"><div class="bn-icon"><i class="fa-solid fa-user"></i></div><span>প্রোফাইল</span></a>
 </nav>
 
 <main id="app"></main>
@@ -269,9 +228,9 @@
     </div>
     <div class="footer-col">
       <h4>দ্রুত লিংক</h4>
-      <a onclick="router.go('home')">হোম</a>
-      <a onclick="router.go('products')">সকল পণ্য</a>
-      <a onclick="router.go('orders')">অর্ডার</a>
+      <a data-go="home">হোম</a>
+      <a data-go="products">সকল পণ্য</a>
+      <a data-go="orders">অর্ডার</a>
     </div>
     <div class="footer-col">
       <h4>যোগাযোগ</h4>
@@ -280,18 +239,13 @@
       <p>ঢাকা, বাংলাদেশ</p>
     </div>
   </div>
-  <div class="footer-bottom">
-    <p>© 2025 EcoShop Pro MAX. সকল অধিকার সংরক্ষিত।</p>
-  </div>
+  <div class="footer-bottom"><p>© 2026 EcoShop Pro MAX. সকল অধিকার সংরক্ষিত।</p></div>
 </footer>
 
-<button class="back-to-top" id="backToTop" title="উপরে যান" type="button">
-  <i class="ph-bold ph-arrow-up"></i>
-</button>
+<button class="back-to-top" id="backToTop" title="উপরে যান" type="button"><i class="fa-solid fa-arrow-up"></i></button>
 
 <div class="modal-root" id="modalRoot"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 <script type="module" src="app.js"></script>
 </body>
-</html>
+                                                             </html>
