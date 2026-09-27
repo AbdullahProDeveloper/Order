@@ -9,11 +9,10 @@
 <meta name="apple-mobile-web-app-title" content="EcoShop">
 <meta name="format-detection" content="telephone=no">
 <meta name="description" content="EcoShop Pro MAX — বাংলাদেশের সেরা প্রিমিয়াম অনলাইন শপিং">
+<title>EcoShop Pro MAX — প্রিমিয়াম ই-কমার্স</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PHRleHQgeD0iOTYiIHk9IjEyMCIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+8J+NuTwvdGV4dD48L3N2Zz4=">
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PHRleHQgeD0iOTYiIHk9IjEyMCIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+8J+NuTwvdGV4dD48L3N2Zz4=">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,10 +20,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="style.css">
+
+<!-- EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
-<!-- Ambient BG -->
 <div class="ambient-bg" aria-hidden="true">
   <div class="ambient-blob blob-1"></div>
   <div class="ambient-blob blob-2"></div>
@@ -39,9 +40,7 @@
       <div class="splash-ring ring-2"></div>
       <div class="splash-icon"><i class="fa-solid fa-leaf"></i></div>
     </div>
-    <h1 class="splash-title">
-      <span class="t-eco">Eco</span><span class="t-shop">Shop</span><span class="t-pro">PRO</span>
-    </h1>
+    <h1 class="splash-title"><span class="t-eco">Eco</span><span class="t-shop">Shop</span><span class="t-pro">PRO</span></h1>
     <p class="splash-tagline" data-i18n="splashTagline">প্রিমিয়াম ই-কমার্স অভিজ্ঞতা</p>
     <div class="splash-progress">
       <div class="splash-bar"><span id="splashBar"></span></div>
@@ -50,12 +49,10 @@
   </div>
 </div>
 
-<!-- Offline indicator -->
 <div class="offline-bar" id="offlineBar">
   <i class="fa-solid fa-wifi"></i> <span id="offlineText">অফলাইন — কিছু ফিচার সীমিত</span>
 </div>
 
-<!-- PWA Install prompt -->
 <div class="install-banner" id="installBanner">
   <div class="install-icon"><i class="fa-solid fa-download"></i></div>
   <div class="install-text">
@@ -70,7 +67,6 @@
 <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 <div class="top-progress" id="topProgress"></div>
 
-<!-- NAVBAR (same as v5) -->
 <header class="navbar" id="navbar">
   <div class="nav-container">
     <button class="menu-toggle" id="menuToggle" aria-label="Menu">
@@ -107,7 +103,6 @@
   </div>
 </header>
 
-<!-- Dropdown, Power Menu, Drawers — v5 এর মতোই (নিচে কমপ্লিট সংস্করণ দেওয়া আছে) -->
 <div class="dropdown" id="userDropdown" role="menu">
   <div class="dropdown-header"><h4 id="ddName">—</h4><p id="ddEmail">—</p></div>
   <a onclick="App.go('profile')"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
@@ -171,7 +166,7 @@
     </div>
     <button class="pm-login-btn" id="pmLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> <span data-i18n="loginRegister">লগইন / রেজিস্টার</span></button>
     <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none"><i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">লগআউট</span></button>
-    <p class="pm-version">v6.0 Enterprise PWA</p>
+    <p class="pm-version">v7.0 OTP Secure</p>
   </div>
 </aside>
 
@@ -251,7 +246,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
