@@ -1,1072 +1,1359 @@
-/* ══════════════════════════════════════════════════════════
-   EcoShop Pro MAX — app.js
-   Firebase Authentication + Realtime Database ব্যবহার করে
-   সম্পূর্ণ লাইভ, মাল্টি-ইউজার ই-কমার্স ব্যাকএন্ড।
-   ছবি আপলোড হয় imgbb (https://api.imgbb.com) এর মাধ্যমে।
-   ══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════════════
+   EcoShop Pro MAX v3.0 — Firebase Realtime + ImgBB Edition
+   ═══════════════════════════════════════════════════════════ */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
-import {
-  getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
-  signInWithEmailAndPassword, signOut, updateProfile
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
-import {
-  getDatabase, ref, push, set, update, remove, onValue,
-  get, query, orderByChild, equalTo
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
-
-/* ═══ FIREBASE INIT ═══ */
+/* ───────── Firebase Config ───────── */
 const firebaseConfig = {
-  apiKey: "AIzaSyBiBGWukd3PNjxK6-gv_4qiCHmwAfO3GzQ",
-  authDomain: "hesab-khata.firebaseapp.com",
-  databaseURL: "https://hesab-khata-default-rtdb.firebaseio.com",
-  projectId: "hesab-khata",
-  storageBucket: "hesab-khata.firebasestorage.app",
-  messagingSenderId: "138943764760",
-  appId: "1:138943764760:web:908c5abacc6122a55d266d",
-  measurementId: "G-0HG3FJSS4X"
-};
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const rtdb = getDatabase(fbApp);
-
-/* ═══ IMGBB (image hosting) ═══ */
-const IMGBB_KEY = "811434d9b77765dbedbb9662b98a0f74";
-async function uploadImage(file) {
-  if (!file) return "";
-  const formData = new FormData();
-  formData.append("image", file);
-  const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
-  const data = await res.json();
-  if (!data.success) throw new Error("ছবি আপলোড ব্যর্থ হয়েছে");
-  return data.data.display_url || data.data.url;
-}
-
-/* ═══ SHORTHAND HELPERS ═══ */
-const $  = (s, c = document) => c.querySelector(s);
-const $$ = (s, c = document) => Array.from(c.querySelectorAll(s));
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
-const fmtPrice = (n) => "৳" + Number(n || 0).toLocaleString("en-US");
-const fmtDate = (ts) => { if (!ts) return "-"; return new Date(ts).toLocaleDateString("bn-BD", { day: "numeric", month: "short", year: "numeric" }); };
-function objToArr(val) { if (!val) return []; return Object.keys(val).map(id => ({ id, ...val[id] })); }
-
-function toast(msg, type = "info") {
-  const c = $("#toastContainer"); if (!c) return;
-  const el = document.createElement("div");
-  el.className = `toast ${type}`;
-  const icon = { success: "circle-check", error: "circle-exclamation", warning: "triangle-exclamation", info: "circle-info" }[type];
-  el.innerHTML = `<i class="fa-solid fa-${icon}"></i><span>${esc(msg)}</span>`;
-  c.appendChild(el);
-  setTimeout(() => { el.style.opacity = "0"; el.style.transform = "translateX(40px)"; setTimeout(() => el.remove(), 250); }, 3200);
-}
-
-const modal = {
-  open(html, opts = {}) {
-    const root = $("#modalRoot");
-    root.innerHTML = `<div class="modal-overlay" id="modalOverlay"><div class="modal-box ${opts.size || ""}">${html}</div></div>`;
-    $("#modalOverlay").addEventListener("mousedown", (e) => { if (e.target.id === "modalOverlay") modal.close(); });
-  },
-  close() { $("#modalRoot").innerHTML = ""; }
+  apiKey: "AIzaSyAtxk-3sNl3RSIEcMrZVk4uZeJCOuVLQMk",
+  authDomain: "my-fast-projets.firebaseapp.com",
+  databaseURL: "https://my-fast-projets-default-rtdb.firebaseio.com",
+  projectId: "my-fast-projets",
+  storageBucket: "my-fast-projets.firebasestorage.app",
+  messagingSenderId: "316176074899",
+  appId: "1:316176074899:web:7a7f6c7961778844c02566",
+  measurementId: "G-L4HEZ409HR"
 };
 
-function confirmDialog(msg, onYes) {
-  modal.open(`
-    <div class="confirm-box">
-      <i class="fa-solid fa-triangle-exclamation"></i>
-      <p>${esc(msg)}</p>
-      <div class="confirm-actions">
-        <button class="btn btn-outline btn-block" id="cdNo">বাতিল</button>
-        <button class="btn btn-danger btn-block" id="cdYes">নিশ্চিত</button>
-      </div>
-    </div>`, { size: "sm" });
-  $("#cdNo").onclick = () => modal.close();
-  $("#cdYes").onclick = () => { modal.close(); onYes(); };
-}
+/* ───────── ImgBB Config ───────── */
+const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
+const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
 
-/* ═══ APP STATE ═══ */
-const state = {
-  products: [], categories: [], orders: [], coupons: [], users: [],
-  siteSettings: {}, notifications: [],
-  user: null, userProfile: null, isAdmin: false, authReady: false,
-  cart: JSON.parse(localStorage.getItem("cart") || "[]"),
-  wishlist: JSON.parse(localStorage.getItem("wishlist") || "[]"),
-  lang: localStorage.getItem("lang") || "bn",
-  themeMode: localStorage.getItem("themeMode") || "light",
-  filters: { query: "", category: "all", sort: "new" },
-  adminPage: "overview"
-};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+try { firebase.analytics(); } catch(e){}
 
-/* ═══ I18N / THEME ═══ */
-const dict = { add_to_cart: { bn: "কার্টে যোগ করুন", en: "Add to Cart" } };
-function t(key) { return (dict[key] && dict[key][state.lang]) || key; }
-function applyLang() {
-  document.documentElement.lang = state.lang;
-  $("#currentLangLabel").textContent = state.lang === "bn" ? "বাং" : "EN";
-}
-function applyTheme() {
-  let mode = state.themeMode;
-  if (mode === "auto") mode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-  document.documentElement.setAttribute("data-theme", mode);
-  const tt = $("#themeToggle");
-  if (tt) tt.innerHTML = `<i class="fa-solid fa-${mode === "dark" ? "sun" : "moon"}"></i>`;
-}
-function toggleTheme() {
-  const order = ["light", "dark", "auto"];
-  state.themeMode = order[(order.indexOf(state.themeMode) + 1) % order.length];
-  localStorage.setItem("themeMode", state.themeMode);
-  applyTheme(); syncSettingsUI();
-}
-function toggleLang() {
-  state.lang = state.lang === "bn" ? "en" : "bn";
-  localStorage.setItem("lang", state.lang);
-  applyLang(); router.render();
-}
-function syncSettingsUI() {
-  $$("#pmLangSeg button").forEach(b => b.classList.toggle("active", b.dataset.lang === state.lang));
-  $$("#pmThemeSeg button").forEach(b => b.classList.toggle("active", b.dataset.theme === state.themeMode));
-}
-
-/* ═══ API LAYER (Firebase Auth + Realtime Database) ═══ */
-const api = {
-  /* ---- auth ---- */
-  async signup({ name, email, password, phone }) {
-    email = (email || "").trim().toLowerCase();
-    if (!email || !password) throw new Error("ইমেইল ও পাসওয়ার্ড আবশ্যক");
-    const cred = await createUserWithEmailAndPassword(auth, email, password);
-    if (name) await updateProfile(cred.user, { displayName: name });
-    // প্রথম যে ব্যবহারকারী সাইনআপ করবে সে স্বয়ংক্রিয়ভাবে এডমিন হবে
-    const bootstrapSnap = await get(ref(rtdb, "meta/adminAssigned"));
-    const role = bootstrapSnap.exists() ? "user" : "admin";
-    if (!bootstrapSnap.exists()) await set(ref(rtdb, "meta/adminAssigned"), true);
-    await set(ref(rtdb, `users/${cred.user.uid}`), {
-      name: name || "User", email, phone: phone || "", role, banned: false, createdAt: Date.now()
-    });
+/* ───────── i18n ───────── */
+const I18N = {
+  bn: {
+    home:'হোম', shop:'শপ', orders:'অর্ডার', profile:'প্রোফাইল',
+    admin:'অ্যাডমিন', login:'লগইন', logout:'লগআউট', search:'পণ্য খুঁজুন...',
+    addToCart:'কার্টে যোগ', wishlist:'উইশলিস্ট',
+    cart:'কার্ট', checkout:'চেকআউট', empty:'কোনো পণ্য নেই',
+    allProducts:'সকল পণ্য', price:'দাম', inStock:'স্টকে আছে', outOfStock:'স্টক নেই',
+    save:'সেভ করুন', cancel:'বাতিল', delete:'ডিলিট',
+    confirmDelete:'আপনি কি নিশ্চিত?', yes:'হ্যাঁ',
+    pending:'পেন্ডিং', confirmed:'কনফার্মড', shipped:'শিপড', delivered:'ডেলিভারড', cancelled:'বাতিল',
+    loginRequired:'অনুগ্রহ করে লগইন করুন', adminRequired:'শুধুমাত্র অ্যাডমিন'
   },
-  async login(email, password) {
-    email = (email || "").trim().toLowerCase();
-    await signInWithEmailAndPassword(auth, email, password);
-  },
-  async logout() { await signOut(auth); },
-  async getProfile(uid) {
-    const snap = await get(ref(rtdb, `users/${uid}`));
-    return snap.exists() ? snap.val() : {};
-  },
-  async updateProfile(uid, data) { await update(ref(rtdb, `users/${uid}`), data); },
-
-  /* ---- products ---- */
-  async addProduct(data, file) {
-    if (!data.name || !data.price) throw new Error("পণ্যের নাম ও দাম আবশ্যক");
-    const image = file ? await uploadImage(file) : "";
-    const newRef = push(ref(rtdb, "products"));
-    await set(newRef, { ...data, image, createdAt: Date.now() });
-  },
-  async updateProduct(id, data, file) {
-    if (file) data.image = await uploadImage(file);
-    await update(ref(rtdb, `products/${id}`), data);
-  },
-  async deleteProduct(id) { await remove(ref(rtdb, `products/${id}`)); },
-  listenProducts(cb) {
-    onValue(ref(rtdb, "products"), (snap) => { state.products = objToArr(snap.val()); cb(state.products); });
-  },
-
-  /* ---- categories ---- */
-  async addCategory(name) {
-    const exists = state.categories.find(c => c.name === name);
-    if (exists) throw new Error("এই ক্যাটাগরি আছে");
-    await set(push(ref(rtdb, "categories")), { name });
-  },
-  async deleteCategory(id) { await remove(ref(rtdb, `categories/${id}`)); },
-  listenCategories(cb) {
-    onValue(ref(rtdb, "categories"), (snap) => { state.categories = objToArr(snap.val()); cb(state.categories); });
-  },
-
-  /* ---- coupons ---- */
-  async addCoupon(c) { await set(push(ref(rtdb, "coupons")), c); },
-  async deleteCoupon(id) { await remove(ref(rtdb, `coupons/${id}`)); },
-  listenCoupons(cb) {
-    onValue(ref(rtdb, "coupons"), (snap) => { state.coupons = objToArr(snap.val()); cb(state.coupons); });
-  },
-
-  /* ---- orders ---- */
-  async placeOrder(order) {
-    const newRef = push(ref(rtdb, "orders"));
-    const o = { orderId: newRef.key, status: "pending", createdAt: Date.now(), ...order };
-    await set(newRef, o);
-    return { id: newRef.key, ...o };
-  },
-  async updateOrderStatus(orderId, status, userId) {
-    await update(ref(rtdb, `orders/${orderId}`), { status });
-    if (userId) {
-      await set(push(ref(rtdb, "notifications")), {
-        userId, title: "অর্ডার আপডেট", body: `আপনার অর্ডারের স্ট্যাটাস: ${status}`, read: false, createdAt: Date.now()
-      });
-    }
-  },
-  listenUserOrders(uid, cb) {
-    const q = query(ref(rtdb, "orders"), orderByChild("userId"), equalTo(uid));
-    onValue(q, (snap) => { cb(objToArr(snap.val()).sort((a, b) => b.createdAt - a.createdAt)); });
-  },
-  listenAllOrders(cb) {
-    onValue(ref(rtdb, "orders"), (snap) => {
-      state.orders = objToArr(snap.val()).sort((a, b) => b.createdAt - a.createdAt);
-      cb(state.orders);
-    });
-  },
-
-  /* ---- users ---- */
-  listenUsers(cb) {
-    onValue(ref(rtdb, "users"), (snap) => { state.users = objToArr(snap.val()); cb(state.users); });
-  },
-  async toggleBan(uid, banned) { await update(ref(rtdb, `users/${uid}`), { banned }); },
-
-  /* ---- settings ---- */
-  listenSiteSettings(cb) {
-    onValue(ref(rtdb, "siteSettings"), (snap) => { state.siteSettings = snap.val() || {}; cb(state.siteSettings); });
-  },
-  async saveSiteSettings(data) { await update(ref(rtdb, "siteSettings"), data); },
-
-  /* ---- notifications ---- */
-  listenNotifications(uid, cb) {
-    const q = query(ref(rtdb, "notifications"), orderByChild("userId"), equalTo(uid));
-    onValue(q, (snap) => { cb(objToArr(snap.val()).sort((a, b) => b.createdAt - a.createdAt)); });
+  en: {
+    home:'Home', shop:'Shop', orders:'Orders', profile:'Profile',
+    admin:'Admin', login:'Login', logout:'Logout', search:'Search products...',
+    addToCart:'Add to Cart', wishlist:'Wishlist',
+    cart:'Cart', checkout:'Checkout', empty:'No products found',
+    allProducts:'All Products', price:'Price', inStock:'In Stock', outOfStock:'Out of Stock',
+    save:'Save', cancel:'Cancel', delete:'Delete',
+    confirmDelete:'Are you sure?', yes:'Yes',
+    pending:'Pending', confirmed:'Confirmed', shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
+    loginRequired:'Please login first', adminRequired:'Admin only'
   }
 };
-window.api = api;
+let LANG = localStorage.getItem('eco_lang') || 'bn';
+const t = k => (I18N[LANG] && I18N[LANG][k]) || k;
 
-/* ═══ CART ═══ */
-const cart = {
-  add(p) {
-    const existing = state.cart.find(c => c.id === p.id);
-    if (existing) existing.qty += 1;
-    else state.cart.push({ id: p.id, name: p.name, price: p.price, image: p.image, qty: 1 });
-    this.save(); this.updateBadge(); this.renderDrawer();
-    toast(`"${p.name}" কার্টে যোগ হয়েছে`, "success");
+/* ───────── Session Storage ───────── */
+const Session = {
+  get(){ try{ return JSON.parse(localStorage.getItem('eco_session')) || null; }catch(e){ return null; } },
+  set(u){ localStorage.setItem('eco_session', JSON.stringify(u)); },
+  clear(){ localStorage.removeItem('eco_session'); }
+};
+const CartStore = {
+  get(){ try{ return JSON.parse(localStorage.getItem('eco_cart')) || []; }catch(e){ return []; } },
+  set(v){ localStorage.setItem('eco_cart', JSON.stringify(v)); }
+};
+const WishStore = {
+  get(){ try{ return JSON.parse(localStorage.getItem('eco_wish')) || []; }catch(e){ return []; } },
+  set(v){ localStorage.setItem('eco_wish', JSON.stringify(v)); }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   REALTIME DATABASE — পূর্ণ ডেটা লেয়ার
+   ═══════════════════════════════════════════════════════════ */
+const DB = {
+  products:[], users:[], orders:[], categories:[], coupons:[], notifs:[], settings:{},
+  listeners:[], ready:{products:false,users:false,orders:false,categories:false,coupons:false,notifs:false},
+
+  init(){
+    this.watch('products', (data)=>{ this.products = this._toArray(data); this._onUpdate('products'); });
+    this.watch('users', (data)=>{ this.users = this._toArray(data); this._onUpdate('users'); });
+    this.watch('orders', (data)=>{ this.orders = this._toArray(data).sort((a,b)=>b.date-a.date); this._onUpdate('orders'); });
+    this.watch('categories', (data)=>{ this.categories = this._toArray(data).map(c=>typeof c==='string'?c:c.name); this._onUpdate('categories'); });
+    this.watch('coupons', (data)=>{ this.coupons = this._toArray(data); this._onUpdate('coupons'); });
+    this.watch('notifications', (data)=>{ this.notifs = this._toArray(data).sort((a,b)=>b.time-a.time); this._onUpdate('notifs'); });
+    this.watch('settings', (data)=>{ this.settings = data || {}; });
+
+    // Seed initial data if empty
+    setTimeout(()=>this.seedIfEmpty(), 1500);
   },
-  remove(id) { state.cart = state.cart.filter(c => c.id !== id); this.save(); this.updateBadge(); this.renderDrawer(); },
-  setQty(id, qty) {
-    const c = state.cart.find(x => x.id === id); if (!c) return;
-    c.qty = Math.max(1, qty);
-    this.save(); this.updateBadge(); this.renderDrawer();
+
+  watch(path, cb){
+    const ref = db.ref(path);
+    const handler = ref.on('value', snap => cb(snap.val()), err => console.error('DB error on', path, err));
+    this.listeners.push({ref, handler});
   },
-  clear() { state.cart = []; this.save(); this.updateBadge(); this.renderDrawer(); },
-  total() { return state.cart.reduce((s, c) => s + c.price * c.qty, 0); },
-  save() { localStorage.setItem("cart", JSON.stringify(state.cart)); },
-  updateBadge() {
-    const n = state.cart.reduce((s, c) => s + c.qty, 0);
-    const b = $("#cartBadge"); if (b) b.textContent = n;
+
+  _toArray(data){
+    if(!data) return [];
+    if(Array.isArray(data)) return data.filter(Boolean);
+    return Object.entries(data).map(([k,v])=>({ ...v, _key:k, id:v.id||k }));
   },
-  renderDrawer() {
-    const body = $("#cartDrawerBody"), foot = $("#cartDrawerFoot"), sub = $("#cartSubtitle");
-    if (!body) return;
-    if (sub) sub.textContent = `${state.cart.length} টি পণ্য`;
-    if (!state.cart.length) {
-      body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>কার্ট খালি</h3></div>`;
-      foot.innerHTML = "";
-      return;
-    }
-    body.innerHTML = state.cart.map(c => `
-      <div class="cart-item">
-        <img src="${esc(c.image || 'https://placehold.co/100x100?text=%20')}" />
+
+  _onUpdate(which){
+    this.ready[which] = true;
+    if(App.route) App.rerenderIfVisible();
+  },
+
+  isReady(){ return this.ready.products && this.ready.users && this.ready.orders; },
+
+  async seedIfEmpty(){
+    if(!this.ready.products || this.products.length) return;
+    console.log('🌱 Seeding initial data...');
+    const products = [
+      {id:'p1', name:'প্রিমিয়াম ইকো-বোতল', nameEn:'Premium Eco Bottle', cat:'ইলেকট্রনিকস', catEn:'Electronics', price:850, oldPrice:1200, discount:29, stock:45, img:'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80', desc:'পরিবেশ বান্ধব স্টেইনলেস স্টিল বোতল', featured:true, createdAt: Date.now()},
+      {id:'p2', name:'ওয়্যারলেস হেডফোন', nameEn:'Wireless Headphone', cat:'ইলেকট্রনিকস', catEn:'Electronics', price:2500, oldPrice:3500, discount:29, stock:20, img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80', desc:'নয়েজ ক্যানসেলিং হেডফোন', featured:true, createdAt: Date.now()+1},
+      {id:'p3', name:'স্মার্ট ওয়াচ', nameEn:'Smart Watch', cat:'গ্যাজেট', catEn:'Gadgets', price:3200, oldPrice:4500, discount:29, stock:15, img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80', desc:'ফিটনেস ট্র্যাকিং স্মার্ট ওয়াচ', featured:true, createdAt: Date.now()+2},
+      {id:'p4', name:'মিনিমালিস্ট ব্যাগ', nameEn:'Minimalist Bag', cat:'ফ্যাশন', catEn:'Fashion', price:1200, oldPrice:1800, discount:33, stock:30, img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80', desc:'ওয়াটারপ্রুফ লেদার ব্যাগ', featured:false, createdAt: Date.now()+3},
+      {id:'p5', name:'ক্যামেরা লেন্স', nameEn:'Camera Lens', cat:'ফটোগ্রাফি', catEn:'Photography', price:8500, oldPrice:10000, discount:15, stock:8, img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80', desc:'প্রফেশনাল ক্যামেরা লেন্স', featured:false, createdAt: Date.now()+4},
+      {id:'p6', name:'সানগ্লাস প্রিমিয়াম', nameEn:'Premium Sunglass', cat:'ফ্যাশন', catEn:'Fashion', price:950, oldPrice:1400, discount:32, stock:0, img:'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=600&q=80', desc:'UV প্রোটেকশন সানগ্লাস', featured:false, createdAt: Date.now()+5}
+    ];
+    const users = {
+      u_admin: {id:'u_admin', name:'Admin', email:'admin@eco.pro', password:'admin123', role:'admin', blocked:false, joined:Date.now(), avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff'},
+      u_rahim: {id:'u_rahim', name:'Rahim Uddin', email:'rahim@mail.com', password:'123456', role:'customer', blocked:false, joined:Date.now(), avatar:'https://ui-avatars.com/api/?name=Rahim&background=10b981&color=fff'},
+      u_karim: {id:'u_karim', name:'Karim Ahmed', email:'karim@mail.com', password:'123456', role:'customer', blocked:false, joined:Date.now(), avatar:'https://ui-avatars.com/api/?name=Karim&background=f59e0b&color=fff'}
+    };
+    const cats = {'c1':'ইলেকট্রনিকস','c2':'গ্যাজেট','c3':'ফ্যাশন','c4':'ফটোগ্রাফি'};
+    const coupons = {
+      cp1: {id:'cp1', code:'ECO10', type:'percent', value:10},
+      cp2: {id:'cp2', code:'FLAT100', type:'flat', value:100}
+    };
+    const notifs = {
+      n1: {id:'n1', title:'স্বাগতম!', body:'EcoShop Pro MAX-এ আপনাকে স্বাগতম', time:Date.now(), read:false}
+    };
+    await Promise.all([
+      db.ref('products').set(products.reduce((a,p)=>(a[p.id]=p,a),{})),
+      db.ref('users').set(users),
+      db.ref('categories').set(cats),
+      db.ref('coupons').set(coupons),
+      db.ref('notifications').set(notifs),
+      db.ref('settings').set({siteName:'EcoShop Pro MAX', shipping:60, supportPhone:'+880 1700-000000'})
+    ]);
+    Toast.show('প্রাথমিক ডেটা লোড হয়েছে','success');
+  },
+
+  /* ─── CRUD helpers (firebase paths) ─── */
+  saveProduct(p){
+    const id = p.id || 'p_'+Date.now();
+    p.id = id; p.updatedAt = Date.now(); if(!p.createdAt) p.createdAt = Date.now();
+    return db.ref('products/'+id).set(p);
+  },
+  deleteProduct(id){ return db.ref('products/'+id).remove(); },
+
+  saveUser(u){
+    const id = u.id || 'u_'+Date.now();
+    u.id = id; if(!u.joined) u.joined = Date.now();
+    return db.ref('users/'+id).set(u);
+  },
+  deleteUser(id){ return db.ref('users/'+id).remove(); },
+  updateUser(id, patch){ return db.ref('users/'+id).update(patch); },
+
+  saveOrder(o){
+    const id = o.id || 'ORD-'+Date.now().toString().slice(-8);
+    o.id = id;
+    return db.ref('orders/'+id).set(o).then(()=>o);
+  },
+  updateOrder(id, patch){ return db.ref('orders/'+id).update(patch); },
+  deleteOrder(id){ return db.ref('orders/'+id).remove(); },
+
+  saveCategory(name){
+    const id = 'c_'+Date.now();
+    return db.ref('categories/'+id).set(name);
+  },
+  deleteCategory(key){
+    return db.ref('categories/'+key).remove();
+  },
+
+  saveCoupon(c){
+    const id = c.id || 'cp_'+Date.now();
+    c.id = id; return db.ref('coupons/'+id).set(c);
+  },
+  deleteCoupon(id){ return db.ref('coupons/'+id).remove(); },
+
+  pushNotif(n){
+    const id = 'n_'+Date.now(); n.id = id; n.time = Date.now(); n.read = false;
+    return db.ref('notifications/'+id).set(n);
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ImgBB Upload Service
+   ═══════════════════════════════════════════════════════════ */
+const ImageUpload = {
+  async upload(file){
+    if(!file) throw new Error('কোনো ফাইল নেই');
+    if(file.size > 32*1024*1024) throw new Error('ফাইল সাইজ ৩২MB এর কম হতে হবে');
+    if(!file.type.startsWith('image/')) throw new Error('শুধুমাত্র ইমেজ ফাইল');
+    
+    const form = new FormData();
+    form.append('key', IMGBB_API_KEY);
+    form.append('image', file);
+    
+    const res = await fetch(IMGBB_UPLOAD_URL, { method:'POST', body: form });
+    const json = await res.json();
+    if(!json.success) throw new Error(json.error?.message || 'আপলোড ব্যর্থ');
+    return {
+      url: json.data.url,
+      thumb: json.data.thumb?.url || json.data.url,
+      delete_url: json.data.delete_url,
+      id: json.data.id
+    };
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Toast / UI
+   ═══════════════════════════════════════════════════════════ */
+const Toast = {
+  show(msg, type='info', ms=2600){
+    const box = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    const icons = {info:'fa-circle-info', success:'fa-circle-check', error:'fa-circle-exclamation', warning:'fa-triangle-exclamation'};
+    el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i><span>${msg}</span>`;
+    box.appendChild(el);
+    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(40px)'; setTimeout(()=>el.remove(),250); }, ms);
+  },
+  progress(){ const p=document.getElementById('topProgress'); p.style.width='70%'; setTimeout(()=>{p.style.width='100%';setTimeout(()=>p.style.width='0',300);},300); }
+};
+
+const Modal = {
+  open(html, cls=''){
+    document.getElementById('modalRoot').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)Modal.close()"><div class="modal-box ${cls}">${html}</div></div>`;
+  },
+  close(){ document.getElementById('modalRoot').innerHTML = ''; },
+  confirm(msg, onYes){
+    this.open(`<div class="confirm-box">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p>${msg}</p>
+      <div class="confirm-actions">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-danger btn-block" id="modalConfirmYes">${t('yes')}</button>
+      </div>
+    </div>`, 'sm');
+    document.getElementById('modalConfirmYes').onclick = ()=>{ Modal.close(); onYes && onYes(); };
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   AUTH
+   ═══════════════════════════════════════════════════════════ */
+const Auth = {
+  user(){ return Session.get(); },
+  isAdmin(){ const u = this.user(); return u && u.role==='admin'; },
+  async login(email, password){
+    const u = DB.users.find(x=>x.email===email && x.password===password);
+    if(!u) return {ok:false, msg:'ভুল ইমেইল বা পাসওয়ার্ড'};
+    if(u.blocked) return {ok:false, msg:'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে'};
+    Session.set(u);
+    return {ok:true, user:u};
+  },
+  async register(name, email, password){
+    if(DB.users.find(x=>x.email===email)) return {ok:false, msg:'এই ইমেইল ইতিমধ্যেই ব্যবহৃত'};
+    const u = {id:'u_'+Date.now(), name, email, password, role:'customer', blocked:false, joined:Date.now(), avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`};
+    await DB.saveUser(u);
+    Session.set(u);
+    return {ok:true, user:u};
+  },
+  logout(){ Session.clear(); Toast.show('লগআউট সফল','success'); App.render(); }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   CART
+   ═══════════════════════════════════════════════════════════ */
+const Cart = {
+  items(){ return CartStore.get(); },
+  save(items){ CartStore.set(items); this.refresh(); },
+  add(id, qty=1){
+    const items = this.items();
+    const found = items.find(i=>i.id===id);
+    const p = DB.products.find(x=>x.id===id);
+    if(!p) return;
+    if(p.stock < qty) return Toast.show('স্টক যথেষ্ট নয়','error');
+    if(found){ if(found.qty+qty > p.stock) return Toast.show('স্টক শেষ','error'); found.qty += qty; }
+    else items.push({id, qty});
+    this.save(items);
+    Toast.show('কার্টে যোগ হয়েছে','success');
+  },
+  remove(id){ this.save(this.items().filter(i=>i.id!==id)); },
+  setQty(id, qty){
+    const items = this.items();
+    const it = items.find(i=>i.id===id); if(!it) return;
+    const p = DB.products.find(x=>x.id===id);
+    if(qty > p.stock) return Toast.show('স্টক শেষ','error');
+    it.qty = Math.max(1, qty); this.save(items);
+  },
+  count(){ return this.items().reduce((s,i)=>s+i.qty,0); },
+  subtotal(){
+    return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); return s + (p?p.price*i.qty:0); },0);
+  },
+  discountTotal(){
+    return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); if(!p||!p.oldPrice) return s; return s + ((p.oldPrice-p.price)*i.qty); },0);
+  },
+  refresh(){
+    const c = this.count();
+    const badge = document.getElementById('cartBadge'); if(badge) badge.textContent = c>0 ? c : '';
+    const cb = document.getElementById('cartCount'); if(cb) cb.textContent = `${c} items`;
+    const st = document.getElementById('cartSubtotal'); if(st) st.textContent = '৳'+this.subtotal();
+    const sh = document.getElementById('cartShipping'); if(sh) sh.textContent = '৳'+(c>0?60:0);
+    const dc = document.getElementById('cartDiscount'); if(dc) dc.textContent = '-৳'+this.discountTotal();
+    const tt = document.getElementById('cartTotal'); if(tt) tt.textContent = '৳'+(this.subtotal() + (c>0?60:0));
+    this.renderDrawer();
+  },
+  renderDrawer(){
+    const body = document.getElementById('cartBody'); if(!body) return;
+    const items = this.items();
+    if(!items.length){ body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>কার্ট খালি</h3><p>পণ্য যোগ করে শুরু করুন</p></div>`; return; }
+    body.innerHTML = items.map(i=>{
+      const p = DB.products.find(x=>x.id===i.id); if(!p) return '';
+      return `<div class="cart-item">
+        <img src="${p.img}" alt="">
         <div class="cart-item-info">
-          <h5>${esc(c.name)}</h5>
-          <span class="price">${fmtPrice(c.price)}</span>
+          <h5>${LANG==='bn'?p.name:p.nameEn||p.name}</h5>
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <span class="price" style="font-size:14px">৳${p.price}</span>
+            <button class="icon-btn-sm danger" onclick="Cart.remove('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+          </div>
           <div class="qty-ctrl">
-            <button data-qty-dec="${c.id}">−</button>
-            <span>${c.qty}</span>
-            <button data-qty-inc="${c.id}">+</button>
-            <button data-cart-remove="${c.id}" style="margin-left:auto;color:var(--danger);border:none;background:none;cursor:pointer;"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="Cart.setQty('${p.id}', ${i.qty-1})">−</button>
+            <span>${i.qty}</span>
+            <button onclick="Cart.setQty('${p.id}', ${i.qty+1})">+</button>
           </div>
         </div>
-      </div>`).join("");
-    foot.innerHTML = `
-      <div class="cart-summary-row total"><span>মোট</span><span>${fmtPrice(this.total())}</span></div>
-      <button class="btn btn-primary btn-block btn-lg" id="checkoutBtn" style="margin-top:12px;"><i class="fa-solid fa-bag-shopping"></i> চেকআউট করুন</button>`;
-    $("#checkoutBtn").onclick = () => { closeAllPanels(); router.go("checkout"); };
+      </div>`;
+    }).join('');
   }
 };
-window.cart = cart;
 
-/* ═══ WISHLIST ═══ */
-const wishlist = {
-  has(id) { return state.wishlist.some(p => p.id === id); },
-  toggle(p) {
-    if (this.has(p.id)) state.wishlist = state.wishlist.filter(x => x.id !== p.id);
-    else state.wishlist.push(p);
-    this.save(); this.updateBadge();
+/* ───────── WISH ───────── */
+const Wish = {
+  all(){ return WishStore.get(); },
+  has(id){ return this.all().includes(id); },
+  toggle(id){
+    const list = this.all();
+    const idx = list.indexOf(id);
+    if(idx>-1){ list.splice(idx,1); Toast.show('উইশলিস্ট থেকে সরানো হয়েছে','info'); }
+    else { list.push(id); Toast.show('উইশলিস্টে যোগ হয়েছে','success'); }
+    WishStore.set(list); App.rerenderIfVisible();
+  }
+};
+
+/* ───────── ORDERS ───────── */
+const Orders = {
+  all(){ return DB.orders; },
+  mine(){ const u=Auth.user(); if(!u) return []; return DB.orders.filter(o=>o.userId===u.id); },
+  async create(customer, items, total, coupon){
+    const u = Auth.user();
+    const order = {
+      id:'ORD-'+Date.now().toString().slice(-8),
+      userId: u?u.id:0, customer, items, total, coupon:coupon||null,
+      status:'pending', date: Date.now()
+    };
+    const saved = await DB.saveOrder(order);
+    // deduct stock
+    for(const i of items){
+      const p = DB.products.find(x=>x.id===i.id);
+      if(p){
+        await db.ref('products/'+p.id+'/stock').set(Math.max(0, p.stock - i.qty));
+      }
+    }
+    // notify admin
+    await DB.pushNotif({title:'নতুন অর্ডার!', body:`${customer.name} — ৳${total}`, type:'order'});
+    Cart.save([]);
+    return saved;
   },
-  save() { localStorage.setItem("wishlist", JSON.stringify(state.wishlist)); },
-  updateBadge() {
-    const n = state.wishlist.length;
-    const a = $("#wishlistBadge"), b = $("#bnWishlistBadge"), c = $("#pmWishBadge");
-    if (a) a.textContent = n; if (b) b.textContent = n; if (c) c.textContent = n;
+  updateStatus(id, status){ return DB.updateOrder(id, {status}); },
+  remove(id){ return DB.deleteOrder(id); }
+};
+
+/* ───────── NOTIFS ───────── */
+const Notifs = {
+  all(){ return DB.notifs; },
+  unread(){ return this.all().filter(n=>!n.read).length; },
+  markAllRead(){
+    this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true); });
+  },
+  refresh(){
+    const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread()||'';
+    const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} unread`;
+    const list = document.getElementById('notifList'); if(!list) return;
+    const arr = this.all();
+    list.innerHTML = arr.length ? arr.map(n=>`
+      <div class="notif-item ${n.read?'':'unread'}">
+        <div class="notif-icon"><i class="fa-solid fa-bell"></i></div>
+        <div><h5>${n.title}</h5><p>${n.body}</p><small>${new Date(n.time).toLocaleString('bn-BD')}</small></div>
+      </div>`).join('') : `<div class="empty-state"><i class="fa-solid fa-bell-slash"></i><h3>কোনো নোটিফিকেশন নেই</h3></div>`;
   }
 };
-window.wishlist = wishlist;
 
-/* ═══ POWER MENU ═══ */
-function openPowerMenu() {
-  $("#powerMenu")?.classList.add("active");
-  $("#backdrop")?.classList.add("active");
-  document.body.style.overflow = "hidden";
-  updatePowerMenuUI();
-}
-function closePowerMenu() {
-  $("#powerMenu")?.classList.remove("active");
-  if (!isAnyPanelOpen()) { $("#backdrop")?.classList.remove("active"); document.body.style.overflow = ""; }
-}
-function isAnyPanelOpen() {
-  return $("#cartDrawer")?.classList.contains("active") || $("#notifPanel")?.classList.contains("active") || $("#powerMenu")?.classList.contains("active") || $("#adminSidebar")?.classList.contains("active");
-}
-function closeAllPanels() {
-  ["#powerMenu", "#cartDrawer", "#notifPanel"].forEach(sel => $(sel)?.classList.remove("active"));
-  $("#backdrop")?.classList.remove("active");
-  document.body.style.overflow = "";
-}
-window.openPowerMenu = openPowerMenu;
-window.closePowerMenu = closePowerMenu;
-
-function updatePowerMenuUI() {
-  if (!state.user) {
-    $("#pmName").textContent = "Guest User";
-    $("#pmEmail").textContent = "লগইন করুন";
-    $("#pmRoleBadge").textContent = "GUEST";
-    $("#pmLoginBtn").style.display = "flex";
-    $("#pmLogoutBtn").style.display = "none";
-    $("#pmAdminBtn").style.display = "none";
-    $("#pmAvatar").src = "https://ui-avatars.com/api/?name=G&background=6366f1&color=fff&size=120";
-  } else {
-    $("#pmName").textContent = state.user.displayName || "User";
-    $("#pmEmail").textContent = state.user.email;
-    $("#pmRoleBadge").textContent = state.isAdmin ? "ADMIN" : "USER";
-    $("#pmAvatar").src = `https://ui-avatars.com/api/?name=${encodeURIComponent(state.user.displayName || "U")}&background=6366f1&color=fff&size=120`;
-    $("#pmLoginBtn").style.display = "none";
-    $("#pmLogoutBtn").style.display = "flex";
-    $("#pmAdminBtn").style.display = state.isAdmin ? "flex" : "none";
-  }
-  const wc = $("#pmWishBadge"); if (wc) wc.textContent = state.wishlist.length;
-}
-
-/* ═══ ROUTER ═══ */
-const router = {
-  current: "home",
-  go(page) {
-    this.current = page;
-    location.hash = page;
+/* ═══════════════════════════════════════════════════════════
+   APP ROUTER
+   ═══════════════════════════════════════════════════════════ */
+const App = {
+  route:'home',
+  rerenderIfVisible(){
+    if(this.route==='admin' || this.route==='home' || this.route==='shop') this.render();
+    else Cart.refresh(), Notifs.refresh();
+  },
+  go(route){
+    this.route = route;
+    document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active', a.dataset.nav===route));
     this.render();
-    window.scrollTo({ top: 0 });
+    window.scrollTo({top:0,behavior:'smooth'});
   },
-  showAdminOrUserDash() {
-    if (this.current === "auth") this.go(state.isAdmin ? "admin" : "dashboard");
-    else this.render();
+  render(){
+    const el = document.getElementById('app'); if(!el) return;
+    Toast.progress();
+    const map = {home:Pages.home, shop:Pages.shop, orders:Pages.orders, profile:Pages.profile, wishlist:Pages.wishlist, admin:Pages.admin, auth:Pages.auth};
+    el.innerHTML = (map[this.route]||Pages.home)();
+    this.syncUI();
+    Cart.refresh(); Notifs.refresh();
   },
-  render() {
-    const isAdminPage = this.current === "admin" && state.isAdmin;
-    $("#adminLayout").style.display = isAdminPage ? "flex" : "none";
-    $("#app").style.display = isAdminPage ? "none" : "block";
-    $("#publicNavbar").style.display = isAdminPage ? "none" : "";
-    $("#bottomNav").style.display = isAdminPage ? "none" : "";
-    $("#publicFooter").style.display = isAdminPage ? "none" : "";
-
-    $$("[data-page]").forEach(a => a.classList.toggle("active", a.dataset.page === this.current));
-    $$("[data-nav]").forEach(a => a.classList.toggle("active", a.dataset.nav === this.current));
-
-    if (isAdminPage) { adminPage.render(); return; }
-    if (this.current === "admin" && !state.isAdmin) { toast("অ্যাক্সেস নেই", "error"); this.current = "home"; }
-
-    const page = Pages[this.current] || Pages.home;
-    page($("#app"));
-  }
+  syncUI(){
+    const u = Auth.user();
+    const loginBtn = document.getElementById('loginBtn');
+    const avatarBtn = document.getElementById('userAvatarBtn');
+    if(u){
+      loginBtn.style.display='none';
+      avatarBtn.classList.add('show');
+      document.getElementById('navAvatar').src = u.avatar;
+      document.getElementById('ddName').textContent = u.name;
+      document.getElementById('ddEmail').textContent = u.email;
+      document.getElementById('ddAdmin').style.display = u.role==='admin' ? 'flex' : 'none';
+      document.getElementById('pmName').textContent = u.name;
+      document.getElementById('pmEmail').textContent = u.email;
+      document.getElementById('pmAvatar').src = u.avatar;
+      document.getElementById('pmRole').textContent = u.role.toUpperCase();
+      document.getElementById('pmAdminSection').style.display = u.role==='admin' ? 'block' : 'none';
+      document.getElementById('pmLoginBtn').style.display='none';
+      document.getElementById('pmLogoutBtn').style.display='flex';
+      document.getElementById('pmOrderCount').textContent = Orders.mine().length;
+      document.getElementById('pmWishCount').textContent = Wish.all().length;
+    } else {
+      loginBtn.style.display='inline-flex';
+      avatarBtn.classList.remove('show');
+      document.getElementById('pmName').textContent = 'অতিথি';
+      document.getElementById('pmEmail').textContent = 'লগইন করুন';
+      document.getElementById('pmRole').textContent = 'GUEST';
+      document.getElementById('pmAdminSection').style.display='none';
+      document.getElementById('pmLoginBtn').style.display='flex';
+      document.getElementById('pmLogoutBtn').style.display='none';
+    }
+  },
+  openCart(){ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); }
 };
-window.router = router;
 
-/* ═══ PAGES ═══ */
+/* ═══════════════════════════════════════════════════════════
+   PAGES
+   ═══════════════════════════════════════════════════════════ */
 const Pages = {
-  home(el) {
-    const featured = state.products.filter(p => p.featured).slice(0, 8);
-    const list = featured.length ? featured : state.products.slice(0, 8);
-    el.innerHTML = `
+  home(){
+    if(!DB.ready.products) return `<div class="loading-state"><div class="spinner"></div><p>পণ্য লোড হচ্ছে...</p></div>`;
+    const featured = DB.products.filter(p=>p.featured).slice(0,4);
+    const newArr = [...DB.products].sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
+    return `
       <section class="hero">
         <div class="hero-inner">
           <div class="hero-content">
-            <span class="hero-badge"><i class="fa-solid fa-bolt"></i> নতুন কালেকশন ২০২৬</span>
-            <h1 class="hero-title">আপনার প্রয়োজনীয় সবকিছু <span class="grad">এক জায়গায়</span></h1>
-            <p class="hero-sub">${esc(state.siteSettings.tagline || "প্রফেশনাল, নিরাপদ এবং দ্রুত ই-কমার্স প্ল্যাটফর্ম — সেরা দামে, নির্ভরযোগ্য সার্ভিসে।")}</p>
-            <div class="hero-btns"><button class="btn btn-primary btn-lg" data-go="products"><i class="fa-solid fa-bag-shopping"></i> কেনাকাটা শুরু করুন</button></div>
+            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> ফায়ারবেস রিয়েলটাইম ২০২৬</div>
+            <h1 class="hero-title">সেরা <span class="grad">প্রিমিয়াম</span> পণ্য<br>এখন আপনার হাতের মুঠোয়</h1>
+            <p class="hero-sub">সারাদেশে দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট এবং ১০০% অরিজিনাল পণ্যের নিশ্চয়তা।</p>
+            <div class="hero-btns">
+              <button class="btn btn-primary btn-lg" onclick="App.go('shop')"><i class="fa-solid fa-store"></i> এখনই কিনুন</button>
+              <button class="btn btn-outline btn-lg" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff" onclick="App.go('orders')"><i class="fa-solid fa-box"></i> আমার অর্ডার</button>
+            </div>
           </div>
         </div>
       </section>
-      <section class="page">
-        <div class="section-head">
-          <h2><i class="fa-solid fa-star"></i> ফিচার্ড পণ্য</h2>
-          <button class="btn btn-outline btn-sm" data-go="products">সব দেখুন</button>
-        </div>
-        <div class="product-grid" id="featuredGrid">${list.length ? list.map(p => productCard(p)).join("") : emptyProducts()}</div>
-      </section>`;
+      <div class="page">
+        <div class="section-head"><h2><i class="fa-solid fa-fire" style="color:var(--accent)"></i> ফিচার্ড পণ্য</h2><span class="count-chip">${featured.length} items</span></div>
+        <div class="product-grid">${featured.map(Components.productCard).join('') || `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${t('empty')}</h3></div>`}</div>
+        <div class="section-head" style="margin-top:40px"><h2><i class="fa-solid fa-sparkles" style="color:var(--brand)"></i> নতুন পণ্য</h2><button class="btn btn-outline btn-sm" onclick="App.go('shop')">সব দেখুন <i class="fa-solid fa-arrow-right"></i></button></div>
+        <div class="product-grid">${newArr.map(Components.productCard).join('')}</div>
+      </div>`;
   },
 
-  products(el) {
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head">
-          <h2><i class="fa-solid fa-bag-shopping"></i> সকল পণ্য</h2>
-          <span class="count-chip">${state.products.length} টি</span>
-        </div>
+  shop(){
+    if(!DB.ready.products) return `<div class="loading-state"><div class="spinner"></div><p>পণ্য লোড হচ্ছে...</p></div>`;
+    const cats = DB.categories;
+    let list = DB.products.slice();
+    if(this._shopCat && this._shopCat!=='all') list = list.filter(p=>p.cat===this._shopCat);
+    if(this._shopQ){ const s=this._shopQ.toLowerCase(); list = list.filter(p=>(p.name+(p.nameEn||'')+(p.desc||'')).toLowerCase().includes(s)); }
+    if(this._shopSort==='low') list.sort((a,b)=>a.price-b.price);
+    else if(this._shopSort==='high') list.sort((a,b)=>b.price-a.price);
+    else if(this._shopSort==='new') list.sort((a,b)=>b.createdAt-a.createdAt);
+    return `
+      <div class="page">
+        <div class="section-head"><h2><i class="fa-solid fa-store"></i> ${t('allProducts')}</h2><span class="count-chip">${list.length} items</span></div>
         <div class="filters-bar">
-          <select id="filterCategory">
+          <select onchange="App._shopCat=this.value;App.render()">
             <option value="all">সব ক্যাটাগরি</option>
-            ${state.categories.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join("")}
+            ${cats.map(c=>`<option value="${c}" ${this._shopCat===c?'selected':''}>${c}</option>`).join('')}
           </select>
-          <select id="filterSort">
-            <option value="new">নতুন আগে</option>
-            <option value="price_low">দাম: কম → বেশি</option>
-            <option value="price_high">দাম: বেশি → কম</option>
+          <select onchange="App._shopSort=this.value;App.render()">
+            <option value="default" ${this._shopSort==='default'?'selected':''}>ডিফল্ট</option>
+            <option value="new" ${this._shopSort==='new'?'selected':''}>নতুন</option>
+            <option value="low" ${this._shopSort==='low'?'selected':''}>দাম: কম → বেশি</option>
+            <option value="high" ${this._shopSort==='high'?'selected':''}>দাম: বেশি → কম</option>
           </select>
+          <input placeholder="সার্চ..." value="${this._shopQ||''}" oninput="App._shopQ=this.value;clearTimeout(window._sq);window._sq=setTimeout(()=>App.render(),300)">
         </div>
-        <div class="product-grid" id="productsGrid"></div>
-      </section>`;
-    $("#filterCategory").value = state.filters.category;
-    $("#filterSort").value = state.filters.sort;
-    $("#filterCategory").onchange = (e) => { state.filters.category = e.target.value; filterProducts(); };
-    $("#filterSort").onchange = (e) => { state.filters.sort = e.target.value; filterProducts(); };
-    filterProducts();
+        <div class="product-grid">${list.map(Components.productCard).join('') || `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3></div>`}</div>
+      </div>`;
   },
 
-  auth(el) {
-    if (state.user) { router.go("dashboard"); return; }
-    el.innerHTML = `
-      <section class="auth-page">
+  orders(){
+    if(!Auth.user()) return this.authPage('orders');
+    const mine = Orders.mine();
+    return `
+      <div class="page">
+        <div class="section-head"><h2><i class="fa-solid fa-box"></i> আমার অর্ডার</h2><span class="count-chip">${mine.length}</span></div>
+        ${mine.length ? `<div class="orders-list">${mine.map(o=>`
+          <div class="order-row">
+            <div class="order-info">
+              <h4>${o.id}</h4>
+              <p>${new Date(o.date).toLocaleString('bn-BD')} • ${o.items.length} items</p>
+            </div>
+            <div class="order-right">
+              <span class="price">৳${o.total}</span>
+              <span class="status-badge status-${o.status}">${t(o.status)}</span>
+            </div>
+          </div>`).join('')}</div>` : `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>কোনো অর্ডার নেই</h3><p>শপিং শুরু করুন</p></div>`}
+      </div>`;
+  },
+
+  wishlist(){
+    const ids = Wish.all();
+    const list = DB.products.filter(p=>ids.includes(p.id));
+    return `
+      <div class="page">
+        <div class="section-head"><h2><i class="fa-solid fa-heart" style="color:var(--danger)"></i> উইশলিস্ট</h2><span class="count-chip">${list.length}</span></div>
+        <div class="product-grid">${list.map(Components.productCard).join('') || `<div class="empty-state"><i class="fa-regular fa-heart"></i><h3>উইশলিস্ট খালি</h3></div>`}</div>
+      </div>`;
+  },
+
+  profile(){
+    const u = Auth.user();
+    if(!u) return this.authPage('profile');
+    return `
+      <div class="page">
+        <div class="profile-header">
+          <img class="profile-avatar" src="${u.avatar}">
+          <div class="profile-info">
+            <h2>${u.name}</h2>
+            <p><i class="fa-solid fa-envelope"></i> ${u.email}</p>
+            <p><i class="fa-solid fa-user-tag"></i> ${u.role==='admin'?'অ্যাডমিন':'কাস্টমার'} • <i class="fa-solid fa-calendar"></i> ${new Date(u.joined).toLocaleDateString('bn-BD')}</p>
+          </div>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-card clickable" onclick="App.go('orders')"><i class="fa-solid fa-box"></i><h3>${Orders.mine().length}</h3><p>মোট অর্ডার</p></div>
+          <div class="dash-card clickable" onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i><h3>${Wish.all().length}</h3><p>উইশলিস্ট</p></div>
+          <div class="dash-card clickable" onclick="App.openCart()"><i class="fa-solid fa-cart-shopping"></i><h3>${Cart.count()}</h3><p>কার্ট</p></div>
+          <div class="dash-card"><i class="fa-solid fa-wallet"></i><h3>৳${Orders.mine().reduce((s,o)=>s+(o.status!=='cancelled'?o.total:0),0)}</h3><p>মোট খরচ</p></div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-head"><h3><i class="fa-solid fa-pen"></i> প্রোফাইল আপডেট</h3></div>
+          <div class="form-group"><label>নাম</label><input id="pfName" value="${u.name}"></div>
+          <div class="form-group"><label>পাসওয়ার্ড</label><input id="pfPass" type="password" value="${u.password}"></div>
+          <button class="btn btn-primary" onclick="Profile.save()"><i class="fa-solid fa-floppy-disk"></i> সেভ</button>
+        </div>
+      </div>`;
+  },
+
+  auth(){ return this.authPage('home'); },
+  authPage(redirect){
+    return `
+      <div class="auth-page">
         <div class="auth-card">
           <div class="auth-tabs">
-            <button class="active" data-tab="login">লগইন</button>
-            <button data-tab="signup">সাইনআপ</button>
+            <button class="active" id="tabLogin" onclick="AuthUI.tab('login')">লগইন</button>
+            <button id="tabReg" onclick="AuthUI.tab('reg')">রেজিস্টার</button>
           </div>
-          <form id="authForm" class="auth-form">
-            <div class="form-group signup-only" style="display:none;"><label>পূর্ণ নাম</label><input type="text" id="authName" placeholder="আপনার নাম" /></div>
-            <div class="form-group signup-only" style="display:none;"><label>ফোন</label><input type="tel" id="authPhone" placeholder="01XXXXXXXXX" /></div>
-            <div class="form-group"><label>ইমেইল</label><input type="email" id="authEmail" placeholder="you@example.com" required /></div>
-            <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="authPassword" placeholder="••••••••" required minlength="6" /></div>
-            <button type="submit" class="btn btn-primary btn-block btn-lg" id="authSubmit"><i class="fa-solid fa-right-to-bracket"></i> লগইন</button>
-          </form>
+          <div id="authForm">${AuthUI.loginForm(redirect)}</div>
+          <p style="text-align:center;font-size:12.5px;color:var(--text-dim);margin-top:16px">
+            ডেমো অ্যাডমিন: <b>admin@eco.pro</b> / <b>admin123</b>
+          </p>
         </div>
-      </section>`;
-    let mode = "login";
-    $$(".auth-tabs button").forEach(b => b.onclick = () => {
-      mode = b.dataset.tab;
-      $$(".auth-tabs button").forEach(x => x.classList.toggle("active", x === b));
-      $$(".signup-only").forEach(x => x.style.display = mode === "signup" ? "block" : "none");
-      $("#authSubmit").innerHTML = mode === "signup" ? '<i class="fa-solid fa-user-plus"></i> সাইনআপ' : '<i class="fa-solid fa-right-to-bracket"></i> লগইন';
-    });
-    $("#authForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = $("#authSubmit"); btn.disabled = true;
-      try {
-        const email = $("#authEmail").value.trim();
-        const password = $("#authPassword").value;
-        if (mode === "signup") {
-          await api.signup({ name: $("#authName").value.trim(), email, password, phone: $("#authPhone").value.trim() });
-          toast("অ্যাকাউন্ট তৈরি হয়েছে!", "success");
-        } else {
-          await api.login(email, password);
-          toast("লগইন সফল", "success");
-        }
-      } catch (err) { toast(friendlyAuthError(err), "error"); }
-      finally { btn.disabled = false; }
-    };
+      </div>`;
   },
 
-  dashboard(el) {
-    if (!state.user) { router.go("auth"); return; }
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head"><h2><i class="fa-solid fa-gauge"></i> ড্যাশবোর্ড</h2></div>
-        <div class="dash-grid">
-          <div class="dash-card"><i class="fa-solid fa-circle-user"></i><h3>${esc(state.user.displayName || "User")}</h3><p>${esc(state.user.email)}</p></div>
-          <div class="dash-card clickable" data-go="orders"><i class="fa-solid fa-receipt"></i><h3>আমার অর্ডার</h3><p>সকল অর্ডার দেখুন</p></div>
-          <div class="dash-card clickable" data-go="wishlist"><i class="fa-solid fa-heart"></i><h3>উইশলিস্ট</h3><p>${state.wishlist.length} টি পণ্য</p></div>
-          ${state.isAdmin ? `<div class="dash-card clickable" data-go="admin"><i class="fa-solid fa-shield-halved"></i><h3>এডমিন প্যানেল</h3><p>ম্যানেজ করুন</p></div>` : ""}
-        </div>
-        <div class="section-head"><h2>সাম্প্রতিক অর্ডার</h2></div>
-        <div id="userOrdersList" class="orders-list"><p class="muted">লোড হচ্ছে...</p></div>
-      </section>`;
-    api.listenUserOrders(state.user.uid, (orders) => {
-      const c = $("#userOrdersList"); if (!c) return;
-      c.innerHTML = orders.length ? orders.slice(0, 5).map(o => orderRow(o)).join("") : `<p class="muted">কোনো অর্ডার নেই</p>`;
-    });
-  },
-
-  profile(el) {
-    if (!state.user) { router.go("auth"); return; }
-    const p = state.userProfile || {};
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head"><h2><i class="fa-solid fa-user"></i> প্রোফাইল</h2></div>
-        <div class="form-card">
-          <div class="form-group"><label>নাম</label><input id="pfName" value="${esc(p.name || state.user.displayName || "")}" /></div>
-          <div class="form-group"><label>ইমেইল</label><input id="pfEmail" value="${esc(state.user.email)}" disabled /></div>
-          <div class="form-group"><label>ফোন</label><input id="pfPhone" value="${esc(p.phone || "")}" placeholder="01XXXXXXXXX" /></div>
-          <div class="form-group"><label>ঠিকানা</label><textarea id="pfAddress" rows="3">${esc(p.address || "")}</textarea></div>
-          <button class="btn btn-primary" id="pfSave"><i class="fa-solid fa-check"></i> সেভ করুন</button>
-        </div>
-      </section>`;
-    $("#pfSave").onclick = async () => {
-      try {
-        await api.updateProfile(state.user.uid, { name: $("#pfName").value.trim(), phone: $("#pfPhone").value.trim(), address: $("#pfAddress").value.trim() });
-        state.userProfile = await api.getProfile(state.user.uid);
-        toast("প্রোফাইল আপডেট হয়েছে", "success");
-      } catch (e) { toast(e.message, "error"); }
-    };
-  },
-
-  orders(el) {
-    if (!state.user) { router.go("auth"); return; }
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head"><h2><i class="fa-solid fa-receipt"></i> আমার অর্ডার</h2></div>
-        <div id="ordersList" class="orders-list"><p class="muted">লোড হচ্ছে...</p></div>
-      </section>`;
-    api.listenUserOrders(state.user.uid, (orders) => {
-      const c = $("#ordersList"); if (!c) return;
-      c.innerHTML = orders.length ? orders.map(o => orderRow(o)).join("") : `<p class="muted">কোনো অর্ডার নেই</p>`;
-    });
-  },
-
-  wishlist(el) {
-    if (!state.wishlist.length) {
-      el.innerHTML = `<section class="page"><div class="empty-state"><i class="fa-solid fa-heart"></i><h3>উইশলিস্ট খালি</h3><button class="btn btn-primary" data-go="products">পণ্য দেখুন</button></div></section>`;
-      return;
-    }
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head"><h2><i class="fa-solid fa-heart"></i> উইশলিস্ট</h2></div>
-        <div class="product-grid">${state.wishlist.map(p => productCard(p)).join("")}</div>
-      </section>`;
-  },
-
-  checkout(el) {
-    if (!state.user) { router.go("auth"); return; }
-    if (!state.cart.length) { el.innerHTML = `<section class="page"><div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>কার্ট খালি</h3><button class="btn btn-primary" data-go="products">কেনাকাটা করুন</button></div></section>`; return; }
-    const p = state.userProfile || {};
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head"><h2><i class="fa-solid fa-bag-shopping"></i> চেকআউট</h2></div>
-        <div class="form-card">
-          <div class="form-group"><label>নাম</label><input id="coName" value="${esc(p.name || state.user.displayName || "")}" required /></div>
-          <div class="form-group"><label>ফোন</label><input id="coPhone" value="${esc(p.phone || "")}" required /></div>
-          <div class="form-group"><label>ঠিকানা</label><textarea id="coAddress" rows="3" required>${esc(p.address || "")}</textarea></div>
-          <div class="cart-summary-row total"><span>সর্বমোট</span><span>${fmtPrice(cart.total())}</span></div>
-          <button class="btn btn-primary btn-block btn-lg" id="placeOrderBtn" style="margin-top:14px;"><i class="fa-solid fa-check"></i> অর্ডার নিশ্চিত করুন</button>
-        </div>
-      </section>`;
-    $("#placeOrderBtn").onclick = async () => {
-      const name = $("#coName").value.trim(), phone = $("#coPhone").value.trim(), address = $("#coAddress").value.trim();
-      if (!name || !phone || !address) { toast("সব তথ্য পূরণ করুন", "error"); return; }
-      const btn = $("#placeOrderBtn"); btn.disabled = true;
-      try {
-        await api.placeOrder({ userId: state.user.uid, userName: name, phone, address, items: state.cart, total: cart.total() });
-        cart.clear();
-        toast("অর্ডার সম্পন্ন হয়েছে!", "success");
-        router.go("orders");
-      } catch (e) { toast(e.message, "error"); btn.disabled = false; }
-    };
-  },
-
-  settings(el) {
-    el.innerHTML = `
-      <section class="page">
-        <div class="section-head"><h2><i class="fa-solid fa-gear"></i> সেটিংস</h2></div>
-        <div class="form-card">
-          <div class="pm-row">
-            <div class="pm-row-label"><i class="fa-solid fa-language"></i><span>ভাষা</span></div>
-            <div class="pm-seg" id="setLang">
-              <button data-lang="bn" class="${state.lang === 'bn' ? 'active' : ''}">বাংলা</button>
-              <button data-lang="en" class="${state.lang === 'en' ? 'active' : ''}">English</button>
+  admin(){
+    if(!Auth.isAdmin()) return this.authPage('admin');
+    if(!DB.ready.products) return `<div class="loading-state"><div class="spinner"></div><p>ডেটা লোড হচ্ছে...</p></div>`;
+    const tab = App._adminTab || 'dashboard';
+    return `
+      <div class="admin-layout">
+        ${Components.adminSidebar(tab)}
+        <div class="admin-main">
+          <div class="admin-header">
+            <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
+            <div class="admin-header-title">
+              <h1>${Admin.titles[tab]}</h1>
+              <p>EcoShop Pro MAX — Firebase Admin</p>
+            </div>
+            <div class="admin-header-actions">
+              <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i> স্টোর</button>
+              <button class="btn btn-primary btn-sm" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i> নতুন পণ্য</button>
             </div>
           </div>
-          <div class="pm-row">
-            <div class="pm-row-label"><i class="fa-solid fa-moon"></i><span>থিম</span></div>
-            <div class="pm-seg" id="setTheme">
-              <button data-theme="light" class="${state.themeMode === 'light' ? 'active' : ''}">☀️</button>
-              <button data-theme="dark" class="${state.themeMode === 'dark' ? 'active' : ''}">🌙</button>
-              <button data-theme="auto" class="${state.themeMode === 'auto' ? 'active' : ''}">A</button>
-            </div>
-          </div>
+          <div class="admin-content" id="adminContent">${Admin.render(tab)}</div>
         </div>
-      </section>`;
-    $$("#setLang button").forEach(b => b.onclick = () => { state.lang = b.dataset.lang; localStorage.setItem("lang", state.lang); applyLang(); router.render(); });
-    $$("#setTheme button").forEach(b => b.onclick = () => { state.themeMode = b.dataset.theme; localStorage.setItem("themeMode", state.themeMode); applyTheme(); router.render(); });
+      </div>`;
   }
 };
 
-function friendlyAuthError(err) {
-  const code = err?.code || "";
-  const map = {
-    "auth/email-already-in-use": "এই ইমেইল দিয়ে অ্যাকাউন্ট আছে",
-    "auth/invalid-email": "সঠিক ইমেইল দিন",
-    "auth/weak-password": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে",
-    "auth/invalid-credential": "ইমেইল বা পাসওয়ার্ড ভুল",
-    "auth/wrong-password": "ইমেইল বা পাসওয়ার্ড ভুল",
-    "auth/user-not-found": "ইমেইল বা পাসওয়ার্ড ভুল",
-    "auth/too-many-requests": "অনেকবার চেষ্টা করা হয়েছে, একটু পর আবার চেষ্টা করুন"
-  };
-  return map[code] || err.message.replace("Firebase:", "").trim();
-}
-
-function productCard(p) {
-  const inWish = wishlist.has(p.id);
-  const safe = esc(JSON.stringify(p));
-  return `
-    <div class="product-card">
-      <div class="product-img-wrap">
-        <img src="${esc(p.image || 'https://placehold.co/400x400?text=No+Image')}" alt="${esc(p.name)}" loading="lazy" />
-        ${p.featured ? '<span class="product-badge">ফিচার্ড</span>' : ''}
-        <button class="wish-btn ${inWish ? 'active' : ''}" data-wish='${safe}'><i class="fa-${inWish ? 'solid' : 'regular'} fa-heart"></i></button>
-      </div>
-      <div class="product-body">
-        <span class="product-cat">${esc(p.category || 'Other')}</span>
-        <h3 class="product-name">${esc(state.lang === 'bn' ? p.name : (p.nameEn || p.name))}</h3>
-        <div class="product-price">
-          <span class="price">${fmtPrice(p.price)}</span>
-          ${p.oldPrice ? `<span class="old-price">${fmtPrice(p.oldPrice)}</span>` : ''}
+/* ═══════════════════════════════════════════════════════════
+   COMPONENTS
+   ═══════════════════════════════════════════════════════════ */
+const Components = {
+  productCard(p){
+    const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
+    const stockCls = p.stock<=0 ? 'out' : (p.stock<10 ? 'low':'');
+    const stockTxt = p.stock<=0 ? t('outOfStock') : (p.stock<10 ? `স্টক: ${p.stock}` : t('inStock'));
+    return `
+      <div class="product-card">
+        <div class="product-img-wrap">
+          <img src="${p.img}" alt="${name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300?text=No+Image'">
+          ${p.discount?`<span class="product-badge">-${p.discount}%</span>`:''}
+          <span class="stock-badge ${stockCls}">${stockTxt}</span>
+          <button class="wish-btn ${Wish.has(p.id)?'active':''}" onclick="event.stopPropagation();Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart"></i></button>
         </div>
-        <button class="btn btn-primary btn-block" data-cart-add='${safe}'><i class="fa-solid fa-cart-plus"></i> ${t('add_to_cart')}</button>
-      </div>
-    </div>`;
-}
-function emptyProducts() {
-  return `<div class="empty-state" style="grid-column:1/-1;"><i class="fa-solid fa-box-open"></i><h3>কোনো পণ্য নেই</h3><p>এডমিন প্যানেল থেকে পণ্য যোগ করুন</p></div>`;
-}
-function orderRow(o) {
-  const statusMap = { pending: "অপেক্ষমাণ", confirmed: "কনফার্মড", shipped: "শিপড", delivered: "ডেলিভারড", cancelled: "বাতিল" };
-  return `
-    <div class="order-row">
-      <div class="order-info"><h4>#${(o.orderId || o.id).slice(-6)}</h4><p>${fmtDate(o.createdAt)} · ${o.items?.length || 0} টি পণ্য</p></div>
-      <div class="order-right"><span class="status-badge status-${o.status}">${statusMap[o.status] || o.status}</span><strong>${fmtPrice(o.total)}</strong></div>
-    </div>`;
-}
-function filterProducts() {
-  let list = [...state.products];
-  if (state.filters.category !== "all") list = list.filter(p => p.category === state.filters.category);
-  if (state.filters.query) { const q = state.filters.query.toLowerCase(); list = list.filter(p => (p.name || "").toLowerCase().includes(q)); }
-  if (state.filters.sort === "price_low") list.sort((a, b) => a.price - b.price);
-  else if (state.filters.sort === "price_high") list.sort((a, b) => b.price - a.price);
-  else list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-  const grid = $("#productsGrid");
-  if (grid) grid.innerHTML = list.length ? list.map(p => productCard(p)).join("") : emptyProducts();
-}
-
-/* ═══ ADMIN PAGE ═══ */
-const adminPage = {
-  render() {
-    const title = $("#adminPageTitle"), sub = $("#adminPageSubtitle"), c = $("#adminContent");
-    if (!c) return;
-    $$(".admin-nav a[data-admin]").forEach(a => a.classList.toggle("active", a.dataset.admin === state.adminPage));
-    const map = {
-      overview: { title: "ওভারভিউ", sub: "সারসংক্ষেপ দেখুন", fn: this.overview.bind(this) },
-      products: { title: "পণ্য", sub: "পণ্য ম্যানেজ করুন", fn: this.products.bind(this) },
-      orders: { title: "অর্ডার", sub: "অর্ডার ম্যানেজ করুন", fn: this.orders.bind(this) },
-      users: { title: "ইউজার", sub: "ইউজার দেখুন", fn: this.users.bind(this) },
-      categories: { title: "ক্যাটাগরি", sub: "ক্যাটাগরি ম্যানেজ", fn: this.categories.bind(this) },
-      coupons: { title: "কুপন", sub: "ডিসকাউন্ট কোড", fn: this.coupons.bind(this) },
-      settings: { title: "সেটিংস", sub: "সাইট কনফিগার", fn: this.settings.bind(this) }
-    };
-    const pg = map[state.adminPage] || map.overview;
-    title.textContent = pg.title; sub.textContent = pg.sub;
-    c.innerHTML = ""; pg.fn(c);
-  },
-
-  overview(c) {
-    const totalRev = state.orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total || 0), 0);
-    c.innerHTML = `
-      <div class="stat-grid">
-        <div class="stat-card"><div class="stat-icon brand"><i class="fa-solid fa-box"></i></div><div><p>মোট পণ্য</p><h3>${state.products.length}</h3></div></div>
-        <div class="stat-card"><div class="stat-icon success"><i class="fa-solid fa-receipt"></i></div><div><p>মোট অর্ডার</p><h3>${state.orders.length}</h3></div></div>
-        <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-users"></i></div><div><p>মোট ইউজার</p><h3>${state.users.length}</h3></div></div>
-        <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-sack-dollar"></i></div><div><p>মোট আয়</p><h3>${fmtPrice(totalRev)}</h3></div></div>
-      </div>
-      <div class="admin-card">
-        <div class="admin-card-head"><h3>সাম্প্রতিক অর্ডার</h3></div>
-        <div class="orders-list">${state.orders.slice(0, 8).map(o => orderRow(o)).join("") || '<p class="muted">কোনো অর্ডার নেই</p>'}</div>
+        <div class="product-body">
+          <span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span>
+          <h3 class="product-name">${name}</h3>
+          <div class="product-price">
+            <span class="price">৳${p.price}</span>
+            ${p.oldPrice?`<span class="old-price">৳${p.oldPrice}</span>`:''}
+          </div>
+          <button class="btn btn-primary btn-block btn-sm" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}')">
+            <i class="fa-solid fa-cart-plus"></i> ${p.stock<=0?t('outOfStock'):t('addToCart')}
+          </button>
+        </div>
       </div>`;
   },
 
-  products(c) {
-    c.innerHTML = `
-      <div class="admin-toolbar"><button class="btn btn-primary" id="addProductBtn"><i class="fa-solid fa-plus"></i> নতুন পণ্য</button></div>
+  adminSidebar(tab){
+    const items = [
+      {sec:'মেইন', list:[
+        {id:'dashboard', icon:'fa-chart-line', label:'ড্যাশবোর্ড'},
+        {id:'products', icon:'fa-box', label:'পণ্য ম্যানেজমেন্ট'},
+        {id:'orders', icon:'fa-receipt', label:'অর্ডার ম্যানেজমেন্ট'},
+        {id:'users', icon:'fa-users', label:'ইউজার ম্যানেজমেন্ট'},
+      ]},
+      {sec:'অতিরিক্ত', list:[
+        {id:'categories', icon:'fa-tags', label:'ক্যাটাগরি'},
+        {id:'coupons', icon:'fa-ticket', label:'কুপন'},
+        {id:'settings', icon:'fa-gear', label:'সেটিংস'},
+      ]}
+    ];
+    return `<aside class="admin-sidebar">
+      <div class="admin-brand">
+        <div class="logo-icon" style="width:34px;height:34px;font-size:15px"><i class="fa-solid fa-leaf"></i></div>
+        <span class="logo-text" style="font-size:15px">EcoShop<span style="color:var(--brand)">Pro</span></span>
+        <span class="admin-pill">ADMIN</span>
+      </div>
+      <nav class="admin-nav">
+        ${items.map(g=>`
+          <div class="nav-section">
+            <div class="nav-section-title">${g.sec}</div>
+            ${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="App._adminTab='${i.id}';App.render()"><i class="fa-solid ${i.icon}"></i> ${i.label}</a>`).join('')}
+          </div>`).join('')}
+      </nav>
+      <div class="admin-footer">
+        <button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> স্টোরে ফিরুন</button>
+      </div>
+    </aside>`;
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN PANEL
+   ═══════════════════════════════════════════════════════════ */
+const Admin = {
+  titles: {dashboard:'ড্যাশবোর্ড', products:'পণ্য ম্যানেজমেন্ট', orders:'অর্ডার ম্যানেজমেন্ট', users:'ইউজার ম্যানেজমেন্ট', categories:'ক্যাটাগরি ম্যানেজমেন্ট', coupons:'কুপন ম্যানেজমেন্ট', settings:'সেটিংস'},
+
+  render(tab){
+    switch(tab){
+      case 'dashboard': return this.dashboard();
+      case 'products': return this.products();
+      case 'orders': return this.orders();
+      case 'users': return this.users();
+      case 'categories': return this.categories();
+      case 'coupons': return this.coupons();
+      case 'settings': return this.settings();
+      default: return this.dashboard();
+    }
+  },
+
+  dashboard(){
+    const orders = DB.orders;
+    const users = DB.users;
+    const prods = DB.products;
+    const totalSales = orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+    const pending = orders.filter(o=>o.status==='pending').length;
+    const lowStock = prods.filter(p=>p.stock<10).length;
+    const recent = orders.slice(0,5);
+    return `
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon brand"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div><div><p>মোট বিক্রয়</p><h3>৳${totalSales.toLocaleString()}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon success"><i class="fa-solid fa-cart-shopping"></i></div><div><p>মোট অর্ডার</p><h3>${orders.length}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-users"></i></div><div><p>মোট ইউজার</p><h3>${users.length}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-box"></i></div><div><p>মোট পণ্য</p><h3>${prods.length}</h3></div></div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><div><p>পেন্ডিং অর্ডার</p><h3>${pending}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div><div><p>লো স্টক পণ্য</p><h3>${lowStock}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon brand"><i class="fa-solid fa-user-check"></i></div><div><p>সক্রিয় ইউজার</p><h3>${users.filter(u=>!u.blocked).length}</h3></div></div>
+      </div>
       <div class="admin-card">
+        <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> সাম্প্রতিক অর্ডার</h3><button class="btn btn-outline btn-sm" onclick="App._adminTab='orders';App.render()">সব দেখুন</button></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>ছবি</th><th>নাম</th><th>ক্যাটাগরি</th><th>দাম</th><th>স্টক</th><th>অ্যাকশন</th></tr></thead>
-            <tbody>
-              ${state.products.map(p => `
-                <tr>
-                  <td><img src="${esc(p.image || 'https://placehold.co/50x50?text=%20')}" class="thumb" /></td>
-                  <td><strong>${esc(p.name)}</strong></td>
-                  <td>${esc(p.category || '-')}</td>
-                  <td>${fmtPrice(p.price)}</td>
-                  <td>${p.stock || 0}</td>
-                  <td class="actions">
-                    <button class="icon-btn-sm" data-edit-product="${p.id}"><i class="fa-solid fa-pen"></i></button>
-                    <button class="icon-btn-sm danger" data-delete-product="${p.id}"><i class="fa-solid fa-trash"></i></button>
-                  </td>
-                </tr>`).join("") || '<tr><td colspan="6" class="muted">কোনো পণ্য নেই</td></tr>'}
-            </tbody>
+            <thead><tr><th>অর্ডার ID</th><th>কাস্টমার</th><th>মোট</th><th>স্ট্যাটাস</th><th>তারিখ</th></tr></thead>
+            <tbody>${recent.length ? recent.map(o=>`<tr>
+              <td><b>${o.id}</b></td>
+              <td>${o.customer.name}</td>
+              <td>৳${o.total}</td>
+              <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
+              <td>${new Date(o.date).toLocaleDateString('bn-BD')}</td>
+            </tr>`).join('') : `<tr><td colspan="5" class="muted">কোনো অর্ডার নেই</td></tr>`}</tbody>
           </table>
         </div>
       </div>`;
-    $("#addProductBtn").onclick = () => this.openProductForm();
-    $$("[data-edit-product]").forEach(b => b.onclick = () => this.editProduct(b.dataset.editProduct));
-    $$("[data-delete-product]").forEach(b => b.onclick = () => this.confirmDelete(b.dataset.deleteProduct));
   },
 
-  openProductForm(product = null) {
-    const isEdit = !!product;
-    const p = product || {};
-    modal.open(`
-      <button class="modal-close" id="pfClose"><i class="fa-solid fa-xmark"></i></button>
-      <div style="padding:28px;">
-        <h2 style="font-size:20px;font-weight:800;margin-bottom:18px;">${isEdit ? 'পণ্য এডিট' : 'নতুন পণ্য'}</h2>
-        <form id="productForm">
-          <div class="form-group"><label>পণ্যের নাম *</label><input id="pName" value="${esc(p.name || '')}" required /></div>
-          <div class="form-group"><label>নাম (English)</label><input id="pNameEn" value="${esc(p.nameEn || '')}" /></div>
-          <div class="form-row">
-            <div class="form-group"><label>দাম *</label><input type="number" id="pPrice" value="${p.price || ''}" required min="0" step="0.01" /></div>
-            <div class="form-group"><label>আগের দাম</label><input type="number" id="pOldPrice" value="${p.oldPrice || ''}" min="0" step="0.01" /></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>ক্যাটাগরি</label>
-              <select id="pCategory">
-                <option value="">-- নির্বাচন --</option>
-                ${state.categories.map(c => `<option value="${esc(c.name)}" ${p.category === c.name ? 'selected' : ''}>${esc(c.name)}</option>`).join("")}
-              </select>
+  products(){
+    const q = this._pQuery || '';
+    const list = DB.products.filter(p=> !q || (p.name+(p.nameEn||'')).toLowerCase().includes(q.toLowerCase()));
+    return `
+      <div class="admin-toolbar">
+        <input placeholder="পণ্য সার্চ..." value="${q}" oninput="Admin._pQuery=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>Admin.refreshContent(),250)">
+        <button class="btn btn-primary" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i> নতুন পণ্য</button>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-head"><h3>মোট পণ্য (${list.length})</h3></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>ছবি</th><th>নাম</th><th>ক্যাটাগরি</th><th>দাম</th><th>ডিসকাউন্ট</th><th>স্টক</th><th>${t('delete')}</th></tr></thead>
+            <tbody>${list.length ? list.map(p=>`<tr>
+              <td><img class="thumb" src="${p.img}" onerror="this.src='https://via.placeholder.com/60'"></td>
+              <td><b>${p.name}</b><br><small style="color:var(--text-dim)">${p.nameEn||''}</small></td>
+              <td><span class="chip">${p.cat}</span></td>
+              <td>৳${p.price} ${p.oldPrice?`<br><small style="text-decoration:line-through;color:var(--text-dim)">৳${p.oldPrice}</small>`:''}</td>
+              <td>${p.discount?`<span class="chip">-${p.discount}%</span>`:'—'}</td>
+              <td>${p.stock<=0?`<span class="chip blocked">স্টক নেই</span>`:(p.stock<10?`<span class="chip" style="background:rgba(245,158,11,.15);color:#b45309">${p.stock}</span>`:`<span class="chip active-status">${p.stock}</span>`)}</td>
+              <td><div class="actions">
+                <button class="icon-btn-sm" title="Edit" onclick="Admin.openProductModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn-sm danger" title="Delete" onclick="Admin.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+              </div></td>
+            </tr>`).join('') : `<tr><td colspan="7" class="muted">কোনো পণ্য নেই</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>`;
+  },
+
+  openProductModal(id){
+    const p = id ? DB.products.find(x=>x.id===id) : {name:'',nameEn:'',cat:'',catEn:'',price:'',oldPrice:'',discount:0,stock:'',img:'',desc:'',featured:false};
+    const cats = DB.categories;
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3>${id?'পণ্য এডিট':'নতুন পণ্য যোগ'}</h3></div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>পণ্যের ছবি (ImgBB-তে আপলোড)</label>
+          <div class="img-upload">
+            <div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div>
+            <div class="upload-btn-wrap">
+              <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ছবি আপলোড করুন</button>
+              <input type="file" id="imgFile" accept="image/*" style="display:none">
+              <div class="upload-hint">JPG, PNG, WebP — সর্বোচ্চ 32MB</div>
+              <div class="upload-progress" id="uploadProgress"><span></span></div>
             </div>
-            <div class="form-group"><label>স্টক</label><input type="number" id="pStock" value="${p.stock || 0}" min="0" /></div>
           </div>
-          <div class="form-group"><label>বিবরণ</label><textarea id="pDesc" rows="3">${esc(p.description || '')}</textarea></div>
-          <div class="form-group"><label>ছবি ${isEdit && p.image ? '(নতুন ছবি না দিলে আগেরটাই থাকবে)' : ''}</label><input type="file" id="pImage" accept="image/*" /></div>
-          <div class="form-group"><label style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="pFeatured" style="width:auto;" ${p.featured ? 'checked' : ''} /> ফিচার্ড পণ্য</label></div>
-          <div style="display:flex;gap:10px;margin-top:18px;">
-            <button type="button" class="btn btn-outline" id="pfCancel" style="flex:1;">বাতিল</button>
-            <button type="submit" class="btn btn-primary" id="pSaveBtn" style="flex:1;"><i class="fa-solid fa-check"></i> ${isEdit ? 'আপডেট' : 'যোগ করুন'}</button>
+          <input type="hidden" id="pImg" value="${p.img||''}">
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>নাম (বাংলা)</label><input id="pName" value="${p.name}"></div>
+          <div class="form-group"><label>Name (English)</label><input id="pNameEn" value="${p.nameEn||''}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>ক্যাটাগরি</label>
+            <select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select>
           </div>
-        </form>
-      </div>`, { size: "md" });
-    $("#pfClose").onclick = () => modal.close();
-    $("#pfCancel").onclick = () => modal.close();
-    $("#productForm").onsubmit = async (e) => {
-      e.preventDefault();
-      const btn = $("#pSaveBtn");
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> সেভ হচ্ছে...';
-      try {
-        const name = $("#pName").value.trim();
-        const price = Number($("#pPrice").value);
-        if (!name || !price) throw new Error("পণ্যের নাম ও দাম আবশ্যক");
-        const data = {
-          name, nameEn: $("#pNameEn").value.trim() || name,
-          price, oldPrice: Number($("#pOldPrice").value) || 0,
-          category: $("#pCategory").value || "Other",
-          stock: Number($("#pStock").value) || 0,
-          description: $("#pDesc").value.trim(),
-          featured: $("#pFeatured").checked
-        };
-        const file = $("#pImage").files[0];
-        if (isEdit) { await api.updateProduct(product.id, data, file); toast("পণ্য আপডেট হয়েছে", "success"); }
-        else { await api.addProduct(data, file); toast("পণ্য যোগ হয়েছে", "success"); }
-        modal.close();
-      } catch (err) {
-        toast("সমস্যা: " + err.message, "error");
-        btn.disabled = false;
-        btn.innerHTML = `<i class="fa-solid fa-check"></i> ${isEdit ? 'আপডেট' : 'যোগ করুন'}`;
+          <div class="form-group"><label>Category (EN)</label><input id="pCatEn" value="${p.catEn||''}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>দাম (৳)</label><input id="pPrice" type="number" value="${p.price}"></div>
+          <div class="form-group"><label>পুরাতন দাম (৳)</label><input id="pOld" type="number" value="${p.oldPrice||''}"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>ডিসকাউন্ট (%)</label><input id="pDisc" type="number" value="${p.discount||0}"></div>
+          <div class="form-group"><label>স্টক</label><input id="pStock" type="number" value="${p.stock}"></div>
+        </div>
+        <div class="form-group"><label>বিবরণ</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
+        <div class="form-group"><label><input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto;display:inline"> ফিচার্ড পণ্য হিসেবে দেখান</label></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-primary btn-block" id="pSaveBtn" onclick="Admin.saveProduct('${id||''}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
+      </div>
+    `, 'md');
+    this.bindUpload();
+  },
+
+  bindUpload(){
+    const btn = document.getElementById('uploadBtn');
+    const file = document.getElementById('imgFile');
+    const prev = document.getElementById('imgPreview');
+    const hidden = document.getElementById('pImg');
+    const prog = document.getElementById('uploadProgress');
+    if(!btn) return;
+    btn.onclick = ()=> file.click();
+    file.onchange = async ()=>{
+      const f = file.files[0]; if(!f) return;
+      // instant preview
+      const reader = new FileReader();
+      reader.onload = e => prev.innerHTML = `<img src="${e.target.result}">`;
+      reader.readAsDataURL(f);
+
+      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> আপলোড হচ্ছে...`;
+      prog.style.display='block'; prog.firstElementChild.style.width='40%';
+      try{
+        const res = await ImageUpload.upload(f);
+        hidden.value = res.url;
+        prev.innerHTML = `<img src="${res.url}">`;
+        prog.firstElementChild.style.width='100%';
+        Toast.show('ছবি আপলোড সফল!','success');
+      } catch(err){
+        console.error(err);
+        Toast.show('আপলোড ব্যর্থ: '+err.message,'error');
+        prev.innerHTML = `<i class="fa-solid fa-image"></i>`;
+      } finally {
+        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ছবি আপলোড করুন`;
+        setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
       }
     };
   },
 
-  editProduct(id) {
-    const p = state.products.find(x => x.id === id);
-    if (!p) { toast("পণ্য পাওয়া যায়নি", "error"); return; }
-    this.openProductForm(p);
+  async saveProduct(id){
+    const data = {
+      id: id || '',
+      name: document.getElementById('pName').value.trim(),
+      nameEn: document.getElementById('pNameEn').value.trim(),
+      cat: document.getElementById('pCat').value,
+      catEn: document.getElementById('pCatEn').value.trim(),
+      price: +document.getElementById('pPrice').value || 0,
+      oldPrice: +document.getElementById('pOld').value || 0,
+      discount: +document.getElementById('pDisc').value || 0,
+      stock: +document.getElementById('pStock').value || 0,
+      img: document.getElementById('pImg').value.trim() || 'https://via.placeholder.com/300?text=No+Image',
+      desc: document.getElementById('pDesc').value.trim(),
+      featured: document.getElementById('pFeatured').checked
+    };
+    if(!data.name || !data.price){ Toast.show('নাম ও দাম আবশ্যক','error'); return; }
+    const btn = document.getElementById('pSaveBtn'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> সেভ হচ্ছে...`;
+    try{
+      await DB.saveProduct(data);
+      Modal.close(); Toast.show('পণ্য সেভ হয়েছে','success');
+    } catch(e){ Toast.show('সেভ ব্যর্থ: '+e.message,'error'); btn.disabled=false; }
   },
-  confirmDelete(id) {
-    const p = state.products.find(x => x.id === id);
-    confirmDialog(`"${p?.name}" মুছে ফেলবেন?`, async () => {
-      try { await api.deleteProduct(id); toast("মুছে ফেলা হয়েছে", "success"); }
-      catch (e) { toast(e.message, "error"); }
+
+  deleteProduct(id){
+    Modal.confirm('এই পণ্যটি স্থায়ীভাবে ডিলিট করতে চান?', async ()=>{
+      try{ await DB.deleteProduct(id); Toast.show('পণ্য ডিলিট হয়েছে','success'); }
+      catch(e){ Toast.show('ডিলিট ব্যর্থ','error'); }
     });
   },
 
-  orders(c) {
-    c.innerHTML = `
+  orders(){
+    const q = (this._oQuery||'').toLowerCase();
+    const list = DB.orders.filter(o=> !q || o.id.toLowerCase().includes(q) || o.customer.name.toLowerCase().includes(q));
+    return `
+      <div class="admin-toolbar">
+        <input placeholder="অর্ডার ID / কাস্টমার নাম সার্চ..." value="${this._oQuery||''}" oninput="Admin._oQuery=this.value;clearTimeout(window._oq);window._oq=setTimeout(()=>Admin.refreshContent(),250)">
+      </div>
       <div class="admin-card">
-        <div class="orders-list">
-          ${state.orders.map(o => `
-            <div class="order-row admin-order-row">
-              <div class="order-info"><h4>#${(o.orderId || o.id).slice(-6)}</h4><p>${esc(o.userName || 'User')} · ${fmtDate(o.createdAt)}</p><p>${o.items?.length || 0} টি পণ্য · ${fmtPrice(o.total)}</p></div>
-              <div class="order-right">
-                <select data-status-select="${o.id}" data-status-user="${o.userId || ''}">
-                  ${['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join("")}
+        <div class="admin-card-head"><h3>মোট অর্ডার (${list.length})</h3></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>ID</th><th>কাস্টমার</th><th>ফোন</th><th>আইটেম</th><th>মোট</th><th>স্ট্যাটাস</th><th>${t('delete')}</th></tr></thead>
+            <tbody>${list.length ? list.map(o=>`<tr>
+              <td><b>${o.id}</b><br><small style="color:var(--text-dim)">${new Date(o.date).toLocaleDateString('bn-BD')}</small></td>
+              <td>${o.customer.name}<br><small style="color:var(--text-dim)">${o.customer.address||''}</small></td>
+              <td>${o.customer.phone||'—'}</td>
+              <td>${o.items.length}</td>
+              <td><b>৳${o.total}</b></td>
+              <td>
+                <select onchange="Orders.updateStatus('${o.id}', this.value);Toast.show('স্ট্যাটাস আপডেট হয়েছে','success')" style="padding:4px 8px;border-radius:8px;border:1px solid var(--border);background:var(--surface);font-size:12.5px">
+                  ${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}
                 </select>
-              </div>
-            </div>`).join("") || '<p class="muted">কোনো অর্ডার নেই</p>'}
+              </td>
+              <td><button class="icon-btn-sm danger" onclick="Admin.deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>`).join('') : `<tr><td colspan="7" class="muted">কোনো অর্ডার নেই</td></tr>`}</tbody>
+          </table>
         </div>
       </div>`;
-    $$("[data-status-select]").forEach(sel => sel.onchange = () => this.changeStatus(sel.dataset.statusSelect, sel.value, sel.dataset.statusUser));
-  },
-  async changeStatus(orderId, status, userId) {
-    try { await api.updateOrderStatus(orderId, status, userId); toast("স্ট্যাটাস আপডেট", "success"); }
-    catch (e) { toast(e.message, "error"); }
   },
 
-  users(c) {
-    c.innerHTML = `
-      <div class="admin-card">
-        <table class="admin-table">
-          <thead><tr><th>নাম</th><th>ইমেইল</th><th>রোল</th><th>অ্যাকশন</th></tr></thead>
-          <tbody>
-            ${state.users.map(u => `
-              <tr>
-                <td>${esc(u.name || '-')}</td><td>${esc(u.email || '-')}</td><td><span class="chip">${esc(u.role || 'user')}</span></td>
-                <td><button class="btn btn-sm ${u.banned ? 'btn-success' : 'btn-danger'}" data-toggle-ban="${u.id}" data-banned="${!u.banned}">${u.banned ? 'আনব্যান' : 'ব্যান'}</button></td>
-              </tr>`).join("") || '<tr><td colspan="4" class="muted">কোনো ইউজার নেই</td></tr>'}
-          </tbody>
-        </table>
-      </div>`;
-    $$("[data-toggle-ban]").forEach(b => b.onclick = () => this.toggleBan(b.dataset.toggleBan, b.dataset.banned === "true"));
-  },
-  async toggleBan(uid, banned) { await api.toggleBan(uid, banned); toast(banned ? "ব্যান হয়েছে" : "আনব্যান হয়েছে", "success"); },
+  deleteOrder(id){ Modal.confirm('অর্ডারটি ডিলিট করতে চান?', async ()=>{ await Orders.remove(id); Toast.show('অর্ডার ডিলিট হয়েছে','success'); }); },
 
-  categories(c) {
-    c.innerHTML = `
+  users(){
+    const q = (this._uQuery||'').toLowerCase();
+    const list = DB.users.filter(u=> !q || (u.name+u.email).toLowerCase().includes(q));
+    const selected = this._selectedUsers || [];
+    return `
       <div class="admin-toolbar">
-        <input id="newCatName" placeholder="ক্যাটাগরির নাম" />
-        <button class="btn btn-primary" id="addCatBtn"><i class="fa-solid fa-plus"></i> যোগ করুন</button>
+        <input placeholder="নাম / ইমেইল সার্চ..." value="${this._uQuery||''}" oninput="Admin._uQuery=this.value;clearTimeout(window._uq);window._uq=setTimeout(()=>Admin.refreshContent(),250)">
+        <button class="btn btn-primary" onclick="Admin.openUserModal()"><i class="fa-solid fa-user-plus"></i> নতুন ইউজার</button>
       </div>
-      <div class="admin-card"><div class="chips-wrap">
-        ${state.categories.map(cat => `<span class="chip-large">${esc(cat.name)}<button data-delete-cat="${cat.id}"><i class="fa-solid fa-xmark"></i></button></span>`).join("")}
-      </div></div>`;
-    $("#addCatBtn").onclick = async () => {
-      const name = $("#newCatName").value.trim();
-      if (!name) return;
-      try { await api.addCategory(name); $("#newCatName").value = ""; toast("ক্যাটাগরি যোগ হয়েছে", "success"); }
-      catch (e) { toast(e.message, "error"); }
-    };
-    $$("[data-delete-cat]").forEach(b => b.onclick = async () => { await api.deleteCategory(b.dataset.deleteCat); toast("মুছে ফেলা হয়েছে", "success"); });
+      ${selected.length ? `<div class="bulk-bar">
+        <span>${selected.length} নির্বাচিত</span>
+        <button class="btn btn-sm btn-danger" onclick="Admin.bulkAction('delete')"><i class="fa-solid fa-trash"></i> ডিলিট</button>
+        <button class="btn btn-sm btn-warning" onclick="Admin.bulkAction('block')"><i class="fa-solid fa-ban"></i> ব্লক</button>
+        <button class="btn btn-sm btn-success" onclick="Admin.bulkAction('unblock')"><i class="fa-solid fa-check"></i> আনব্লক</button>
+        <button class="btn btn-sm btn-outline" onclick="Admin._selectedUsers=[];Admin.refreshContent()">বাতিল</button>
+      </div>` : ''}
+      <div class="admin-card">
+        <div class="admin-card-head"><h3>মোট ইউজার (${list.length})</h3></div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr>
+              <th><input type="checkbox" onchange="Admin.toggleAllUsers(this.checked)"></th>
+              <th>অ্যাভাটার</th><th>নাম</th><th>ইমেইল</th><th>রোল</th><th>স্ট্যাটাস</th><th>অ্যাকশন</th>
+            </tr></thead>
+            <tbody>${list.length ? list.map(u=>`<tr>
+              <td><input type="checkbox" ${selected.includes(u.id)?'checked':''} onchange="Admin.toggleUser('${u.id}', this.checked)"></td>
+              <td><img class="thumb" style="border-radius:50%" src="${u.avatar}"></td>
+              <td><b>${u.name}</b></td>
+              <td>${u.email}</td>
+              <td><span class="chip ${u.role==='admin'?'active-status':''}">${u.role}</span></td>
+              <td>${u.blocked?`<span class="chip blocked">ব্লকড</span>`:`<span class="chip active-status">সক্রিয়</span>`}</td>
+              <td><div class="actions">
+                <button class="icon-btn-sm" title="Edit" onclick="Admin.openUserModal('${u.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn-sm ${u.blocked?'success':''}" title="${u.blocked?'Unblock':'Block'}" onclick="Admin.toggleBlock('${u.id}')"><i class="fa-solid ${u.blocked?'fa-unlock':'fa-ban'}"></i></button>
+                ${u.role!=='admin'?`<button class="icon-btn-sm danger" onclick="Admin.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>`:''}
+              </div></td>
+            </tr>`).join('') : `<tr><td colspan="7" class="muted">কোনো ইউজার নেই</td></tr>`}</tbody>
+          </table>
+        </div>
+      </div>`;
   },
 
-  coupons(c) {
-    c.innerHTML = `
-      <div class="admin-toolbar"><button class="btn btn-primary" id="addCouponBtn"><i class="fa-solid fa-plus"></i> নতুন কুপন</button></div>
-      <div class="admin-card">
-        <table class="admin-table">
-          <thead><tr><th>কোড</th><th>টাইপ</th><th>মান</th><th>অ্যাকশন</th></tr></thead>
-          <tbody>
-            ${state.coupons.map(cp => `
-              <tr><td><strong>${esc(cp.code)}</strong></td><td>${esc(cp.type)}</td><td>${cp.type === 'percent' ? cp.value + '%' : fmtPrice(cp.value)}</td>
-              <td><button class="icon-btn-sm danger" data-delete-coupon="${cp.id}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join("") || '<tr><td colspan="4" class="muted">কোনো কুপন নেই</td></tr>'}
-          </tbody>
-        </table>
-      </div>`;
-    $("#addCouponBtn").onclick = () => this.openCouponForm();
-    $$("[data-delete-coupon]").forEach(b => b.onclick = async () => { await api.deleteCoupon(b.dataset.deleteCoupon); toast("মুছে ফেলা হয়েছে", "success"); });
+  toggleUser(id, checked){
+    const sel = this._selectedUsers || [];
+    if(checked && !sel.includes(id)) sel.push(id);
+    else if(!checked) sel.splice(sel.indexOf(id),1);
+    this._selectedUsers = sel; this.refreshContent();
   },
-  openCouponForm() {
-    modal.open(`
-      <button class="modal-close" id="cfClose"><i class="fa-solid fa-xmark"></i></button>
-      <div style="padding:28px;">
-        <h2 style="font-size:18px;font-weight:800;margin-bottom:18px;">নতুন কুপন</h2>
-        <form id="couponForm">
-          <div class="form-group"><label>কোড</label><input id="cCode" required placeholder="SAVE10" style="text-transform:uppercase" /></div>
-          <div class="form-row">
-            <div class="form-group"><label>টাইপ</label><select id="cType"><option value="percent">Percent (%)</option><option value="fixed">Fixed (৳)</option></select></div>
-            <div class="form-group"><label>মান</label><input type="number" id="cValue" required min="0" /></div>
-          </div>
-          <div class="form-group"><label>সর্বনিম্ন কেনাকাটা</label><input type="number" id="cMin" value="0" min="0" /></div>
-          <div style="display:flex;gap:10px;margin-top:18px;">
-            <button type="button" class="btn btn-outline" id="cfCancel" style="flex:1;">বাতিল</button>
-            <button type="submit" class="btn btn-primary" style="flex:1;">যোগ করুন</button>
-          </div>
-        </form>
-      </div>`, { size: "sm" });
-    $("#cfClose").onclick = () => modal.close();
-    $("#cfCancel").onclick = () => modal.close();
-    $("#couponForm").onsubmit = async (e) => {
-      e.preventDefault();
-      await api.addCoupon({ code: $("#cCode").value.toUpperCase(), type: $("#cType").value, value: Number($("#cValue").value), minPurchase: Number($("#cMin").value) || 0, active: true });
-      modal.close(); toast("কুপন যোগ হয়েছে", "success");
-    };
+  toggleAllUsers(checked){
+    this._selectedUsers = checked ? DB.users.map(u=>u.id) : [];
+    this.refreshContent();
+  },
+  bulkAction(type){
+    const ids = this._selectedUsers || [];
+    if(!ids.length) return;
+    Modal.confirm(`${ids.length} জন ইউজারের উপর ${type==='delete'?'ডিলিট':type==='block'?'ব্লক':'আনব্লক'} অ্যাকশন?`, async ()=>{
+      for(const id of ids){
+        const u = DB.users.find(x=>x.id===id);
+        if(!u || u.role==='admin') continue;
+        if(type==='delete') await DB.deleteUser(id);
+        else await DB.updateUser(id, {blocked: type==='block'});
+      }
+      this._selectedUsers = [];
+      Toast.show('বাল্ক অ্যাকশন সফল','success');
+    });
   },
 
-  settings(c) {
-    const s = state.siteSettings || {};
-    c.innerHTML = `
+  openUserModal(id){
+    const u = id ? DB.users.find(x=>x.id===id) : {name:'',email:'',password:'',role:'customer'};
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3>${id?'ইউজার এডিট':'নতুন ইউজার'}</h3></div>
+      <div class="modal-body">
+        <div class="form-group"><label>নাম</label><input id="uName" value="${u.name}"></div>
+        <div class="form-group"><label>ইমেইল</label><input id="uEmail" type="email" value="${u.email}"></div>
+        <div class="form-group"><label>পাসওয়ার্ড</label><input id="uPass" value="${u.password}"></div>
+        <div class="form-group"><label>রোল</label>
+          <select id="uRole">
+            <option value="customer" ${u.role==='customer'?'selected':''}>Customer</option>
+            <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-primary btn-block" onclick="Admin.saveUser('${id||''}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
+      </div>
+    `);
+  },
+
+  async saveUser(id){
+    const name = document.getElementById('uName').value.trim();
+    const email = document.getElementById('uEmail').value.trim();
+    const password = document.getElementById('uPass').value.trim();
+    const role = document.getElementById('uRole').value;
+    if(!name || !email || !password){ Toast.show('সব তথ্য দিন','error'); return; }
+    if(!id && DB.users.find(x=>x.email===email)){ Toast.show('এই ইমেইল আগেই আছে','error'); return; }
+    const data = {id, name, email, password, role, blocked:false, avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff`};
+    if(id){ const existing = DB.users.find(x=>x.id===id); data.blocked = existing?.blocked||false; data.joined = existing?.joined||Date.now(); }
+    await DB.saveUser(data);
+    Modal.close(); Toast.show('ইউজার সেভ হয়েছে','success');
+  },
+
+  async toggleBlock(id){
+    const u = DB.users.find(x=>x.id===id); if(!u || u.role==='admin') return;
+    await DB.updateUser(id, {blocked: !u.blocked});
+    Toast.show(u.blocked?'ইউজার আনব্লক হয়েছে':'ইউজার ব্লক হয়েছে','success');
+  },
+
+  deleteUser(id){
+    Modal.confirm('ইউজারটি ডিলিট করতে চান?', async ()=>{ await DB.deleteUser(id); Toast.show('ইউজার ডিলিট হয়েছে','success'); });
+  },
+
+  categories(){
+    const entries = Object.entries(DB._catRaw || {});
+    const cats = DB.categories;
+    return `
       <div class="admin-card">
-        <div class="form-group"><label>সাইট নাম</label><input id="sName" value="${esc(s.siteName || 'EcoShop Pro MAX')}" /></div>
-        <div class="form-group"><label>সাইট ট্যাগলাইন</label><input id="sTagline" value="${esc(s.tagline || '')}" /></div>
-        <div class="form-group"><label>যোগাযোগ ইমেইল</label><input id="sEmail" value="${esc(s.email || '')}" /></div>
-        <div class="form-group"><label>ফোন</label><input id="sPhone" value="${esc(s.phone || '')}" /></div>
-        <button class="btn btn-primary" id="sSave"><i class="fa-solid fa-check"></i> সেভ করুন</button>
+        <div class="admin-card-head"><h3>ক্যাটাগরি ম্যানেজমেন্ট</h3></div>
+        <div class="admin-toolbar">
+          <input id="newCat" placeholder="নতুন ক্যাটাগরির নাম">
+          <button class="btn btn-primary" onclick="Admin.addCat()"><i class="fa-solid fa-plus"></i> যোগ করুন</button>
+        </div>
+        <div class="chips-wrap">
+          ${cats.map(c=>`<div class="chip-large">${c}<button onclick="Admin.delCat('${c}')"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}
+        </div>
       </div>`;
-    $("#sSave").onclick = async () => {
-      await api.saveSiteSettings({ siteName: $("#sName").value.trim(), tagline: $("#sTagline").value.trim(), email: $("#sEmail").value.trim(), phone: $("#sPhone").value.trim() });
-      toast("সেটিংস সেভ হয়েছে", "success");
+  },
+  async addCat(){
+    const v = document.getElementById('newCat').value.trim(); if(!v) return;
+    if(DB.categories.includes(v)) return Toast.show('আগেই আছে','warning');
+    await DB.saveCategory(v); Toast.show('ক্যাটাগরি যোগ হয়েছে','success');
+  },
+  delCat(c){
+    Modal.confirm(`"${c}" ক্যাটাগরি ডিলিট?`, async ()=>{
+      // find key by name
+      const snap = await db.ref('categories').once('value');
+      const data = snap.val() || {};
+      for(const [k,v] of Object.entries(data)){ if(v===c){ await DB.deleteCategory(k); break; } }
+      Toast.show('ডিলিট হয়েছে','success');
+    });
+  },
+
+  coupons(){
+    const list = DB.coupons;
+    return `
+      <div class="admin-card">
+        <div class="admin-card-head"><h3>কুপন কোড ম্যানেজমেন্ট</h3></div>
+        <div class="admin-toolbar">
+          <input id="cCode" placeholder="কুপন কোড (যেমন: ECO10)">
+          <select id="cType"><option value="percent">শতাংশ (%)</option><option value="flat">ফ্ল্যাট (৳)</option></select>
+          <input id="cVal" type="number" placeholder="মান">
+          <button class="btn btn-primary" onclick="Admin.addCoupon()"><i class="fa-solid fa-plus"></i> যোগ</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead><tr><th>কোড</th><th>টাইপ</th><th>মান</th><th>অ্যাকশন</th></tr></thead>
+            <tbody>${list.map(c=>`<tr>
+              <td><b>${c.code}</b></td>
+              <td><span class="chip">${c.type}</span></td>
+              <td>${c.type==='percent'?c.value+'%':'৳'+c.value}</td>
+              <td><button class="icon-btn-sm danger" onclick="Admin.delCoupon('${c.id}')"><i class="fa-solid fa-trash"></i></button></td>
+            </tr>`).join('')}</tbody>
+          </table>
+        </div>
+      </div>`;
+  },
+  async addCoupon(){
+    const code = document.getElementById('cCode').value.trim().toUpperCase();
+    const type = document.getElementById('cType').value;
+    const value = +document.getElementById('cVal').value;
+    if(!code || !value) return Toast.show('সব তথ্য দিন','error');
+    if(DB.coupons.find(c=>c.code===code)) return Toast.show('কোড আগেই আছে','warning');
+    await DB.saveCoupon({code, type, value});
+    Toast.show('কুপন যোগ হয়েছে','success');
+  },
+  async delCoupon(id){ await DB.deleteCoupon(id); Toast.show('ডিলিট হয়েছে','success'); },
+
+  settings(){
+    const s = DB.settings || {};
+    return `
+      <div class="admin-card">
+        <div class="admin-card-head"><h3><i class="fa-solid fa-gear"></i> সাইট সেটিংস</h3></div>
+        <div class="form-group"><label>সাইটের নাম</label><input id="stName" value="${s.siteName||'EcoShop Pro MAX'}"></div>
+        <div class="form-group"><label>ডেলিভারি চার্জ (৳)</label><input id="stShip" type="number" value="${s.shipping||60}"></div>
+        <div class="form-group"><label>সাপোর্ট ফোন</label><input id="stPhone" value="${s.supportPhone||'+880 1700-000000'}"></div>
+        <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> সেভ</button>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-head"><h3><i class="fa-solid fa-database"></i> ডেটা ম্যানেজমেন্ট</h3></div>
+        <p style="color:var(--text-dim);font-size:13px;padding:0 0 12px">সমস্ত ডেটা Firebase Realtime Database-এ সংরক্ষিত। ছবি ImgBB-তে হোস্টেড।</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn btn-danger" onclick="Admin.resetAll()"><i class="fa-solid fa-trash"></i> সব ডেটা রিসেট</button>
+          <button class="btn btn-outline" onclick="Admin.exportData()"><i class="fa-solid fa-download"></i> এক্সপোর্ট JSON</button>
+        </div>
+      </div>`;
+  },
+  async saveSettings(){
+    const settings = {
+      siteName: document.getElementById('stName').value.trim(),
+      shipping: +document.getElementById('stShip').value || 60,
+      supportPhone: document.getElementById('stPhone').value.trim()
     };
+    await db.ref('settings').set(settings);
+    Toast.show('সেটিংস সেভ হয়েছে','success');
+  },
+  resetAll(){
+    Modal.confirm('সমস্ত ডেটা মুছে যাবে! নিশ্চিত?', async ()=>{
+      await db.ref().set({settings:{siteName:'EcoShop Pro MAX', shipping:60}});
+      localStorage.clear(); location.reload();
+    });
+  },
+  exportData(){
+    const data = {products:DB.products, users:DB.users, orders:DB.orders, categories:DB.categories, coupons:DB.coupons};
+    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'ecoshop-data.json'; a.click();
+    Toast.show('এক্সপোর্ট সম্পন্ন','success');
+  },
+
+  refreshContent(){
+    const el = document.getElementById('adminContent');
+    if(el) el.innerHTML = this.render(App._adminTab||'dashboard');
   }
 };
-window.adminPage = adminPage;
 
-/* ═══ AUTH UI ═══ */
-const authUI = {
-  async doLogout() {
-    try { await api.logout(); toast("লগআউট সফল", "success"); closePowerMenu(); router.go("home"); }
-    catch (e) { toast(e.message, "error"); }
+/* ═══════════════════════════════════════════════════════════
+   AUTH UI
+   ═══════════════════════════════════════════════════════════ */
+const AuthUI = {
+  tab(which){
+    document.getElementById('tabLogin').classList.toggle('active', which==='login');
+    document.getElementById('tabReg').classList.toggle('active', which==='reg');
+    document.getElementById('authForm').innerHTML = which==='login' ? this.loginForm() : this.regForm();
   },
-  updateUI(user) {
-    const btnLogin = $("#loginBtn"), userMenu = $("#userMenu");
-    if (user) {
-      if (btnLogin) btnLogin.style.display = "none";
-      if (userMenu) userMenu.classList.add("show");
-      const url = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.displayName || user.email)}&background=6366f1&color=fff`;
-      const av = $("#userAvatar"), adminAv = $("#adminAvatar");
-      if (av) av.src = url; if (adminAv) adminAv.src = url;
-      const h = $("#dropdownUserHeader");
-      if (h) h.innerHTML = `<h4>${esc(user.displayName || "User")}</h4><p>${esc(user.email)}</p>`;
-    } else {
-      if (btnLogin) btnLogin.style.display = "flex";
-      if (userMenu) userMenu.classList.remove("show");
-    }
-    updatePowerMenuUI();
+  loginForm(redirect='home'){
+    return `<form onsubmit="AuthUI.doLogin(event, '${redirect}')">
+      <div class="form-group"><label>ইমেইল</label><input type="email" id="authEmail" required placeholder="admin@eco.pro"></div>
+      <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="authPass" required placeholder="admin123"></div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">লগইন <i class="fa-solid fa-arrow-right"></i></button>
+    </form>`;
+  },
+  regForm(){
+    return `<form onsubmit="AuthUI.doReg(event)">
+      <div class="form-group"><label>নাম</label><input id="regName" required></div>
+      <div class="form-group"><label>ইমেইল</label><input type="email" id="regEmail" required></div>
+      <div class="form-group"><label>পাসওয়ার্ড</label><input type="password" id="regPass" required minlength="6"></div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">রেজিস্টার <i class="fa-solid fa-user-plus"></i></button>
+    </form>`;
+  },
+  async doLogin(e, redirect){
+    e.preventDefault();
+    const r = await Auth.login(document.getElementById('authEmail').value, document.getElementById('authPass').value);
+    if(!r.ok){ Toast.show(r.msg,'error'); return; }
+    Toast.show('স্বাগতম, '+r.user.name,'success');
+    App.go(r.user.role==='admin' ? 'admin' : (redirect||'home'));
+  },
+  async doReg(e){
+    e.preventDefault();
+    const r = await Auth.register(document.getElementById('regName').value, document.getElementById('regEmail').value, document.getElementById('regPass').value);
+    if(!r.ok){ Toast.show(r.msg,'error'); return; }
+    Toast.show('রেজিস্ট্রেশন সফল','success'); App.go('home');
   }
 };
-window.authUI = authUI;
 
-/* ═══ GLOBAL EVENT DELEGATION ═══ */
-function bindGlobalEvents() {
-  const sb = $("#splashBar"), ss = $("#splashStatus");
-  const steps = [[20, "ফায়ারবেস চালু হচ্ছে..."], [55, "ডেটা লোড হচ্ছে..."], [85, "প্রায় প্রস্তুত..."], [100, "স্বাগতম!"]];
-  let i = 0;
-  const iv = setInterval(() => {
-    if (i >= steps.length) { clearInterval(iv); return; }
-    if (sb) sb.style.width = steps[i][0] + "%";
-    if (ss) ss.textContent = steps[i][1];
-    i++;
-  }, 350);
-  setTimeout(() => $("#splash")?.classList.add("hidden"), 1600);
-
-  $("#menuToggle")?.addEventListener("click", (e) => { e.stopPropagation(); openPowerMenu(); });
-  $("#pmClose")?.addEventListener("click", closePowerMenu);
-  $("#backdrop")?.addEventListener("click", closeAllPanels);
-  $("#themeToggle")?.addEventListener("click", toggleTheme);
-  $("#langToggle")?.addEventListener("click", toggleLang);
-
-  $("#cartBtn")?.addEventListener("click", () => { $("#cartDrawer")?.classList.add("active"); $("#backdrop")?.classList.add("active"); cart.renderDrawer(); });
-  $("#closeCart")?.addEventListener("click", () => { $("#cartDrawer")?.classList.remove("active"); if (!isAnyPanelOpen()) $("#backdrop")?.classList.remove("active"); });
-  $("#notifBtn")?.addEventListener("click", () => { $("#notifPanel")?.classList.add("active"); $("#backdrop")?.classList.add("active"); });
-  $("#closeNotif")?.addEventListener("click", () => { $("#notifPanel")?.classList.remove("active"); if (!isAnyPanelOpen()) $("#backdrop")?.classList.remove("active"); });
-
-  const umb = $("#userMenuBtn"), ud = $("#userDropdown");
-  umb?.addEventListener("click", (e) => { e.stopPropagation(); ud.classList.toggle("active"); });
-  document.addEventListener("click", (e) => { if (ud && !ud.contains(e.target) && e.target !== umb) ud.classList.remove("active"); });
-
-  $("#logoutBtn")?.addEventListener("click", () => authUI.doLogout());
-  $("#pmLogoutBtn")?.addEventListener("click", () => authUI.doLogout());
-  $("#adminLogoutBtn")?.addEventListener("click", () => authUI.doLogout());
-
-  const si = $("#globalSearchInput");
-  if (si) si.onkeydown = (e) => { if (e.key === "Enter") { state.filters.query = si.value.trim(); router.go("products"); } };
-
-  $$("#pmLangSeg button").forEach(b => b.onclick = () => { state.lang = b.dataset.lang; localStorage.setItem("lang", state.lang); applyLang(); syncSettingsUI(); router.render(); });
-  $$("#pmThemeSeg button").forEach(b => b.onclick = () => { state.themeMode = b.dataset.theme; localStorage.setItem("themeMode", state.themeMode); applyTheme(); syncSettingsUI(); });
-
-  const btt = $("#backToTop");
-  if (btt) {
-    window.addEventListener("scroll", () => btt.classList.toggle("show", window.scrollY > 300));
-    btt.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
+/* ═══════════════════════════════════════════════════════════
+   CHECKOUT
+   ═══════════════════════════════════════════════════════════ */
+const Checkout = {
+  coupon:null,
+  open(){
+    const u = Auth.user();
+    if(!u){ Toast.show(t('loginRequired'),'warning'); App.go('auth'); return; }
+    if(!Cart.items().length) return Toast.show('কার্ট খালি','warning');
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-credit-card"></i> চেকআউট</h3></div>
+      <div class="modal-body">
+        <div class="form-group"><label>নাম</label><input id="coName" value="${u.name}"></div>
+        <div class="form-row">
+          <div class="form-group"><label>ফোন</label><input id="coPhone" placeholder="017XXXXXXXX"></div>
+          <div class="form-group"><label>শহর</label><input id="coCity" value="ঢাকা"></div>
+        </div>
+        <div class="form-group"><label>ঠিকানা</label><textarea id="coAddr" rows="2"></textarea></div>
+        <div class="form-group"><label>কুপন কোড (ঐচ্ছিক)</label>
+          <div style="display:flex;gap:8px"><input id="coCoupon" placeholder="ECO10"><button class="btn btn-outline" onclick="Checkout.applyCoupon()">অ্যাপ্লাই</button></div>
+        </div>
+        <div style="background:var(--surface-2);padding:14px;border-radius:10px;margin-top:12px">
+          <div class="cart-summary-row"><span>Subtotal</span><span>৳${Cart.subtotal()}</span></div>
+          <div class="cart-summary-row"><span>Shipping</span><span>৳60</span></div>
+          <div class="cart-summary-row"><span>Coupon</span><span id="coCouponShow">—</span></div>
+          <div class="cart-summary-row total"><span>Total</span><span id="coTotal">৳${Cart.subtotal()+60}</span></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">বাতিল</button>
+        <button class="btn btn-primary btn-block" id="coSubmit" onclick="Checkout.place()"><i class="fa-solid fa-check"></i> অর্ডার কনফার্ম</button>
+      </div>
+    `);
+    this.coupon = null;
+  },
+  applyCoupon(){
+    const code = document.getElementById('coCoupon').value.trim().toUpperCase();
+    const c = DB.coupons.find(x=>x.code===code);
+    if(!c){ Toast.show('কুপন কোড সঠিক নয়','error'); return; }
+    this.coupon = c;
+    let sub = Cart.subtotal() + 60;
+    let off = c.type==='percent' ? Math.round(sub * c.value/100) : c.value;
+    document.getElementById('coCouponShow').textContent = `-৳${off} (${c.code})`;
+    document.getElementById('coTotal').textContent = '৳' + Math.max(0, sub-off);
+    Toast.show('কুপন অ্যাপ্লাই হয়েছে','success');
+  },
+  async place(){
+    const name = document.getElementById('coName').value.trim();
+    const phone = document.getElementById('coPhone').value.trim();
+    const city = document.getElementById('coCity').value.trim();
+    const address = document.getElementById('coAddr').value.trim();
+    if(!name || !phone || !address){ Toast.show('সব তথ্য পূরণ করুন','error'); return; }
+    let sub = Cart.subtotal() + 60;
+    let off = 0;
+    if(this.coupon) off = this.coupon.type==='percent' ? Math.round(sub*this.coupon.value/100) : this.coupon.value;
+    const total = Math.max(0, sub - off);
+    const items = Cart.items().map(i=>{
+      const p = DB.products.find(x=>x.id===i.id);
+      return {id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty};
+    });
+    const btn = document.getElementById('coSubmit'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> প্রসেসিং...`;
+    try{
+      const order = await Orders.create({name, phone, city, address}, items, total, this.coupon?.code);
+      Modal.close();
+      Toast.show('অর্ডার সফল! ID: '+order.id,'success',4000);
+      App.go('orders');
+    } catch(e){
+      console.error(e); Toast.show('অর্ডার ব্যর্থ: '+e.message,'error');
+      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check"></i> অর্ডার কনফার্ম`;
+    }
   }
-  window.addEventListener("scroll", () => $("#publicNavbar")?.classList.toggle("scrolled", window.scrollY > 10));
+};
 
-  $$(".admin-nav a[data-admin]").forEach(a => a.addEventListener("click", () => {
-    state.adminPage = a.dataset.admin;
-    adminPage.render();
-    $("#adminSidebar")?.classList.remove("active");
-  }));
-  $("#adminSidebarToggle")?.addEventListener("click", () => $("#adminSidebar")?.classList.toggle("active"));
+/* ───────── PROFILE ───────── */
+const Profile = {
+  async save(){
+    const u = Auth.user(); if(!u) return;
+    const name = document.getElementById('pfName').value.trim();
+    const pass = document.getElementById('pfPass').value.trim();
+    if(!name || !pass) return Toast.show('তথ্য পূরণ করুন','error');
+    const patch = { name, password: pass, avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff` };
+    await DB.updateUser(u.id, patch);
+    Session.set({...u, ...patch});
+    Toast.show('প্রোফাইল আপডেট হয়েছে','success'); App.render();
+  }
+};
 
-  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeAllPanels(); modal.close(); } });
+/* ═══════════════════════════════════════════════════════════
+   THEME / LANG / UI INIT
+   ═══════════════════════════════════════════════════════════ */
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
+  localStorage.setItem('eco_theme', mode);
+  document.querySelectorAll('[data-set-theme]').forEach(b=>b.classList.toggle('active', b.dataset.setTheme===mode));
+  const tb = document.getElementById('themeBtn');
+  if(tb) tb.innerHTML = `<i class="fa-solid fa-${mode==='dark'?'sun':'moon'}"></i>`;
+}
+function applyLang(lang){
+  LANG = lang; localStorage.setItem('eco_lang', lang);
+  document.getElementById('langChip').textContent = lang.toUpperCase();
+  document.querySelectorAll('[data-set-lang]').forEach(b=>b.classList.toggle('active', b.dataset.setLang===lang));
+  App.render();
+}
+function setFbStatus(ok, text){
+  const el = document.getElementById('fbStatus');
+  const txt = document.getElementById('fbStatusText');
+  if(el) el.style.color = ok ? 'var(--success)' : 'var(--warning)';
+  if(txt) txt.textContent = text;
+}
 
-  document.addEventListener("click", (e) => {
-    const goEl = e.target.closest("[data-go]");
-    if (goEl) {
-      e.preventDefault();
-      router.go(goEl.dataset.go);
-      if (goEl.dataset.close || goEl.closest("#powerMenu")) closeAllPanels();
-      return;
+document.addEventListener('DOMContentLoaded', ()=>{
+  applyTheme(localStorage.getItem('eco_theme') || 'light');
+  LANG = localStorage.getItem('eco_lang') || 'bn';
+  document.getElementById('langChip').textContent = LANG.toUpperCase();
+
+  /* Splash + Firebase connect */
+  let p = 0;
+  const statuses = ['Firebase-এ সংযুক্ত হচ্ছে...','ডেটা সিঙ্ক হচ্ছে...','প্রায় শেষ...','স্বাগতম!'];
+  const si = setInterval(()=>{
+    p += 25;
+    document.getElementById('splashBar').style.width = p+'%';
+    document.getElementById('splashStatus').textContent = statuses[Math.min(3,Math.floor(p/25)-1)] || statuses[0];
+    if(p>=100){
+      clearInterval(si);
+      setTimeout(()=>document.getElementById('splash').classList.add('hidden'), 500);
     }
-    const addEl = e.target.closest("[data-cart-add]");
-    if (addEl) { cart.add(JSON.parse(addEl.dataset.cartAdd)); return; }
-    const wishEl = e.target.closest("[data-wish]");
-    if (wishEl) { wishlist.toggle(JSON.parse(wishEl.dataset.wish)); router.render(); return; }
-    const decEl = e.target.closest("[data-qty-dec]");
-    if (decEl) { const c = state.cart.find(x => x.id === decEl.dataset.qtyDec); if (c) cart.setQty(c.id, c.qty - 1); return; }
-    const incEl = e.target.closest("[data-qty-inc]");
-    if (incEl) { const c = state.cart.find(x => x.id === incEl.dataset.qtyInc); if (c) cart.setQty(c.id, c.qty + 1); return; }
-    const remEl = e.target.closest("[data-cart-remove]");
-    if (remEl) { cart.remove(remEl.dataset.cartRemove); return; }
+  }, 400);
+
+  /* Firebase init */
+  db.ref('.info/connected').on('value', snap=>{
+    setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: সংযুক্ত' : 'Firebase: অফলাইন');
   });
-}
+  DB.init();
 
-/* ═══ AUTH STATE LISTENER ═══ */
-function initAuthListener() {
-  onAuthStateChanged(auth, async (user) => {
-    state.authReady = true;
-    if (user) {
-      state.user = { uid: user.uid, email: user.email, displayName: user.displayName };
-      state.userProfile = await api.getProfile(user.uid);
-      state.isAdmin = state.userProfile?.role === "admin";
-      authUI.updateUI(state.user);
-      api.listenNotifications(user.uid, (notifs) => {
-        const unread = notifs.filter(n => !n.read).length;
-        const b = $("#notifBadge");
-        if (b) { b.textContent = unread; b.classList.toggle("show", unread > 0); }
-        renderNotifications(notifs);
-      });
-    } else {
-      state.user = null; state.isAdmin = false; state.userProfile = null;
-      authUI.updateUI(null);
-    }
-    if (router.current === "auth") router.showAdminOrUserDash();
-    else if (router.current === "admin") router.render();
-    else if (["dashboard", "orders", "profile"].includes(router.current)) router.render();
+  /* Events */
+  window.addEventListener('scroll', ()=>{
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY>10);
+    document.getElementById('backToTop').classList.toggle('show', window.scrollY>400);
   });
-}
-function renderNotifications(notifs) {
-  const c = $("#notifList");
-  if (!c) return;
-  if (!notifs.length) { c.innerHTML = `<div class="empty-state" style="padding:40px 20px;"><i class="fa-solid fa-bell-slash"></i><h3 style="font-size:16px;">কোনো নোটিফিকেশন নেই</h3></div>`; return; }
-  c.innerHTML = notifs.map(n => `
-    <div class="notif-item ${n.read ? '' : 'unread'}">
-      <div class="notif-icon"><i class="fa-solid fa-bell"></i></div>
-      <div><h5>${esc(n.title)}</h5><p>${esc(n.body)}</p><small>${fmtDate(n.createdAt)}</small></div>
-    </div>`).join("");
-}
+  document.getElementById('backToTop').onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
 
-/* ═══ BOOT ═══ */
-function boot() {
-  applyTheme();
-  applyLang();
-  cart.updateBadge();
-  wishlist.updateBadge();
-  bindGlobalEvents();
-  initAuthListener();
+  document.querySelectorAll('[data-nav]').forEach(a=>{
+    a.onclick = ()=>{
+      const r = a.dataset.nav;
+      if(r==='cart'){ App.openCart(); return; }
+      App.go(r);
+    };
+  });
+  document.querySelectorAll('.nav-menu a').forEach(a=>{ a.onclick = ()=> App.go(a.dataset.nav); });
 
-  api.listenProducts(() => { if (["home", "products"].includes(router.current)) router.render(); if (router.current === "admin" && state.adminPage === "products") adminPage.render(); });
-  api.listenCategories(() => { if (["home", "products"].includes(router.current)) router.render(); if (router.current === "admin" && state.adminPage === "categories") adminPage.render(); });
-  api.listenAllOrders(() => { if (router.current === "admin") adminPage.render(); });
-  api.listenUsers(() => { if (router.current === "admin" && state.adminPage === "users") adminPage.render(); });
-  api.listenCoupons(() => { if (router.current === "admin" && state.adminPage === "coupons") adminPage.render(); });
-  api.listenSiteSettings(() => { if (router.current === "admin" && state.adminPage === "settings") adminPage.render(); });
+  const openPM = ()=>{ document.getElementById('powerMenu').classList.add('active'); document.getElementById('backdrop').classList.add('active'); };
+  const closePM = ()=>{ document.getElementById('powerMenu').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); };
+  document.getElementById('menuToggle').onclick = openPM;
+  document.getElementById('pmClose').onclick = closePM;
 
-  const initial = (location.hash || "#home").replace("#", "");
-  router.go(initial || "home");
-}
+  const openCart = ()=>{ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); };
+  const closeCart = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); };
+  document.getElementById('cartBtn').onclick = openCart;
+  document.getElementById('cartClose').onclick = closeCart;
+  document.getElementById('checkoutBtn').onclick = ()=>{ closeCart(); Checkout.open(); };
 
-if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot);
-else boot();
+  const openNotif = ()=>{ document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); };
+  const closeNotif = ()=>{ document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); };
+  document.getElementById('notifBtn').onclick = openNotif;
+  document.getElementById('notifClose').onclick = closeNotif;
+
+  document.getElementById('backdrop').onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
+
+  document.getElementById('loginBtn').onclick = ()=>{ closePM(); App.go('auth'); };
+  document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App.go('auth'); };
+  document.getElementById('pmLogoutBtn').onclick = ()=>{ closePM(); Auth.logout(); };
+
+  const av = document.getElementById('userAvatarBtn');
+  const dd = document.getElementById('userDropdown');
+  av.onclick = (e)=>{ e.stopPropagation(); dd.classList.toggle('active'); };
+  document.addEventListener('click', ()=> dd.classList.remove('active'));
+
+  document.getElementById('themeBtn').onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
+  document.getElementById('langBtn').onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
+  document.querySelectorAll('[data-set-theme]').forEach(b=> b.onclick = ()=> applyTheme(b.dataset.setTheme));
+  document.querySelectorAll('[data-set-lang]').forEach(b=> b.onclick = ()=> applyLang(b.dataset.setLang));
+
+  document.getElementById('globalSearch').oninput = (e)=>{
+    App._shopQ = e.target.value; App._shopCat='all'; App.go('shop');
+  };
+
+  App.render();
+});
