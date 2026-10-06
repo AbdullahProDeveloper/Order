@@ -1,110 +1,330 @@
-/* ═══════════════════════════════════════════════════════════
-   EcoShop Pro MAX v14.0 — Ultra Professional
-   ═══════════════════════════════════════════════════════════ */
+<!DOCTYPE html>
+<html lang="bn" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
+<meta name="theme-color" content="#6366f1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="EcoShop">
+<meta name="format-detection" content="telephone=no">
+<meta name="description" content="EcoShop Pro MAX — বাংলাদেশের সেরা প্রিমিয়াম অনলাইন শপিং">
+<title>EcoShop Pro MAX — প্রিমিয়াম ই-কমার্স</title>
 
-:root{
-  --brand:#6366f1; --brand-dark:#4f46e5; --brand-light:#818cf8;
-  --brand-50:#eef2ff; --brand-100:#e0e7ff; --brand-glow:rgba(99,102,241,.5);
-  --accent:#f59e0b; --accent-dark:#ea580c;
-  --success:#10b981; --success-dark:#059669;
-  --danger:#ef4444; --danger-dark:#dc2626;
-  --warning:#f59e0b; --info:#3b82f6; --pink:#ec4899;
-  --whatsapp:#25D366; --whatsapp-dark:#128C7E;
-  --bg:#f8f9fd; --surface:#fff; --surface-2:#f1f3fa; --surface-3:#e6e9f3;
-  --text:#0f1021; --text-dim:#64748b; --text-soft:#94a3b8; --border:#e5e8f0;
-  --glass:rgba(255,255,255,.72);
-  --radius:16px; --radius-sm:10px; --radius-lg:22px;
-  --shadow-sm:0 2px 6px rgba(15,16,33,.06);
-  --shadow-md:0 8px 24px rgba(15,16,33,.08);
-  --shadow-lg:0 20px 48px rgba(15,16,33,.12);
-  --shadow-xl:0 32px 64px rgba(15,16,33,.18);
-  --font-bn:'Hind Siliguri',system-ui,sans-serif;
-  --font-en:'Plus Jakarta Sans',system-ui,sans-serif;
-  --nav-h:64px; --bottom-nav-h:64px;
-  --safe-t:env(safe-area-inset-top,0px); --safe-b:env(safe-area-inset-bottom,0px);
-  --safe-l:env(safe-area-inset-left,0px); --safe-r:env(safe-area-inset-right,0px);
-  --ease:cubic-bezier(.4,0,.2,1);
-}
-:root[data-theme="dark"]{
-  --bg:#0a0b14; --surface:#12141f; --surface-2:#1a1d2b; --surface-3:#232738;
-  --text:#f0f2fa; --text-dim:#94a3b8; --text-soft:#64748b; --border:#252a3d;
-  --glass:rgba(18,20,31,.72);
-  --brand-50:rgba(99,102,241,.1); --brand-100:rgba(99,102,241,.15);
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html{scroll-padding-top:calc(var(--nav-h) + 8px);overflow-x:hidden;scroll-behavior:smooth;}
-body{font-family:var(--font-bn);background:var(--bg);color:var(--text);padding-top:var(--safe-t);min-height:100dvh;overflow-x:hidden;transition:background .25s,color .25s;padding-bottom:calc(var(--bottom-nav-h) + var(--safe-b) + 4px);line-height:1.55;-webkit-font-smoothing:antialiased;}
-img{max-width:100%;display:block;height:auto;}
-button,input,select,textarea{font-family:inherit;color:inherit;font-size:16px;}
-a{color:inherit;text-decoration:none;cursor:pointer;}
-button{cursor:pointer;}
-::-webkit-scrollbar{width:6px;height:6px;}
-::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:8px;}
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PHRleHQgeD0iOTYiIHk9IjEyMCIgZm9udC1zaXplPSI5MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iI2ZmZiI+8J+NuTwvdGV4dD48L3N2Zz4=">
 
-/* Ambient */
-.ambient-bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
-.ambient-blob{position:absolute;border-radius:50%;filter:blur(80px);opacity:.3;}
-.blob-1{width:400px;height:400px;background:var(--brand);top:-100px;left:-100px;}
-.blob-2{width:350px;height:350px;background:var(--accent);top:40%;right:-100px;}
-.blob-3{width:300px;height:300px;background:var(--pink);bottom:-100px;left:30%;}
-:root[data-theme="dark"] .ambient-blob{opacity:.15;}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 
-/* Splash */
-.splash{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#4f46e5,#6366f1 50%,#818cf8);transition:opacity .4s,visibility .4s;}
-.splash.hidden{opacity:0;visibility:hidden;pointer-events:none;}
-.splash-content{text-align:center;color:#fff;padding:20px;}
-.splash-icon-wrap{position:relative;width:100px;height:100px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;}
-.splash-icon{font-size:40px;background:rgba(255,255,255,.15);width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);}
-.splash-ring{position:absolute;inset:0;border:3px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin 1s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg);}}
-.splash-title{font-family:var(--font-en);font-size:32px;font-weight:800;}
-.t-eco{color:#fff;} .t-shop{color:#ffe49a;}
-.t-pro{font-size:.5em;vertical-align:super;background:#fff;color:var(--brand-dark);padding:3px 10px;border-radius:8px;margin-left:6px;font-weight:900;}
-.splash-tagline{opacity:.9;margin-top:6px;font-size:13.5px;}
-.splash-progress{width:200px;margin:24px auto 0;}
-.splash-bar{height:4px;background:rgba(255,255,255,.25);border-radius:8px;overflow:hidden;}
-.splash-bar span{display:block;height:100%;width:0;background:#fff;border-radius:8px;transition:width .3s;}
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+</head>
+<body>
 
-/* Toasts */
-.toast-container{position:fixed;top:calc(var(--safe-t) + 14px);right:calc(var(--safe-r) + 12px);z-index:9500;display:flex;flex-direction:column;gap:8px;max-width:340px;width:calc(100% - 24px);pointer-events:none;}
-.toast{background:var(--surface);padding:12px 16px;border-radius:12px;box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;font-size:13px;border-left:4px solid var(--brand);animation:toastIn .3s;pointer-events:auto;font-weight:600;}
-.toast.success{border-color:var(--success);} .toast.success i{color:var(--success);}
-.toast.error{border-color:var(--danger);} .toast.error i{color:var(--danger);}
-.toast.warning{border-color:var(--warning);} .toast.warning i{color:var(--warning);}
-.toast i{font-size:16px;color:var(--brand);}
-@keyframes toastIn{from{transform:translateX(60px);opacity:0;}to{transform:translateX(0);opacity:1;}}
-.top-progress{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--brand),var(--accent));z-index:9600;width:0;transition:width .3s;}
+<div class="ambient-bg" aria-hidden="true">
+  <div class="ambient-blob blob-1"></div>
+  <div class="ambient-blob blob-2"></div>
+  <div class="ambient-blob blob-3"></div>
+</div>
 
-/* Header */
-.navbar{position:sticky;top:0;z-index:400;background:var(--glass);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--border);height:var(--nav-h);transition:box-shadow .3s;}
-.navbar.scrolled{box-shadow:var(--shadow-sm);}
-.navbar-progress{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,var(--brand),var(--accent));width:0;transition:width .15s;}
-.nav-container{max-width:1320px;margin:0 auto;height:100%;padding:0 14px;display:flex;align-items:center;gap:10px;width:100%;}
+<!-- Splash -->
+<div class="splash" id="splash">
+  <div class="splash-content">
+    <div class="splash-icon-wrap">
+      <div class="splash-ring"></div>
+      <div class="splash-ring ring-2"></div>
+      <div class="splash-icon"><i class="fa-solid fa-leaf"></i></div>
+    </div>
+    <h1 class="splash-title"><span class="t-eco">Eco</span><span class="t-shop">Shop</span><span class="t-pro">PRO</span></h1>
+    <p class="splash-tagline">প্রিমিয়াম ই-কমার্স অভিজ্ঞতা</p>
+    <div class="splash-progress">
+      <div class="splash-bar"><span id="splashBar"></span></div>
+      <p class="splash-status" id="splashStatus">Firebase-এ সংযুক্ত হচ্ছে...</p>
+    </div>
+  </div>
+</div>
 
-.menu-toggle{width:42px;height:42px;min-width:42px;border:none;background:var(--surface-2);border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;transition:all .25s;}
-.menu-toggle:hover{background:var(--brand);}
-.menu-toggle:hover .bar{background:#fff;}
-.menu-toggle .bar{width:18px;height:2px;background:var(--text);border-radius:2px;transition:all .25s;}
+<div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="top-progress" id="topProgress"></div>
 
-.nav-logo{display:flex;align-items:center;gap:10px;flex-shrink:0;cursor:pointer;}
-.logo-icon{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 16px var(--brand-glow);}
-.logo-text{font-family:var(--font-en);font-weight:800;font-size:17px;white-space:nowrap;}
-.logo-text span{background:linear-gradient(135deg,var(--brand),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;}
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="navbar" id="navbar">
+  <div class="nav-container">
+    <button class="menu-toggle" id="menuToggle" aria-label="Menu">
+      <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+    </button>
 
-.nav-search{flex:1;max-width:460px;position:relative;display:flex;align-items:center;background:var(--surface-2);border-radius:999px;padding:0 6px 0 14px;height:42px;border:1.5px solid transparent;transition:all .25s;gap:2px;}
-.nav-search:focus-within{border-color:var(--brand);background:var(--surface);box-shadow:0 0 0 4px rgba(99,102,241,.12);}
-.nav-search .search-icon{color:var(--text-dim);font-size:14px;flex-shrink:0;}
-.nav-search input{flex:1;border:none;background:transparent;outline:none;padding:0 8px;font-size:14px;min-width:0;}
-.search-img-btn,.search-voice-btn,.search-clear{background:none;border:none;color:var(--text-dim);padding:6px;font-size:14px;border-radius:8px;display:flex;align-items:center;justify-content:center;transition:all .2s;width:32px;height:32px;}
-.search-img-btn:hover{color:var(--brand);background:var(--brand-50);}
-.search-voice-btn:hover{color:var(--danger);background:rgba(239,68,68,.1);}
-.search-voice-btn.listening{color:var(--danger);background:rgba(239,68,68,.15);animation:pulse-voice 1s infinite;}
-@keyframes pulse-voice{0%,100%{transform:scale(1);}50%{transform:scale(1.15);}}
-.search-clear:hover{color:var(--danger);}
+    <a class="nav-logo" onclick="App.go('home')">
+      <div class="logo-icon"><i class="fa-solid fa-leaf"></i><span class="logo-glow"></span></div>
+      <span class="logo-text">EcoShop<span>Pro</span></span>
+    </a>
 
-.search-suggest{position:absolute;top:calc(100% + 8px);left:0;right:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-lg);padding:8px;max-height:420px;overflow-y:auto;opacity:0;visibility:hidden;transform:translateY(-8px);transition:all .2s;z-index:50;}
-.search-suggest.active{opacity:1;visibility:visible;transform:translateY(0);}
-.suggest-section-label{font-size:10.5px;font-weight:800;color:var(--text-soft);text-transform:uppercase;letter-spacing:.5px;padding:8px 10px 4px;}
-.suggest-item{display:flex;gap:10px;padding:10px;border-radius:10px;cursor:pointer;align-items:center;transition:background .15s;}
-.suggest-item:hover{background:var(--surface-2);}
-.suggest-item img{width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:
+    <div class="nav-search" id="navSearch">
+      <i class="fa-solid fa-magnifying-glass search-icon"></i>
+      <input type="text" id="globalSearch" placeholder="পণ্য খুঁজুন..." autocomplete="off">
+      <button class="search-img-btn" id="imageSearchBtn" title="Image Search"><i class="fa-solid fa-image"></i></button>
+      <button class="search-voice-btn" id="voiceSearchBtn" title="Voice Search"><i class="fa-solid fa-microphone"></i></button>
+      <button class="search-clear" id="searchClear" style="display:none"><i class="fa-solid fa-xmark"></i></button>
+      <kbd class="search-kbd">⌘K</kbd>
+      <input type="file" id="imageSearchInput" accept="image/*" style="display:none">
+      <div class="search-suggest" id="searchSuggest"></div>
+    </div>
+
+    <nav class="nav-menu" id="navMenu">
+      <a data-nav="home" class="active"><i class="fa-solid fa-house"></i> <span>হোম</span></a>
+      <a data-nav="shop"><i class="fa-solid fa-store"></i> <span>শপ</span></a>
+      <a data-nav="orders"><i class="fa-solid fa-box"></i> <span>অর্ডার</span></a>
+      <a data-nav="admin" class="nav-admin-link"><i class="fa-solid fa-gauge-high"></i> <span>অ্যাডমিন</span></a>
+    </nav>
+
+    <div class="nav-actions">
+      <button class="icon-btn" id="themeBtn" title="Theme"><i class="fa-solid fa-moon"></i></button>
+      <button class="icon-btn lang-btn" id="langBtn" title="Language">
+        <i class="fa-solid fa-globe"></i><span class="lang-chip" id="langChip">BN</span>
+      </button>
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <i class="fa-solid fa-bell"></i><span class="badge" id="notifBadge"></span>
+      </button>
+      <button class="icon-btn" id="cartBtn" title="Cart">
+        <i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartBadge"></span>
+      </button>
+      <button class="avatar-btn" id="userAvatarBtn"><img id="navAvatar" src="" alt=""></button>
+      <button class="btn btn-primary login-btn" id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i><span>লগইন</span></button>
+    </div>
+  </div>
+  <div class="navbar-progress" id="navbarProgress"></div>
+</header>
+
+<div class="dropdown" id="userDropdown">
+  <div class="dropdown-header"><h4 id="ddName">—</h4><p id="ddEmail">—</p></div>
+  <a onclick="App.go('profile')"><i class="fa-solid fa-user"></i> প্রোফাইল</a>
+  <a onclick="App.go('orders')"><i class="fa-solid fa-box"></i> আমার অর্ডার</a>
+  <a onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i> উইশলিস্ট</a>
+  <a onclick="App.go('admin')" id="ddAdmin"><i class="fa-solid fa-gauge-high"></i> অ্যাডমিন প্যানেল</a>
+  <div class="dropdown-divider"></div>
+  <a class="danger" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</a>
+</div>
+
+<!-- ═══════════ SIDE MENU ═══════════ -->
+<aside class="power-menu" id="powerMenu">
+  <div class="pm-header">
+    <button class="pm-close" id="pmClose"><i class="fa-solid fa-xmark"></i></button>
+    <div class="pm-profile">
+      <div class="pm-avatar-wrap" onclick="App.go('profile');App.closePM();">
+        <img id="pmAvatar" src="https://ui-avatars.com/api/?name=Guest&background=6366f1&color=fff" alt="">
+        <span class="pm-online-dot"></span>
+      </div>
+      <div class="pm-profile-info">
+        <h3 id="pmName">অতিথি</h3>
+        <p id="pmEmail">লগইন করুন</p>
+        <span class="pm-role-badge" id="pmRole">GUEST</span>
+      </div>
+    </div>
+    <div class="pm-stats" id="pmStats" style="display:none">
+      <div class="pm-stat" onclick="App.go('orders');App.closePM();">
+        <span class="pm-stat-num" id="pmOrderCount">0</span><span class="pm-stat-label">অর্ডার</span>
+      </div>
+      <div class="pm-stat" onclick="App.go('wishlist');App.closePM();">
+        <span class="pm-stat-num" id="pmWishCount">0</span><span class="pm-stat-label">উইশ</span>
+      </div>
+      <div class="pm-stat" onclick="App.openCart();App.closePM();">
+        <span class="pm-stat-num" id="pmCartCount">0</span><span class="pm-stat-label">কার্ট</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Status bar moved here (inside side menu) -->
+  <div class="pm-status-bar">
+    <div class="pm-status" id="pmOfflineStatus" style="display:none">
+      <i class="fa-solid fa-wifi"></i> <span>অফলাইন মোড</span>
+    </div>
+    <div class="pm-status install" id="pmInstallStatus" style="display:none" onclick="PWA.triggerInstall()">
+      <i class="fa-solid fa-download"></i> <span>অ্যাপ ইনস্টল করুন</span>
+      <i class="fa-solid fa-chevron-right"></i>
+    </div>
+  </div>
+
+  <nav class="pm-nav">
+    <div class="pm-section">
+      <div class="pm-section-title">মেনু</div>
+      <a onclick="App.go('home');App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-house"></i></span>
+        <span class="pm-label">হোম</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('shop');App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-store"></i></span>
+        <span class="pm-label">শপ</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('orders');App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-box"></i></span>
+        <span class="pm-label">আমার অর্ডার</span>
+        <span class="pm-badge" id="pmOrderBadge">0</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('wishlist');App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-heart"></i></span>
+        <span class="pm-label">উইশলিস্ট</span>
+        <span class="pm-badge" id="pmWishBadge">0</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('profile');App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-user"></i></span>
+        <span class="pm-label">প্রোফাইল</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="Tracking.open();App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-truck-fast"></i></span>
+        <span class="pm-label">অর্ডার ট্র্যাক</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+    </div>
+
+    <div class="pm-section" id="pmAdminSection" style="display:none">
+      <div class="pm-section-title">ম্যানেজমেন্ট</div>
+      <a onclick="App.go('admin');App.closePM();" class="pm-admin-link">
+        <span class="pm-icon-wrap admin-icon"><i class="fa-solid fa-gauge-high"></i></span>
+        <span class="pm-label">অ্যাডমিন ড্যাশবোর্ড</span>
+        <span class="pm-badge pm-badge-admin">ADMIN</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="Admin.openBroadcastModal();App.closePM();">
+        <span class="pm-icon-wrap" style="background:rgba(236,72,153,.1);color:var(--pink)"><i class="fa-solid fa-bullhorn"></i></span>
+        <span class="pm-label">ব্রডকাস্ট নোটিফিকেশন</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+    </div>
+
+    <div class="pm-section">
+      <div class="pm-section-title">সেটিংস</div>
+      <div class="pm-row">
+        <span class="pm-row-label"><i class="fa-solid fa-moon"></i> থিম</span>
+        <div class="pm-seg">
+          <button data-set-theme="light"><i class="fa-solid fa-sun"></i></button>
+          <button data-set-theme="dark"><i class="fa-solid fa-moon"></i></button>
+        </div>
+      </div>
+      <div class="pm-row">
+        <span class="pm-row-label"><i class="fa-solid fa-language"></i> ভাষা</span>
+        <div class="pm-seg">
+          <button data-set-lang="bn">বাংলা</button>
+          <button data-set-lang="en">EN</button>
+        </div>
+      </div>
+      <div class="pm-row">
+        <span class="pm-row-label"><i class="fa-solid fa-bell"></i> পুশ নোটিফিকেশন</span>
+        <button class="btn btn-sm btn-outline" id="pushNotifBtn">চালু</button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="pm-footer">
+    <div class="fb-status">
+      <i class="fa-solid fa-circle" id="fbStatus"></i>
+      <span id="fbStatusText">Firebase: connecting...</span>
+    </div>
+    <button class="pm-login-btn" id="pmLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> লগইন / রেজিস্টার</button>
+    <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
+    <p class="pm-version">EcoShop Pro MAX • v13.0</p>
+  </div>
+</aside>
+
+<div class="backdrop" id="backdrop"></div>
+
+<!-- Cart drawer -->
+<aside class="side-drawer cart-drawer" id="cartDrawer">
+  <div class="panel-header">
+    <div><h3><i class="fa-solid fa-cart-shopping"></i> আপনার কার্ট</h3><p class="panel-sub" id="cartCount">0 items</p></div>
+    <button class="panel-close" id="cartClose"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-foot">
+    <div class="cart-summary-row"><span>সাবটোটাল</span><span id="cartSubtotal">৳0</span></div>
+    <div class="cart-summary-row"><span>ডেলিভারি</span><span id="cartShipping">৳100</span></div>
+    <div class="cart-summary-row total"><span>সর্বমোট</span><span id="cartTotal">৳0</span></div>
+    <button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" id="checkoutBtn"><i class="fa-solid fa-credit-card"></i> চেকআউট</button>
+  </div>
+</aside>
+
+<aside class="side-drawer notif-panel" id="notifPanel">
+  <div class="panel-header">
+    <div><h3><i class="fa-solid fa-bell"></i> নোটিফিকেশন</h3><p class="panel-sub" id="notifCount">0 unread</p></div>
+    <button class="panel-close" id="notifClose"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="notif-list" id="notifList"></div>
+</aside>
+
+<main id="app"></main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="nav-logo">
+        <div class="logo-icon"><i class="fa-solid fa-leaf"></i></div>
+        <span class="logo-text">EcoShop<span>Pro</span></span>
+      </div>
+      <p>বাংলাদেশের সেরা প্রিমিয়াম অনলাইন শপিং প্ল্যাটফর্ম।</p>
+      <div class="social-links">
+        <a href="#"><i class="fa-brands fa-facebook-f"></i></a>
+        <a href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="#"><i class="fa-brands fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>দ্রুত লিংক</h4>
+      <a onclick="App.go('home')">হোম</a>
+      <a onclick="App.go('shop')">শপ</a>
+      <a onclick="App.go('orders')">অর্ডার</a>
+      <a onclick="App.go('profile')">প্রোফাইল</a>
+    </div>
+    <div class="footer-col">
+      <h4>সাপোর্ট</h4>
+      <p><i class="fa-solid fa-phone"></i> +880 1700-000000</p>
+      <p><i class="fa-solid fa-envelope"></i> support@ecoshop.pro</p>
+      <p><i class="fa-solid fa-location-dot"></i> ঢাকা, বাংলাদেশ</p>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 EcoShop Pro MAX — সর্বস্বত্ব সংরক্ষিত</div>
+</footer>
+
+<nav class="bottom-nav" id="bottomNav">
+  <a data-nav="home" class="active"><span class="bn-icon"><i class="fa-solid fa-house"></i></span><span>হোম</span></a>
+  <a data-nav="shop"><span class="bn-icon"><i class="fa-solid fa-store"></i></span><span>শপ</span></a>
+  <a data-nav="search" class="bn-center-btn"><i class="fa-solid fa-magnifying-glass"></i></a>
+  <a data-nav="wishlist"><span class="bn-icon"><i class="fa-solid fa-heart"></i></span><span>উইশ</span></a>
+  <a data-nav="profile"><span class="bn-icon"><i class="fa-solid fa-user"></i></span><span>প্রোফাইল</span></a>
+</nav>
+
+<button class="back-to-top" id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
+
+<div class="modal-root" id="modalRoot"></div>
+<div class="quick-view-root" id="quickViewRoot"></div>
+
+<!-- Mobile search modal -->
+<div class="mobile-search-modal" id="mobileSearchModal">
+  <div class="msm-bar">
+    <button class="msm-back" id="msmBack"><i class="fa-solid fa-arrow-left"></i></button>
+    <div class="msm-input-wrap">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="mobileSearchInput" placeholder="পণ্য খুঁজুন..." autocomplete="off">
+      <button class="msm-img" id="msmImageSearch"><i class="fa-solid fa-image"></i></button>
+      <button class="msm-voice" id="msmVoiceSearch"><i class="fa-solid fa-microphone"></i></button>
+      <input type="file" id="msmImageInput" accept="image/*" style="display:none">
+    </div>
+  </div>
+  <div class="msm-results" id="msmResults"></div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics-compat.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
