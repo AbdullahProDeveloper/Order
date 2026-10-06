@@ -40,7 +40,7 @@
       <div class="splash-icon"><i class="fa-solid fa-leaf"></i></div>
     </div>
     <h1 class="splash-title"><span class="t-eco">Eco</span><span class="t-shop">Shop</span><span class="t-pro">PRO</span></h1>
-    <p class="splash-tagline" data-i18n="splashTagline">প্রিমিয়াম ই-কমার্স অভিজ্ঞতা</p>
+    <p class="splash-tagline">প্রিমিয়াম ই-কমার্স অভিজ্ঞতা</p>
     <div class="splash-progress">
       <div class="splash-bar"><span id="splashBar"></span></div>
       <p class="splash-status" id="splashStatus">Firebase-এ সংযুক্ত হচ্ছে...</p>
@@ -55,8 +55,8 @@
 <div class="install-banner" id="installBanner">
   <div class="install-icon"><i class="fa-solid fa-download"></i></div>
   <div class="install-text">
-    <b data-i18n="installApp">অ্যাপ ইনস্টল করুন</b>
-    <small data-i18n="installHint">হোম স্ক্রিনে যোগ করুন</small>
+    <b>অ্যাপ ইনস্টল করুন</b>
+    <small>হোম স্ক্রিনে যোগ করুন</small>
   </div>
   <button class="btn btn-primary btn-sm" id="installBtn">ইনস্টল</button>
   <button class="install-close" id="installClose"><i class="fa-solid fa-xmark"></i></button>
@@ -66,83 +66,153 @@
 <div class="toast-container" id="toastContainer" role="status" aria-live="polite"></div>
 <div class="top-progress" id="topProgress"></div>
 
-<!-- Navbar -->
+<!-- ═══════════ ADVANCED HEADER ═══════════ -->
 <header class="navbar" id="navbar">
   <div class="nav-container">
     <button class="menu-toggle" id="menuToggle" aria-label="Menu">
       <span class="bar"></span><span class="bar"></span><span class="bar"></span>
     </button>
+
     <a class="nav-logo" onclick="App.go('home')">
       <div class="logo-icon"><i class="fa-solid fa-leaf"></i><span class="logo-glow"></span></div>
       <span class="logo-text">EcoShop<span>Pro</span></span>
     </a>
+
     <div class="nav-search" id="navSearch">
       <i class="fa-solid fa-magnifying-glass search-icon"></i>
-      <input type="text" id="globalSearch" placeholder="পণ্য খুঁজুন..." data-i18n-ph="searchPlaceholder" autocomplete="off">
+      <input type="text" id="globalSearch" placeholder="পণ্য খুঁজুন..." autocomplete="off">
       <button class="search-clear" id="searchClear" style="display:none"><i class="fa-solid fa-xmark"></i></button>
+      <button class="search-voice" id="voiceSearch" style="display:none"><i class="fa-solid fa-microphone"></i></button>
       <kbd class="search-kbd">⌘K</kbd>
       <div class="search-suggest" id="searchSuggest"></div>
     </div>
+
     <nav class="nav-menu" id="navMenu">
-      <a data-nav="home" class="active"><i class="fa-solid fa-house"></i> <span data-i18n="home">হোম</span></a>
-      <a data-nav="shop"><i class="fa-solid fa-store"></i> <span data-i18n="shop">শপ</span></a>
-      <a data-nav="orders"><i class="fa-solid fa-box"></i> <span data-i18n="orders">অর্ডার</span></a>
-      <a data-nav="admin" class="nav-admin-link"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="admin">অ্যাডমিন</span></a>
+      <a data-nav="home" class="active"><i class="fa-solid fa-house"></i> <span>হোম</span></a>
+      <a data-nav="shop"><i class="fa-solid fa-store"></i> <span>শপ</span></a>
+      <a data-nav="orders"><i class="fa-solid fa-box"></i> <span>অর্ডার</span></a>
+      <a data-nav="admin" class="nav-admin-link"><i class="fa-solid fa-gauge-high"></i> <span>অ্যাডমিন</span></a>
     </nav>
+
     <div class="nav-actions">
       <button class="icon-btn" id="themeBtn" title="Theme"><i class="fa-solid fa-moon"></i></button>
       <button class="icon-btn lang-btn" id="langBtn" title="Language">
         <i class="fa-solid fa-globe"></i><span class="lang-chip" id="langChip">BN</span>
       </button>
-      <button class="icon-btn" id="notifBtn" title="Notifications"><i class="fa-solid fa-bell"></i><span class="badge" id="notifBadge"></span></button>
-      <button class="icon-btn" id="cartBtn" title="Cart"><i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartBadge"></span></button>
+      <button class="icon-btn" id="notifBtn" title="Notifications">
+        <i class="fa-solid fa-bell"></i><span class="badge" id="notifBadge"></span>
+      </button>
+      <button class="icon-btn" id="cartBtn" title="Cart">
+        <i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartBadge"></span>
+      </button>
       <button class="avatar-btn" id="userAvatarBtn"><img id="navAvatar" src="" alt=""></button>
-      <button class="btn btn-primary login-btn" id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i><span data-i18n="login">লগইন</span></button>
+      <button class="btn btn-primary login-btn" id="loginBtn"><i class="fa-solid fa-right-to-bracket"></i><span>লগইন</span></button>
     </div>
   </div>
+  <div class="navbar-progress" id="navbarProgress"></div>
 </header>
 
+<!-- User dropdown -->
 <div class="dropdown" id="userDropdown">
-  <div class="dropdown-header"><h4 id="ddName">—</h4><p id="ddEmail">—</p></div>
-  <a onclick="App.go('profile')"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
-  <a onclick="App.go('orders')"><i class="fa-solid fa-box"></i> <span data-i18n="myOrders">আমার অর্ডার</span></a>
-  <a onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span></a>
-  <a onclick="App.go('admin')" id="ddAdmin"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="adminPanel">অ্যাডমিন</span></a>
+  <div class="dropdown-header">
+    <h4 id="ddName">—</h4>
+    <p id="ddEmail">—</p>
+  </div>
+  <a onclick="App.go('profile')"><i class="fa-solid fa-user"></i> প্রোফাইল</a>
+  <a onclick="App.go('orders')"><i class="fa-solid fa-box"></i> আমার অর্ডার</a>
+  <a onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i> উইশলিস্ট</a>
+  <a onclick="App.go('admin')" id="ddAdmin"><i class="fa-solid fa-gauge-high"></i> অ্যাডমিন প্যানেল</a>
   <div class="dropdown-divider"></div>
-  <a class="danger" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">লগআউট</span></a>
+  <a class="danger" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</a>
 </div>
 
+<!-- ═══════════ ADVANCED SIDE MENU ═══════════ -->
 <aside class="power-menu" id="powerMenu">
   <div class="pm-header">
+    <div class="pm-close-wrap">
+      <button class="pm-close" id="pmClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
     <div class="pm-profile">
-      <div class="pm-avatar-wrap"><img id="pmAvatar" src="" alt=""><span class="pm-online-dot"></span></div>
+      <div class="pm-avatar-wrap" onclick="App.go('profile'); App.closePM();">
+        <img id="pmAvatar" src="https://ui-avatars.com/api/?name=Guest&background=6366f1&color=fff" alt="">
+        <span class="pm-online-dot"></span>
+      </div>
       <div class="pm-profile-info">
-        <h3 id="pmName">অতিথি</h3><p id="pmEmail">লগইন করুন</p>
+        <h3 id="pmName">অতিথি</h3>
+        <p id="pmEmail">লগইন করুন</p>
         <span class="pm-role-badge" id="pmRole">GUEST</span>
       </div>
     </div>
-    <button class="pm-close" id="pmClose"><i class="fa-solid fa-xmark"></i></button>
+    <div class="pm-stats" id="pmStats" style="display:none">
+      <div class="pm-stat" onclick="App.go('orders'); App.closePM();">
+        <span class="pm-stat-num" id="pmOrderCount">0</span>
+        <span class="pm-stat-label">অর্ডার</span>
+      </div>
+      <div class="pm-stat" onclick="App.go('wishlist'); App.closePM();">
+        <span class="pm-stat-num" id="pmWishCount">0</span>
+        <span class="pm-stat-label">উইশ</span>
+      </div>
+      <div class="pm-stat" onclick="App.openCart(); App.closePM();">
+        <span class="pm-stat-num" id="pmCartCount">0</span>
+        <span class="pm-stat-label">কার্ট</span>
+      </div>
+    </div>
   </div>
+
   <nav class="pm-nav">
     <div class="pm-section">
-      <div class="pm-section-title">নেভিগেশন</div>
-      <a onclick="App.go('home')"><i class="fa-solid fa-house"></i> <span data-i18n="home">হোম</span></a>
-      <a onclick="App.go('shop')"><i class="fa-solid fa-store"></i> <span data-i18n="shop">শপ</span></a>
-      <a onclick="App.go('orders')"><i class="fa-solid fa-box"></i> <span data-i18n="orders">অর্ডার</span> <span class="pm-badge" id="pmOrderCount">0</span></a>
-      <a onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i> <span data-i18n="wishlist">উইশলিস্ট</span> <span class="pm-badge" id="pmWishCount">0</span></a>
-      <a onclick="App.go('profile')"><i class="fa-solid fa-user"></i> <span data-i18n="profile">প্রোফাইল</span></a>
+      <div class="pm-section-title">মেনু</div>
+      <a onclick="App.go('home'); App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-house"></i></span>
+        <span class="pm-label">হোম</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('shop'); App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-store"></i></span>
+        <span class="pm-label">শপ</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('orders'); App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-box"></i></span>
+        <span class="pm-label">আমার অর্ডার</span>
+        <span class="pm-badge" id="pmOrderBadge">0</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('wishlist'); App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-heart"></i></span>
+        <span class="pm-label">উইশলিস্ট</span>
+        <span class="pm-badge" id="pmWishBadge">0</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="App.go('profile'); App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-user"></i></span>
+        <span class="pm-label">প্রোফাইল</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
+      <a onclick="Tracking.open(); App.closePM();">
+        <span class="pm-icon-wrap"><i class="fa-solid fa-truck-fast"></i></span>
+        <span class="pm-label">অর্ডার ট্র্যাক</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
     </div>
+
     <div class="pm-section" id="pmAdminSection" style="display:none">
       <div class="pm-section-title">ম্যানেজমেন্ট</div>
-      <a onclick="App.go('admin')"><i class="fa-solid fa-gauge-high"></i> <span data-i18n="dashboard">ড্যাশবোর্ড</span> <span class="pm-badge pm-badge-admin">ADMIN</span></a>
+      <a onclick="App.go('admin'); App.closePM();" class="pm-admin-link">
+        <span class="pm-icon-wrap admin-icon"><i class="fa-solid fa-gauge-high"></i></span>
+        <span class="pm-label">অ্যাডমিন ড্যাশবোর্ড</span>
+        <span class="pm-badge pm-badge-admin">ADMIN</span>
+        <i class="fa-solid fa-chevron-right pm-arrow"></i>
+      </a>
     </div>
+
     <div class="pm-section">
       <div class="pm-section-title">সেটিংস</div>
       <div class="pm-row">
         <span class="pm-row-label"><i class="fa-solid fa-moon"></i> থিম</span>
         <div class="pm-seg">
-          <button data-set-theme="light">লাইট</button>
-          <button data-set-theme="dark">ডার্ক</button>
+          <button data-set-theme="light"><i class="fa-solid fa-sun"></i></button>
+          <button data-set-theme="dark"><i class="fa-solid fa-moon"></i></button>
         </div>
       </div>
       <div class="pm-row">
@@ -153,24 +223,36 @@
         </div>
       </div>
       <div class="pm-row">
-        <span class="pm-row-label"><i class="fa-solid fa-bell"></i> পুশ</span>
+        <span class="pm-row-label"><i class="fa-solid fa-bell"></i> পুশ নোটিফিকেশন</span>
         <button class="btn btn-sm btn-outline" id="pushNotifBtn">চালু</button>
       </div>
     </div>
   </nav>
+
   <div class="pm-footer">
-    <div class="fb-status"><i class="fa-solid fa-circle" id="fbStatus"></i><span id="fbStatusText">Firebase: connecting...</span></div>
-    <button class="pm-login-btn" id="pmLoginBtn"><i class="fa-solid fa-right-to-bracket"></i> লগইন / রেজিস্টার</button>
-    <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none"><i class="fa-solid fa-right-from-bracket"></i> লগআউট</button>
-    <p class="pm-version">v11.0 Pro Order</p>
+    <div class="fb-status">
+      <i class="fa-solid fa-circle" id="fbStatus"></i>
+      <span id="fbStatusText">Firebase: connecting...</span>
+    </div>
+    <button class="pm-login-btn" id="pmLoginBtn">
+      <i class="fa-solid fa-right-to-bracket"></i> লগইন / রেজিস্টার
+    </button>
+    <button class="pm-logout-btn" id="pmLogoutBtn" style="display:none">
+      <i class="fa-solid fa-right-from-bracket"></i> লগআউট
+    </button>
+    <p class="pm-version">EcoShop Pro MAX • v12.0</p>
   </div>
 </aside>
 
 <div class="backdrop" id="backdrop"></div>
 
+<!-- Cart drawer -->
 <aside class="side-drawer cart-drawer" id="cartDrawer">
   <div class="panel-header">
-    <div><h3><i class="fa-solid fa-cart-shopping"></i> কার্ট</h3><p class="panel-sub" id="cartCount">0 items</p></div>
+    <div>
+      <h3><i class="fa-solid fa-cart-shopping"></i> আপনার কার্ট</h3>
+      <p class="panel-sub" id="cartCount">0 items</p>
+    </div>
     <button class="panel-close" id="cartClose"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="cart-body" id="cartBody"></div>
@@ -179,13 +261,19 @@
     <div class="cart-summary-row"><span>ডেলিভারি</span><span id="cartShipping">৳100</span></div>
     <div class="cart-summary-row"><span>ডিসকাউন্ট</span><span id="cartDiscount">-৳0</span></div>
     <div class="cart-summary-row total"><span>সর্বমোট</span><span id="cartTotal">৳0</span></div>
-    <button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" id="checkoutBtn"><i class="fa-solid fa-credit-card"></i> চেকআউট</button>
+    <button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" id="checkoutBtn">
+      <i class="fa-solid fa-credit-card"></i> চেকআউট
+    </button>
   </div>
 </aside>
 
+<!-- Notification panel -->
 <aside class="side-drawer notif-panel" id="notifPanel">
   <div class="panel-header">
-    <div><h3><i class="fa-solid fa-bell"></i> নোটিফিকেশন</h3><p class="panel-sub" id="notifCount">0 unread</p></div>
+    <div>
+      <h3><i class="fa-solid fa-bell"></i> নোটিফিকেশন</h3>
+      <p class="panel-sub" id="notifCount">0 unread</p>
+    </div>
     <button class="panel-close" id="notifClose"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="notif-list" id="notifList"></div>
@@ -226,11 +314,11 @@
 </footer>
 
 <nav class="bottom-nav" id="bottomNav">
-  <a data-nav="home" class="active"><span class="bn-icon"><i class="fa-solid fa-house"></i></span>হোম</a>
-  <a data-nav="shop"><span class="bn-icon"><i class="fa-solid fa-store"></i></span>শপ</a>
+  <a data-nav="home" class="active"><span class="bn-icon"><i class="fa-solid fa-house"></i></span><span>হোম</span></a>
+  <a data-nav="shop"><span class="bn-icon"><i class="fa-solid fa-store"></i></span><span>শপ</span></a>
   <a data-nav="cart" class="bn-center-btn"><i class="fa-solid fa-cart-shopping"></i><span class="mini-badge" id="bnCartBadge"></span></a>
-  <a data-nav="wishlist"><span class="bn-icon"><i class="fa-solid fa-heart"></i></span>উইশ</a>
-  <a data-nav="profile"><span class="bn-icon"><i class="fa-solid fa-user"></i></span>প্রোফাইল</a>
+  <a data-nav="wishlist"><span class="bn-icon"><i class="fa-solid fa-heart"></i></span><span>উইশ</span></a>
+  <a data-nav="profile"><span class="bn-icon"><i class="fa-solid fa-user"></i></span><span>প্রোফাইল</span></a>
 </nav>
 
 <button class="back-to-top" id="backToTop"><i class="fa-solid fa-arrow-up"></i></button>
@@ -251,7 +339,7 @@
 
 <!-- AI Chatbot -->
 <div class="chatbot-widget" id="chatbotWidget">
-  <button class="chatbot-toggle" id="chatbotToggle" aria-label="Chat">
+  <button class="chatbot-toggle" id="chatbotToggle">
     <i class="fa-solid fa-comments bot-icon"></i>
     <i class="fa-solid fa-xmark close-icon"></i>
     <span class="chatbot-badge" id="chatbotBadge">1</span>
@@ -261,7 +349,7 @@
       <div class="chatbot-avatar"><i class="fa-solid fa-robot"></i></div>
       <div class="chatbot-info">
         <h4>EcoBot</h4>
-        <p><span class="online-dot"></span> <span>অনলাইন</span></p>
+        <p><span class="online-dot"></span> অনলাইন</p>
       </div>
       <button class="chatbot-close" id="chatbotClose"><i class="fa-solid fa-xmark"></i></button>
     </div>
