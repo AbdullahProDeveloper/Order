@@ -1,8 +1,9 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   EcoShop Pro MAX v8.0 — Full OTP + Password Reset (EmailJS)
+   EcoShop Pro MAX v11.0 — Professional Order Management + AI Chatbot
+   Full app.js
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ───────── Firebase Config ───────── */
+/* ───────── Firebase ───────── */
 const firebaseConfig = {
   apiKey: "AIzaSyAtxk-3sNl3RSIEcMrZVk4uZeJCOuVLQMk",
   authDomain: "my-fast-projets.firebaseapp.com",
@@ -16,7 +17,6 @@ const firebaseConfig = {
 const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
 const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
 
-/* ───────── EmailJS Config ───────── */
 const EmailJSConfig = {
   publicKey: 'zuPQJsWL-br59MV3t',
   serviceId: 'service_Abdullah_200',
@@ -42,10 +42,8 @@ const DEFAULT_SETTINGS = {
   bkashNumber: '01700000000',
   nagadNumber: '01700000000',
   rocketNumber: '01700000000',
-  enableCOD: true,
-  enableBkash: true,
-  enableNagad: true,
-  enableRocket: true,
+  whatsappNumber: '8801700000000',
+  enableCOD: true, enableBkash: true, enableNagad: true, enableRocket: true,
   requireEmailOTP: true
 };
 
@@ -56,151 +54,178 @@ const I18N = {
   bn: {
     home:'হোম', shop:'শপ', orders:'অর্ডার', profile:'প্রোফাইল', admin:'অ্যাডমিন',
     dashboard:'ড্যাশবোর্ড', myOrders:'আমার অর্ডার', wishlist:'উইশলিস্ট', cart:'কার্ট',
-    login:'লগইন', logout:'লগআউট', register:'রেজিস্টার', loginRegister:'লগইন / রেজিস্টার',
+    login:'লগইন', logout:'লগআউট', register:'রেজিস্টার',
     adminPanel:'অ্যাডমিন প্যানেল', notifications:'নোটিফিকেশন', navigation:'নেভিগেশন',
     management:'ম্যানেজমেন্ট', settings:'সেটিংস', theme:'থিম', language:'ভাষা',
     light:'লাইট', dark:'ডার্ক', searchPlaceholder:'পণ্য খুঁজুন...',
     splashTagline:'প্রিমিয়াম ই-কমার্স অভিজ্ঞতা',
-    footerDesc:'বাংলাদেশের সেরা প্রিমিয়াম অনলাইন শপিং প্ল্যাটফর্ম। Firebase Realtime Database দ্বারা পরিচালিত।',
+    footerDesc:'বাংলাদেশের সেরা প্রিমিয়াম অনলাইন শপিং প্ল্যাটফর্ম।',
     quickLinks:'দ্রুত লিংক', support:'সাপোর্ট', allRights:'সর্বস্বত্ব সংরক্ষিত',
     subtotal:'সাবটোটাল', shipping:'ডেলিভারি', discount:'ডিসকাউন্ট', total:'সর্বমোট', checkout:'চেকআউট',
-    addToCart:'কার্টে যোগ করুন', buyNow:'এখনই কিনুন', outOfStock:'স্টক নেই', inStock:'স্টকে আছে',
+    addToCart:'কার্টে যোগ করুন', outOfStock:'স্টক নেই', inStock:'স্টকে আছে',
     empty:'কোনো পণ্য নেই', allProducts:'সকল পণ্য', featured:'ফিচার্ড পণ্য', newArrivals:'নতুন পণ্য',
     price:'দাম', stock:'স্টক', category:'ক্যাটাগরি', save:'সেভ', cancel:'বাতিল', delete:'ডিলিট',
     edit:'এডিট', yes:'হ্যাঁ', no:'না', close:'বন্ধ', confirmDelete:'আপনি কি নিশ্চিত?',
-    pending:'পেন্ডিং', confirmed:'কনফার্মড', shipped:'শিপড', delivered:'ডেলিভারড', cancelled:'বাতিল',
-    loginRequired:'অনুগ্রহ করে লগইন করুন', adminRequired:'শুধুমাত্র অ্যাডমিন',
+    pending:'পেন্ডিং', confirmed:'কনফার্মড', processing:'প্রসেসিং', shipped:'শিপড',
+    out_for_delivery:'ডেলিভারির পথে', delivered:'ডেলিভারড', cancelled:'বাতিল', rejected:'প্রত্যাখ্যাত',
+    loginRequired:'অনুগ্রহ করে লগইন করুন', adminOnly:'শুধুমাত্র অ্যাডমিন',
     fullName:'পূর্ণ নাম', email:'ইমেইল', password:'পাসওয়ার্ড', confirmPassword:'পাসওয়ার্ড নিশ্চিত',
     phone:'ফোন নম্বর', address:'ঠিকানা', city:'শহর',
     agreeTerms:'আমি শর্তাবলী ও গোপনীয়তা নীতিতে সম্মত',
-    yourProfile:'আপনার প্রোফাইল', editProfile:'প্রোফাইল এডিট',
-    newPassword:'নতুন পাসওয়ার্ড (খালি রাখলে পরিবর্তন হবে না)',
-    orderId:'অর্ডার ID', orderDate:'অর্ডারের তারিখ', orderStatus:'অর্ডার স্ট্যাটাস', orderTotal:'সর্বমোট',
+    editProfile:'প্রোফাইল এডিট', newPassword:'নতুন পাসওয়ার্ড',
+    orderId:'অর্ডার ID', orderDate:'তারিখ', orderStatus:'স্ট্যাটাস',
     productName:'পণ্যের নাম', productNameEn:'Product Name (English)',
     description:'বিবরণ', descriptionEn:'Description (English)', images:'ছবি',
     oldPrice:'পুরাতন দাম', discountPercent:'ডিসকাউন্ট (%)', tags:'ট্যাগ', featured_product:'ফিচার্ড পণ্য',
     reviews:'রিভিউ', writeReview:'রিভিউ লিখুন', submitReview:'রিভিউ জমা দিন', yourRating:'আপনার রেটিং',
     relatedProducts:'সম্পর্কিত পণ্য',
-    minPrice:'সর্বনিম্ন দাম', maxPrice:'সর্বোচ্চ দাম', applyFilter:'ফিল্টার প্রয়োগ',
-    clearFilters:'ফিল্টার মুছুন', defaultSort:'ডিফল্ট',
-    priceLowHigh:'দাম: কম থেকে বেশি', priceHighLow:'দাম: বেশি থেকে কম', newest:'নতুন আগে',
-    popular:'জনপ্রিয়', searchResults:'সার্চ ফলাফল',
+    minPrice:'সর্বনিম্ন', maxPrice:'সর্বোচ্চ', applyFilter:'প্রয়োগ', clearFilters:'মুছুন', defaultSort:'ডিফল্ট',
+    priceLowHigh:'কম থেকে বেশি', priceHighLow:'বেশি থেকে কম', newest:'নতুন আগে', popular:'জনপ্রিয়',
+    searchResults:'সার্চ ফলাফল',
     profileUpdated:'প্রোফাইল আপডেট হয়েছে', loginSuccess:'লগইন সফল', registerSuccess:'রেজিস্ট্রেশন সফল',
     logoutSuccess:'লগআউট সফল', saveSuccess:'সেভ হয়েছে', deleteSuccess:'ডিলিট হয়েছে',
-    adminOnly:'শুধুমাত্র অ্যাডমিন',
-    invalidCredentials:'ভুল ইমেইল বা পাসওয়ার্ড', accountBlocked:'আপনার অ্যাকাউন্ট ব্লক করা হয়েছে',
+    invalidCredentials:'ভুল ইমেইল বা পাসওয়ার্ড', accountBlocked:'অ্যাকাউন্ট ব্লক করা হয়েছে',
     emailExists:'এই ইমেইল দিয়ে আগেই রেজিস্ট্রেশন করা হয়েছে। লগইন করুন।',
-    passwordMismatch:'পাসওয়ার্ড মিলছে না',
-    weakPassword:'পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে',
-    fillAllFields:'সব তথ্য পূরণ করুন', orderPlaced:'অর্ডার সফল হয়েছে', orderFailed:'অর্ডার ব্যর্থ',
-    couponApplied:'কুপন প্রয়োগ হয়েছে', invalidCoupon:'কুপন কোড সঠিক নয়',
-    emptyCart:'আপনার কার্ট খালি', cartItems:'আইটেম', imageUploadSuccess:'ছবি আপলোড সফল',
-    imageUploadFailed:'আপলোড ব্যর্থ', processing:'প্রসেসিং...', loadingData:'ডেটা লোড হচ্ছে...',
+    passwordMismatch:'পাসওয়ার্ড মিলছে না', weakPassword:'কমপক্ষে ৬ অক্ষর',
+    fillAllFields:'সব তথ্য পূরণ করুন', orderPlaced:'অর্ডার সফল',
+    invalidCoupon:'কুপন সঠিক নয়', emptyCart:'কার্ট খালি', items:'আইটেম',
+    processing:'প্রসেসিং...', loadingData:'ডেটা লোড হচ্ছে...',
     totalProducts:'মোট পণ্য', totalOrders:'মোট অর্ডার', totalUsers:'মোট ইউজার', totalSales:'মোট বিক্রয়',
     pendingOrders:'পেন্ডিং অর্ডার', lowStock:'কম স্টক', activeUsers:'সক্রিয় ইউজার',
     recentOrders:'সাম্প্রতিক অর্ডার', products:'পণ্য', users:'ইউজার', ordersTab:'অর্ডার',
     coupons:'কুপন', categories:'ক্যাটাগরি',
-    addProduct:'নতুন পণ্য যোগ', editProduct:'পণ্য এডিট করুন', productSearch:'পণ্য সার্চ...',
-    addUser:'নতুন ইউজার', editUser:'ইউজার এডিট', userSearch:'নাম / ইমেইল সার্চ...',
+    addProduct:'নতুন পণ্য', editProduct:'পণ্য এডিট', productSearch:'পণ্য সার্চ...',
+    addUser:'নতুন ইউজার', editUser:'ইউজার এডিট', userSearch:'নাম / ইমেইল...',
     orderSearch:'অর্ডার সার্চ...', role:'রোল', customer:'কাস্টমার', adminRole:'অ্যাডমিন',
     blocked:'ব্লকড', active:'সক্রিয়', block:'ব্লক', unblock:'আনব্লক',
-    selected:'নির্বাচিত', deleteConfirm:'ডিলিট করতে চান?', categoryName:'ক্যাটাগরির নাম', addCategory:'ক্যাটাগরি যোগ',
-    couponCode:'কুপন কোড', percentOff:'শতাংশ (%)', flatOff:'ফ্ল্যাট (৳)', addCoupon:'কুপন যোগ',
+    selected:'নির্বাচিত', deleteConfirm:'ডিলিট?', categoryName:'ক্যাটাগরি নাম', addCategory:'যোগ',
+    couponCode:'কুপন কোড', percentOff:'শতাংশ (%)', flatOff:'ফ্ল্যাট (৳)', addCoupon:'যোগ',
     siteName:'সাইটের নাম', supportPhone:'সাপোর্ট ফোন',
-    exportData:'এক্সপোর্ট JSON', resetAll:'সব ডেটা রিসেট', resetConfirm:'সমস্ত ডেটা মুছে যাবে!',
-    noData:'কোনো ডেটা নেই', items:'আইটেম',
-    quickView:'দ্রুত দেখুন', printInvoice:'ইনভয়েস প্রিন্ট',
-    installApp:'অ্যাপ ইনস্টল করুন', installHint:'হোম স্ক্রিনে যোগ করে দ্রুত অ্যাক্সেস করুন', install:'ইনস্টল',
-    offlineMode:'অফলাইন — কিছু ফিচার সীমিত',
-    pushNotif:'পুশ নোটিফিকেশন', enable:'চালু', pushEnabled:'পুশ চালু হয়েছে',
-    paymentMethod:'পেমেন্ট পদ্ধতি', selectPayment:'পেমেন্ট পদ্ধতি নির্বাচন করুন',
-    cod:'ক্যাশ অন ডেলিভারি', codDesc:'পণ্য হাতে পেয়ে পেমেন্ট',
+    exportData:'এক্সপোর্ট', resetAll:'সব রিসেট', resetConfirm:'সব ডেটা মুছে যাবে!',
+    noData:'ডেটা নেই', quickView:'দ্রুত দেখুন', printInvoice:'প্রিন্ট',
+    installApp:'অ্যাপ ইনস্টল করুন', installHint:'হোম স্ক্রিনে যোগ করুন', install:'ইনস্টল',
+    offlineMode:'অফলাইন', pushNotif:'পুশ', enable:'চালু', pushEnabled:'পুশ চালু',
+    paymentMethod:'পেমেন্ট', selectPayment:'পেমেন্ট নির্বাচন',
+    cod:'ক্যাশ অন ডেলিভারি', codDesc:'হাতে পেয়ে পেমেন্ট',
     bkash:'বিকাশ', nagad:'নগদ', rocket:'রকেট', mobilePayment:'মোবাইল পেমেন্ট',
     paymentNumber:'পেমেন্ট নাম্বার', copy:'কপি', copied:'কপি হয়েছে',
-    sendMoneySteps:'সেন্ড মানি করার ধাপ', useDialCode:'ডায়াল কোড দিয়ে সেন্ড মানি',
+    sendMoneySteps:'সেন্ড মানি করুন', useDialCode:'ডায়াল কোড',
     txnId:'ট্রানজেকশন আইডি', txnIdPlaceholder:'যেমন: 8AB1C2D3E4',
-    screenshot:'স্ক্রিনশট', screenshotOptional:'(ঐচ্ছিক)', uploadScreenshot:'স্ক্রিনশট আপলোড',
-    confirmOrder:'অর্ডার কনফার্ম করুন',
-    orderSuccessCOD:'অর্ডার সফল! ক্যাশ অন ডেলিভারিতে পেমেন্ট হবে',
-    orderSuccessPaid:'অর্ডার সফল! পেমেন্ট ভেরিফিকেশনের অপেক্ষায়',
+    screenshot:'স্ক্রিনশট', screenshotOptional:'(ঐচ্ছিক)', uploadScreenshot:'আপলোড',
+    confirmOrder:'অর্ডার কনফার্ম',
+    orderSuccessCOD:'অর্ডার সফল!',
+    orderSuccessPaid:'অর্ডার সফল! পেমেন্ট ভেরিফিকেশনে',
     deliveryZone:'ডেলিভারি এলাকা', insideDhaka:'ঢাকার ভিতরে', outsideDhaka:'ঢাকার বাইরে',
-    deliveryCharge:'ডেলিভারি চার্জ', deliveryChargeEdit:'ডেলিভারি চার্জ পরিবর্তন',
-    adminComment:'অ্যাডমিন কমেন্ট', adminCommentOptional:'(ঐচ্ছিক)', commentPlaceholder:'কমেন্ট লিখুন...',
-    paymentInfo:'পেমেন্ট তথ্য', paymentNumberConfig:'পেমেন্ট নাম্বার সেটআপ', settingsSaved:'সেটিংস সেভ হয়েছে',
-    numberCopied:'নাম্বার কপি হয়েছে', dialCodeCopied:'ডায়াল কোড কপি হয়েছে',
-    invalidTxnId:'সঠিক ট্রানজেকশন আইডি দিন (কমপক্ষে ৬ অক্ষর)',
-    sendOTP:'OTP পাঠান', verifyOTP:'যাচাই করুন', resendOTP:'আবার পাঠান',
-    verifyEmail:'ইমেইল যাচাই করুন', weSentCode:'আমরা ৬-ডিজিটের কোড পাঠিয়েছি',
-    otpValidTime:'১০ মিনিট পর্যন্ত বৈধ', changeInfo:'তথ্য পরিবর্তন',
-    otpSent:'✅ OTP পাঠানো হয়েছে, ইমেইল চেক করুন', otpSending:'পাঠানো হচ্ছে...',
-    otpVerifying:'যাচাই হচ্ছে...', emailAvailable:'✓ ইমেইল ব্যবহারযোগ্য',
-    emailTaken:'❌ এই ইমেইল আগেই রেজিস্ট্রেশন করা হয়েছে। লগইন করুন।',
+    deliveryCharge:'ডেলিভারি চার্জ', deliveryChargeEdit:'ডেলিভারি চার্জ',
+    adminComment:'কমেন্ট', adminCommentOptional:'(ঐচ্ছিক)', commentPlaceholder:'কমেন্ট লিখুন...',
+    paymentInfo:'পেমেন্ট তথ্য', paymentNumberConfig:'পেমেন্ট নাম্বার', settingsSaved:'সেভ হয়েছে',
+    numberCopied:'নাম্বার কপি', dialCodeCopied:'ডায়াল কোড কপি',
+    invalidTxnId:'সঠিক Txn ID দিন',
+    sendOTP:'OTP পাঠান', verifyOTP:'যাচাই', resendOTP:'আবার পাঠান',
+    verifyEmail:'ইমেইল যাচাই', weSentCode:'৬-ডিজিটের কোড পাঠিয়েছি',
+    otpValidTime:'১০ মিনিট বৈধ', changeInfo:'তথ্য পরিবর্তন',
+    otpSent:'✅ OTP পাঠানো হয়েছে', otpSending:'পাঠানো হচ্ছে...',
+    otpVerifying:'যাচাই...', emailAvailable:'✓ ব্যবহারযোগ্য',
+    emailTaken:'❌ আগেই রেজিস্ট্রেশন করা হয়েছে',
     invalidEmail:'সঠিক ইমেইল দিন', agreeToTerms:'শর্তাবলীতে সম্মতি দিন',
-    enterFullCode:'৬-ডিজিটের সম্পূর্ণ কোড দিন', registrationSuccess:'🎉 রেজিস্ট্রেশন সফল!',
+    enterFullCode:'৬-ডিজিটের কোড দিন', registrationSuccess:'🎉 রেজিস্ট্রেশন সফল!',
     otpFailed:'ইমেইল পাঠানো যায়নি',
-    checkingEmail:'ইমেইল চেক হচ্ছে...',
-    dataLoadingWait:'ডেটা লোড হচ্ছে, একটু অপেক্ষা করুন...',
-    redirectingToLogin:'লগইন পেজে নিয়ে যাওয়া হচ্ছে...',
-    emailAlreadyRegisteredTitle:'ইমেইল আগেই রেজিস্ট্রেশন করা আছে',
-    forgotPassword:'পাসওয়ার্ড ভুলে গেছেন?',
-    resetPassword:'পাসওয়ার্ড রিসেট',
-    resetPasswordDesc:'আপনার রেজিস্টার্ড ইমেইল দিন। আমরা ৬-ডিজিটের একটি কোড পাঠাবো।',
-    sendCode:'কোড পাঠান',
-    back:'পিছনে',
-    newPassword2:'নতুন পাসওয়ার্ড',
-    updatePassword:'পাসওয়ার্ড আপডেট করুন',
-    passwordUpdated:'✅ পাসওয়ার্ড আপডেট হয়েছে',
-    passwordUpdatedDesc:'আপনার পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে লগইন করুন।',
-    loginNow:'লগইন করুন',
-    noAccountWithEmail:'এই ইমেইল দিয়ে কোনো অ্যাকাউন্ট নেই',
-    verifyCodeFirst:'আগে কোড যাচাই করুন',
-    updateFailed:'আপডেট ব্যর্থ',
+    dataLoadingWait:'ডেটা লোড হচ্ছে...',
+    forgotPassword:'পাসওয়ার্ড ভুলে গেছেন?', resetPassword:'পাসওয়ার্ড রিসেট',
+    resetPasswordDesc:'রেজিস্টার্ড ইমেইল দিন',
+    sendCode:'কোড পাঠান', back:'পিছনে',
+    newPassword2:'নতুন পাসওয়ার্ড', updatePassword:'আপডেট',
+    passwordUpdated:'✅ পাসওয়ার্ড আপডেট', passwordUpdatedDesc:'নতুন পাসওয়ার্ড দিয়ে লগইন করুন',
+    loginNow:'লগইন করুন', noAccountWithEmail:'এই ইমেইলে অ্যাকাউন্ট নেই',
+    verifyCodeFirst:'আগে কোড যাচাই করুন', updateFailed:'আপডেট ব্যর্থ',
     codeVerified:'✅ কোড যাচাই সফল',
-    stepEmail:'ইমেইল', stepOtp:'OTP', stepNew:'নতুন'
+    stepEmail:'ইমেইল', stepOtp:'OTP', stepNew:'নতুন',
+    compare:'তুলনা', clearCompare:'সব মুছুন', features:'বৈশিষ্ট্য',
+    wallet:'ওয়ালেট', walletBalance:'ওয়ালেট ব্যালেন্স', addMoney:'টাকা যোগ', balance:'ব্যালেন্স',
+    transactions:'লেনদেন', noTransactions:'লেনদেন নেই', amount:'পরিমাণ',
+    referral:'রেফারেল', referralCode:'রেফারেল কোড', applyCode:'কোড প্রয়োগ',
+    inviteFriends:'🎁 বন্ধুদের ইনভাইট করুন',
+    loyalty:'লয়্যালটি পয়েন্ট', trackOrder:'অর্ডার ট্র্যাক', track:'ট্র্যাকিং',
+    salesTrend:'বিক্রয় ট্রেন্ড', totalSalesLabel:'মোট বিক্রয়', ordersLabel:'অর্ডার', avgPerDay:'দৈনিক গড়',
+    whatsappOrder:'WhatsApp-এ অর্ডার কনফার্ম', whatsappSend:'WhatsApp-এ পাঠান',
+    whatsappDesc:'কাস্টমারকে WhatsApp-এ অর্ডার ডিটেইল পাঠান',
+    downloadPDF:'PDF ডাউনলোড', printInvoicePDF:'PDF ইনভয়েস', invoice:'ইনভয়েস',
+    chatbot:'AI সহকারী', botOnline:'অনলাইন', botPlaceholder:'মেসেজ লিখুন...',
+    botTyping:'টাইপ করছে...', botGreeting:'আসসালামু আলাইকুম! আমি EcoBot। কীভাবে সাহায্য করতে পারি?',
+    botSearchingProducts:'পণ্য খুঁজছি...',
+    botNoProducts:'দুঃখিত, কোনো পণ্য পাওয়া যায়নি।',
+    botFoundProducts:'এই পণ্যগুলো পেয়েছি:',
+    botOrderTracking:'অর্ডার আইডি লিখুন (ORD-...)',
+    botHelpMessage:'আমি সাহায্য করতে পারি: পণ্য খোঁজা, অর্ডার ট্র্যাক, দাম জিজ্ঞাসা, যোগাযোগ',
+    botContact:'যোগাযোগ: +880 1700-000000 | support@ecoshop.pro',
+    botInvalidOrder:'অর্ডার পাওয়া যায়নি',
+    botOrderStatus:'আপনার অর্ডার স্ট্যাটাস:',
+    botThanks:'ধন্যবাদ! আর কোনো সাহায্য লাগলে বলুন।',
+    botPrice:'দাম: ',
+    /* v11 order management */
+    orderDetails:'অর্ডার বিস্তারিত', changeStatus:'স্ট্যাটাস পরিবর্তন',
+    courier:'কুরিয়ার', trackingNumber:'ট্র্যাকিং নাম্বার', eta:'সম্ভাব্য ডেলিভারি',
+    internalNotes:'ইন্টারনাল নোট (শুধু অ্যাডমিন)', writeNote:'নোট লিখুন...',
+    addNote:'নোট যোগ', orderHistory:'অর্ডার হিস্ট্রি', orderItems:'পণ্যসমূহ',
+    customerInfo:'কাস্টমার তথ্য', paymentDetails:'পেমেন্ট তথ্য',
+    amounts:'অ্যামাউন্ট', recalculate:'রিক্যালকুলেট',
+    bulkSelected:'নির্বাচিত', bulkConfirm:'কনফার্ম', bulkCancel:'বাতিল', bulkPrint:'বাল্ক প্রিন্ট',
+    filterStatus:'স্ট্যাটাস', filterPayment:'পেমেন্ট', filterFrom:'শুরুর তারিখ',
+    filterTo:'শেষ তারিখ', filterSearch:'সার্চ', filterReset:'রিসেট',
+    cancelOrder:'অর্ডার বাতিল', cancelReason:'বাতিলের কারণ',
+    writeReason:'কারণ লিখুন...', confirmCancelAction:'বাতিল করুন',
+    reorder:'আবার অর্ডার', activeOrders:'চলমান', allOrders:'সব অর্ডার',
+    orderReceived:'অর্ডার গ্রহণ করা হয়েছে, অ্যাডমিন কনফার্মেশনের অপেক্ষায়',
+    confirmedByAdmin:'অ্যাডমিন অর্ডার কনফার্ম করেছেন',
+    processingStarted:'প্যাকিং শুরু হয়েছে',
+    shippedByCourier:'কুরিয়ারে পাঠানো হয়েছে',
+    outForDelivery:'ডেলিভারির পথে',
+    deliveredSuccess:'সফলভাবে ডেলিভার করা হয়েছে',
+    cancelledByAdmin:'অ্যাডমিন অর্ডার বাতিল করেছেন',
+    rejectedByAdmin:'অ্যাডমিন অর্ডার প্রত্যাখ্যান করেছেন',
+    noReasonGiven:'কারণ উল্লেখ করা হয়নি',
+    saveChanges:'পরিবর্তন সেভ করুন', updatedByAdmin:'অ্যাডমিন আপডেট করেছেন',
+    quickConfirmTitle:'অর্ডার কনফার্ম করবেন?'
   },
   en: {
     home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
     dashboard:'Dashboard', myOrders:'My Orders', wishlist:'Wishlist', cart:'Cart',
-    login:'Login', logout:'Logout', register:'Register', loginRegister:'Login / Register',
+    login:'Login', logout:'Logout', register:'Register',
     adminPanel:'Admin Panel', notifications:'Notifications', navigation:'Navigation',
     management:'Management', settings:'Settings', theme:'Theme', language:'Language',
     light:'Light', dark:'Dark', searchPlaceholder:'Search products...',
     splashTagline:'Premium e-commerce experience',
-    footerDesc:"Bangladesh's best premium online shopping. Powered by Firebase.",
+    footerDesc:"Bangladesh's best premium online shopping platform.",
     quickLinks:'Quick Links', support:'Support', allRights:'All Rights Reserved',
     subtotal:'Subtotal', shipping:'Shipping', discount:'Discount', total:'Total', checkout:'Checkout',
-    addToCart:'Add to Cart', buyNow:'Buy Now', outOfStock:'Out of Stock', inStock:'In Stock',
+    addToCart:'Add to Cart', outOfStock:'Out of Stock', inStock:'In Stock',
     empty:'No products found', allProducts:'All Products', featured:'Featured Products', newArrivals:'New Arrivals',
     price:'Price', stock:'Stock', category:'Category', save:'Save', cancel:'Cancel', delete:'Delete',
     edit:'Edit', yes:'Yes', no:'No', close:'Close', confirmDelete:'Are you sure?',
-    pending:'Pending', confirmed:'Confirmed', shipped:'Shipped', delivered:'Delivered', cancelled:'Cancelled',
-    loginRequired:'Please login first', adminRequired:'Admin only',
+    pending:'Pending', confirmed:'Confirmed', processing:'Processing', shipped:'Shipped',
+    out_for_delivery:'Out for Delivery', delivered:'Delivered', cancelled:'Cancelled', rejected:'Rejected',
+    loginRequired:'Please login first', adminOnly:'Admin only',
     fullName:'Full Name', email:'Email', password:'Password', confirmPassword:'Confirm Password',
-    phone:'Phone Number', address:'Address', city:'City',
+    phone:'Phone', address:'Address', city:'City',
     agreeTerms:'I agree to the Terms & Privacy Policy',
-    yourProfile:'Your Profile', editProfile:'Edit Profile',
-    newPassword:'New Password (blank = keep current)',
-    orderId:'Order ID', orderDate:'Order Date', orderStatus:'Order Status', orderTotal:'Order Total',
+    editProfile:'Edit Profile', newPassword:'New Password',
+    orderId:'Order ID', orderDate:'Date', orderStatus:'Status',
     productName:'Product Name', productNameEn:'Product Name (English)',
     description:'Description', descriptionEn:'Description (English)', images:'Images',
     oldPrice:'Old Price', discountPercent:'Discount (%)', tags:'Tags', featured_product:'Featured Product',
     reviews:'Reviews', writeReview:'Write Review', submitReview:'Submit Review', yourRating:'Your Rating',
     relatedProducts:'Related Products',
-    minPrice:'Min Price', maxPrice:'Max Price', applyFilter:'Apply',
-    clearFilters:'Clear Filters', defaultSort:'Default',
-    priceLowHigh:'Price: Low to High', priceHighLow:'Price: High to Low', newest:'Newest First',
-    popular:'Popular', searchResults:'Search Results',
+    minPrice:'Min', maxPrice:'Max', applyFilter:'Apply', clearFilters:'Clear', defaultSort:'Default',
+    priceLowHigh:'Low to High', priceHighLow:'High to Low', newest:'Newest', popular:'Popular',
+    searchResults:'Search Results',
     profileUpdated:'Profile updated', loginSuccess:'Login successful', registerSuccess:'Registration successful',
     logoutSuccess:'Logged out', saveSuccess:'Saved', deleteSuccess:'Deleted',
-    adminOnly:'Admin only',
-    invalidCredentials:'Invalid credentials', accountBlocked:'Account is blocked',
+    invalidCredentials:'Invalid credentials', accountBlocked:'Account blocked',
     emailExists:'This email is already registered. Please login.',
-    passwordMismatch:'Passwords do not match',
-    weakPassword:'Password must be at least 6 characters',
-    fillAllFields:'Please fill all fields', orderPlaced:'Order placed', orderFailed:'Order failed',
-    couponApplied:'Coupon applied', invalidCoupon:'Invalid coupon',
-    emptyCart:'Your cart is empty', cartItems:'items', imageUploadSuccess:'Image uploaded',
-    imageUploadFailed:'Upload failed', processing:'Processing...', loadingData:'Loading data...',
+    passwordMismatch:'Passwords do not match', weakPassword:'Min 6 characters',
+    fillAllFields:'Please fill all fields', orderPlaced:'Order placed',
+    invalidCoupon:'Invalid coupon', emptyCart:'Cart empty', items:'items',
+    processing:'Processing...', loadingData:'Loading...',
     totalProducts:'Total Products', totalOrders:'Total Orders', totalUsers:'Total Users', totalSales:'Total Sales',
     pendingOrders:'Pending Orders', lowStock:'Low Stock', activeUsers:'Active Users',
     recentOrders:'Recent Orders', products:'Products', users:'Users', ordersTab:'Orders',
@@ -209,59 +234,93 @@ const I18N = {
     addUser:'Add User', editUser:'Edit User', userSearch:'Search name / email...',
     orderSearch:'Search orders...', role:'Role', customer:'Customer', adminRole:'Admin',
     blocked:'Blocked', active:'Active', block:'Block', unblock:'Unblock',
-    selected:'selected', deleteConfirm:'Delete this item?', categoryName:'Category Name', addCategory:'Add Category',
-    couponCode:'Coupon Code', percentOff:'Percent (%)', flatOff:'Flat (৳)', addCoupon:'Add Coupon',
+    selected:'selected', deleteConfirm:'Delete?', categoryName:'Category Name', addCategory:'Add',
+    couponCode:'Coupon Code', percentOff:'Percent (%)', flatOff:'Flat (৳)', addCoupon:'Add',
     siteName:'Site Name', supportPhone:'Support Phone',
-    exportData:'Export JSON', resetAll:'Reset All Data', resetConfirm:'All data will be deleted!',
-    noData:'No data', items:'items',
-    quickView:'Quick View', printInvoice:'Print Invoice',
-    installApp:'Install App', installHint:'Add to home screen for quick access', install:'Install',
-    offlineMode:'Offline — some features limited',
-    pushNotif:'Push Notifications', enable:'Enable', pushEnabled:'Push enabled',
-    paymentMethod:'Payment Method', selectPayment:'Select payment method',
+    exportData:'Export', resetAll:'Reset All', resetConfirm:'All data will be deleted!',
+    noData:'No data', quickView:'Quick View', printInvoice:'Print',
+    installApp:'Install App', installHint:'Add to home screen', install:'Install',
+    offlineMode:'Offline', pushNotif:'Push', enable:'Enable', pushEnabled:'Push enabled',
+    paymentMethod:'Payment', selectPayment:'Select payment',
     cod:'Cash on Delivery', codDesc:'Pay when you receive',
     bkash:'bKash', nagad:'Nagad', rocket:'Rocket', mobilePayment:'Mobile Payment',
     paymentNumber:'Payment Number', copy:'Copy', copied:'Copied',
-    sendMoneySteps:'Steps to send money', useDialCode:'Send via dial code',
+    sendMoneySteps:'Send money steps', useDialCode:'Dial code',
     txnId:'Transaction ID', txnIdPlaceholder:'e.g. 8AB1C2D3E4',
-    screenshot:'Screenshot', screenshotOptional:'(optional)', uploadScreenshot:'Upload Screenshot',
+    screenshot:'Screenshot', screenshotOptional:'(optional)', uploadScreenshot:'Upload',
     confirmOrder:'Confirm Order',
-    orderSuccessCOD:'Order placed! Pay on delivery',
+    orderSuccessCOD:'Order placed!',
     orderSuccessPaid:'Order placed! Awaiting verification',
     deliveryZone:'Delivery Zone', insideDhaka:'Inside Dhaka', outsideDhaka:'Outside Dhaka',
-    deliveryCharge:'Delivery Charge', deliveryChargeEdit:'Edit Delivery Charge',
-    adminComment:'Admin Comment', adminCommentOptional:'(optional)', commentPlaceholder:'Write comment...',
-    paymentInfo:'Payment Info', paymentNumberConfig:'Payment Number Setup', settingsSaved:'Settings saved',
+    deliveryCharge:'Delivery Charge', deliveryChargeEdit:'Delivery Charge',
+    adminComment:'Comment', adminCommentOptional:'(optional)', commentPlaceholder:'Write comment...',
+    paymentInfo:'Payment Info', paymentNumberConfig:'Payment Number', settingsSaved:'Settings saved',
     numberCopied:'Number copied', dialCodeCopied:'Dial code copied',
-    invalidTxnId:'Enter valid Transaction ID (min 6 chars)',
+    invalidTxnId:'Enter valid Txn ID',
     sendOTP:'Send OTP', verifyOTP:'Verify', resendOTP:'Resend',
     verifyEmail:'Verify Email', weSentCode:'We sent a 6-digit code to',
-    otpValidTime:'Valid for 10 minutes', changeInfo:'Change info',
-    otpSent:'✅ OTP sent, check your email', otpSending:'Sending...',
-    otpVerifying:'Verifying...', emailAvailable:'✓ Email available',
-    emailTaken:'❌ This email is already registered. Please login.',
-    invalidEmail:'Enter a valid email', agreeToTerms:'Agree to terms',
-    enterFullCode:'Enter complete 6-digit code', registrationSuccess:'🎉 Registration successful!',
+    otpValidTime:'Valid 10 minutes', changeInfo:'Change info',
+    otpSent:'✅ OTP sent', otpSending:'Sending...',
+    otpVerifying:'Verifying...', emailAvailable:'✓ Available',
+    emailTaken:'❌ Already registered',
+    invalidEmail:'Enter valid email', agreeToTerms:'Agree to terms',
+    enterFullCode:'Enter 6-digit code', registrationSuccess:'🎉 Registration successful!',
     otpFailed:'Failed to send email',
-    checkingEmail:'Checking email...',
-    dataLoadingWait:'Data loading, please wait...',
-    redirectingToLogin:'Redirecting to login...',
-    emailAlreadyRegisteredTitle:'Email already registered',
-    forgotPassword:'Forgot Password?',
-    resetPassword:'Reset Password',
-    resetPasswordDesc:'Enter your registered email. We will send a 6-digit code.',
-    sendCode:'Send Code',
-    back:'Back',
-    newPassword2:'New Password',
-    updatePassword:'Update Password',
-    passwordUpdated:'✅ Password Updated',
-    passwordUpdatedDesc:'Your password has been changed successfully. Login with your new password.',
-    loginNow:'Login Now',
-    noAccountWithEmail:'No account with this email',
-    verifyCodeFirst:'Verify code first',
-    updateFailed:'Update failed',
+    dataLoadingWait:'Loading...',
+    forgotPassword:'Forgot Password?', resetPassword:'Reset Password',
+    resetPasswordDesc:'Enter your registered email',
+    sendCode:'Send Code', back:'Back',
+    newPassword2:'New Password', updatePassword:'Update',
+    passwordUpdated:'✅ Password Updated', passwordUpdatedDesc:'Login with your new password',
+    loginNow:'Login Now', noAccountWithEmail:'No account with this email',
+    verifyCodeFirst:'Verify code first', updateFailed:'Update failed',
     codeVerified:'✅ Code verified',
-    stepEmail:'Email', stepOtp:'OTP', stepNew:'New'
+    stepEmail:'Email', stepOtp:'OTP', stepNew:'New',
+    compare:'Compare', clearCompare:'Clear All', features:'Features',
+    wallet:'Wallet', walletBalance:'Wallet Balance', addMoney:'Add Money', balance:'Balance',
+    transactions:'Transactions', noTransactions:'No transactions', amount:'Amount',
+    referral:'Referral', referralCode:'Referral Code', applyCode:'Apply Code',
+    inviteFriends:'🎁 Invite Friends',
+    loyalty:'Loyalty Points', trackOrder:'Track Order', track:'Tracking',
+    salesTrend:'Sales Trend', totalSalesLabel:'Total Sales', ordersLabel:'Orders', avgPerDay:'Avg/Day',
+    whatsappOrder:'WhatsApp Order Confirmation', whatsappSend:'Send via WhatsApp',
+    whatsappDesc:'Send order details to customer via WhatsApp',
+    downloadPDF:'Download PDF', printInvoicePDF:'PDF Invoice', invoice:'Invoice',
+    chatbot:'AI Assistant', botOnline:'Online', botPlaceholder:'Type a message...',
+    botTyping:'Typing...', botGreeting:'Hello! I am EcoBot. How can I help you?',
+    botSearchingProducts:'Searching products...',
+    botNoProducts:'Sorry, no products found.',
+    botFoundProducts:'I found these products:',
+    botOrderTracking:'Enter order ID (ORD-...)',
+    botHelpMessage:'I can help with: find products, track orders, price inquiry, contact',
+    botContact:'Contact: +880 1700-000000 | support@ecoshop.pro',
+    botInvalidOrder:'Order not found',
+    botOrderStatus:'Your order status:',
+    botThanks:'Thanks! Let me know if you need more help.',
+    botPrice:'Price: ',
+    orderDetails:'Order Details', changeStatus:'Change Status',
+    courier:'Courier', trackingNumber:'Tracking Number', eta:'Expected Delivery',
+    internalNotes:'Internal Notes (admin only)', writeNote:'Write note...',
+    addNote:'Add Note', orderHistory:'Order History', orderItems:'Items',
+    customerInfo:'Customer Info', paymentDetails:'Payment Details',
+    amounts:'Amounts', recalculate:'Recalculate',
+    bulkSelected:'selected', bulkConfirm:'Confirm', bulkCancel:'Cancel', bulkPrint:'Bulk Print',
+    filterStatus:'Status', filterPayment:'Payment', filterFrom:'From',
+    filterTo:'To', filterSearch:'Search', filterReset:'Reset',
+    cancelOrder:'Cancel Order', cancelReason:'Reason for cancellation',
+    writeReason:'Write reason...', confirmCancelAction:'Cancel Order',
+    reorder:'Reorder', activeOrders:'Active', allOrders:'All Orders',
+    orderReceived:'Order received, awaiting admin confirmation',
+    confirmedByAdmin:'Order confirmed by admin',
+    processingStarted:'Processing started',
+    shippedByCourier:'Shipped via courier',
+    outForDelivery:'Out for delivery',
+    deliveredSuccess:'Delivered successfully',
+    cancelledByAdmin:'Cancelled by admin',
+    rejectedByAdmin:'Rejected by admin',
+    noReasonGiven:'No reason given',
+    saveChanges:'Save changes', updatedByAdmin:'Updated by admin',
+    quickConfirmTitle:'Confirm this order?'
   }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
@@ -287,14 +346,13 @@ const RecentStore = {
   get(){ try{ return JSON.parse(localStorage.getItem('eco_recent')) || []; }catch(e){ return []; } },
   add(id){
     let list = this.get().filter(x=>x!==id);
-    list.unshift(id);
-    list = list.slice(0, 12);
+    list.unshift(id); list = list.slice(0, 12);
     localStorage.setItem('eco_recent', JSON.stringify(list));
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   DB — Firebase Realtime
+   DB
    ═══════════════════════════════════════════════════════════ */
 const DB = {
   products: [], users: [], orders: [], categories: [], coupons: [], notifs: [], reviews: [],
@@ -323,10 +381,8 @@ const DB = {
   },
 
   watch(path, cb){
-    try {
-      db.ref(path).on('value', s => { try{ cb(s.val()); }catch(e){ console.error(path, e); } },
-        err => { this.error = err.message; });
-    } catch(e){ console.error(e); }
+    try { db.ref(path).on('value', s => { try{ cb(s.val()); }catch(e){ console.error(path, e); } }, err => { this.error = err.message; }); }
+    catch(e){ console.error(e); }
   },
 
   _toArray(data){
@@ -338,9 +394,7 @@ const DB = {
   _markReady(w){
     this.ready[w] = true;
     if(this.ready.products && this.ready.users && this.ready.orders){
-      App.hideSplash();
-      this.trySeed();
-      App.rerenderIfVisible();
+      App.hideSplash(); this.trySeed(); App.rerenderIfVisible();
     }
   },
 
@@ -373,11 +427,7 @@ const DB = {
         db.ref('settings').set(DEFAULT_SETTINGS)
       ]);
       console.log('✅ Seed done');
-      Toast.show(LANG==='bn'?'প্রাথমিক ডেটা লোড হয়েছে':'Initial data loaded','success');
-    } catch(e){
-      console.error('Seed failed:', e);
-      Toast.show('Seed failed — Firebase Rules চেক করুন','error', 6000);
-    }
+    } catch(e){ console.error('Seed failed:', e); }
   },
 
   saveProduct(p){ const id = p.id || 'p_'+Date.now(); p.id=id; p.updatedAt=Date.now(); if(!p.createdAt) p.createdAt=Date.now(); return db.ref('products/'+id).set(p); },
@@ -394,7 +444,6 @@ const DB = {
   deleteCoupon(id){ return db.ref('coupons/'+id).remove(); },
   pushNotif(n){ const id='n_'+Date.now(); n.id=id; n.time=Date.now(); n.read=false; return db.ref('notifications/'+id).set(n); },
   saveReview(r){ const id='r_'+Date.now(); r.id=id; r.date=Date.now(); return db.ref('reviews/'+id).set(r); },
-
   isReady(){ return this.ready.products && this.ready.users && this.ready.orders; },
   updateStock(productId, newStock){ return db.ref('products/'+productId+'/stock').set(newStock); },
   getProductReviews(productId){ return this.reviews.filter(r=>r.productId===productId); },
@@ -414,7 +463,7 @@ const DB = {
 const ImageUpload = {
   async upload(file){
     if(!file) throw new Error('No file');
-    if(file.size > 32*1024*1024) throw new Error('File too large (max 32MB)');
+    if(file.size > 32*1024*1024) throw new Error('File too large');
     if(!file.type.startsWith('image/')) throw new Error('Only images');
     const form = new FormData();
     form.append('key', IMGBB_API_KEY);
@@ -427,98 +476,55 @@ const ImageUpload = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   EmailJS OTP Service
+   EmailJS OTP
    ═══════════════════════════════════════════════════════════ */
 const OTP = {
-  currentEmail: null,
-  currentCode: null,
-  expiresAt: 0,
-  attempts: 0,
-  cooldownTimer: null,
-  verified: false,
+  currentEmail: null, currentCode: null, expiresAt: 0, attempts: 0,
+  cooldownTimer: null, verified: false,
 
   init(){
-    if(typeof emailjs === 'undefined'){
-      console.warn('⚠️ EmailJS SDK not loaded');
-      return false;
-    }
+    if(typeof emailjs === 'undefined') return false;
     if(!EmailJSConfig.initialized){
-      try {
-        emailjs.init({ publicKey: EmailJSConfig.publicKey });
-        EmailJSConfig.initialized = true;
-        console.log('✅ EmailJS initialized');
-      } catch(e){
-        console.error('❌ EmailJS init failed:', e);
-        return false;
-      }
+      try { emailjs.init({ publicKey: EmailJSConfig.publicKey }); EmailJSConfig.initialized = true; return true; }
+      catch(e){ console.error(e); return false; }
     }
     return true;
   },
-
   generate(){ return String(Math.floor(100000 + Math.random() * 900000)); },
-
   async send(email, name){
-    if(!this.init()){
-      return { ok:false, msg: LANG==='bn'?'EmailJS লোড হয়নি, পেজ রিফ্রেশ করুন':'EmailJS not loaded, refresh' };
-    }
-
+    if(!this.init()) return { ok:false, msg: 'EmailJS not loaded' };
     const code = this.generate();
     this.currentEmail = Auth.normalizeEmail(email);
     this.currentCode = code;
     this.expiresAt = Date.now() + 10 * 60 * 1000;
-    this.attempts = 0;
-    this.verified = false;
-
-    const payload = {
-      to_email: this.currentEmail,
-      email: this.currentEmail,
-      user_email: this.currentEmail,
-      reply_to: this.currentEmail,
-      otp_code: code,
-      code: code,
-      otp: code,
-      user_name: name || 'User',
-      name: name || 'User',
-      site_name: 'EcoShop Pro MAX',
-      expiry: '10 minutes'
-    };
-
+    this.attempts = 0; this.verified = false;
     try {
-      const result = await emailjs.send(
-        EmailJSConfig.serviceId,
-        EmailJSConfig.templateId,
-        payload
-      );
-      console.log('✅ OTP sent to', this.currentEmail, result);
+      await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, {
+        to_email: this.currentEmail, email: this.currentEmail,
+        reply_to: this.currentEmail, otp_code: code, code: code,
+        user_name: name || 'User', site_name: 'EcoShop Pro MAX', expiry: '10 minutes'
+      });
       return { ok:true };
     } catch(err){
-      console.error('❌ OTP send failed:', err);
-      const errMsg = err?.text || err?.message || 'Email sending failed';
-      return { ok:false, msg: errMsg };
+      return { ok:false, msg: err?.text || err?.message || 'Failed' };
     }
   },
-
   async verify(inputCode){
-    if(!this.currentCode) return { ok:false, msg: LANG==='bn'?'আগে কোড পাঠান':'Send code first' };
-    if(Date.now() > this.expiresAt) return { ok:false, msg: LANG==='bn'?'কোডের মেয়াদ শেষ':'Code expired' };
-    if(this.attempts >= 5) return { ok:false, msg: LANG==='bn'?'অনেকবার ভুল, আবার পাঠান':'Too many attempts' };
+    if(!this.currentCode) return { ok:false, msg:'Send code first' };
+    if(Date.now() > this.expiresAt) return { ok:false, msg:'Code expired' };
+    if(this.attempts >= 5) return { ok:false, msg:'Too many attempts' };
     if(String(inputCode).trim() !== this.currentCode){
       this.attempts++;
-      return { ok:false, msg: LANG==='bn'?`ভুল কোড (${5-this.attempts} বার বাকি)`:`Wrong code (${5-this.attempts} left)` };
+      return { ok:false, msg:`Wrong code (${5-this.attempts} left)` };
     }
     this.verified = true;
     return { ok:true };
   },
-
   reset(){
-    this.currentEmail = null;
-    this.currentCode = null;
-    this.expiresAt = 0;
-    this.attempts = 0;
-    this.verified = false;
+    this.currentEmail = null; this.currentCode = null; this.expiresAt = 0;
+    this.attempts = 0; this.verified = false;
     if(this.cooldownTimer){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
   },
-
   startCooldown(seconds, onTick){
     if(this.cooldownTimer) clearInterval(this.cooldownTimer);
     this.cooldownTimer = setInterval(()=>{
@@ -527,7 +533,6 @@ const OTP = {
       if(seconds <= 0){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
     }, 1000);
   },
-
   maskEmail(email){
     if(!email) return '';
     const [user, domain] = email.split('@');
@@ -538,71 +543,428 @@ const OTP = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   PWA
+   WhatsApp
+   ═══════════════════════════════════════════════════════════ */
+const WhatsApp = {
+  cleanNumber(num){ return num ? String(num).replace(/\D/g, '') : ''; },
+  formatBD(number){
+    let n = this.cleanNumber(number);
+    if(n.startsWith('0')) n = '88' + n;
+    else if(n.startsWith('880')) {}
+    else if(!n.startsWith('88')) n = '880' + n.replace(/^0+/, '');
+    return n;
+  },
+  buildOrderMessage(order){
+    const itemsList = (order.items || []).map((it, i) =>
+      `${i+1}. ${it.name}\n   ${it.qty} × ৳${it.price} = ৳${it.qty * it.price}`
+    ).join('\n\n');
+    const isBn = LANG === 'bn';
+    const msg = isBn
+      ? `🛒 *EcoShop Pro MAX — অর্ডার কনফার্মেশন*\n\n` +
+        `👤 *নাম:* ${order.customer.name}\n` +
+        `📞 *ফোন:* ${order.customer.phone}\n` +
+        `📍 *ঠিকানা:* ${order.customer.address}${order.customer.city ? ', ' + order.customer.city : ''}\n\n` +
+        `📦 *পণ্য:*\n${itemsList}\n\n` +
+        `💰 *সাবটোটাল:* ৳${order.subtotal || 0}\n` +
+        `🚚 *ডেলিভারি:* ৳${order.deliveryCharge || 0}\n` +
+        (order.discount ? `🎁 *ডিসকাউন্ট:* -৳${order.discount}\n` : '') +
+        `✅ *সর্বমোট:* ৳${order.total}\n\n` +
+        `💳 *পেমেন্ট:* ${(order.paymentMethod || 'cod').toUpperCase()}\n` +
+        (order.txnId ? `🔢 *Txn ID:* ${order.txnId}\n` : '') +
+        `\n🆔 *অর্ডার আইডি:* ${order.id}\n` +
+        `📊 *স্ট্যাটাস:* ${Orders.statusLabel(order.status)}\n` +
+        `🕐 *সময়:* ${new Date(order.date).toLocaleString('bn-BD')}\n\n` +
+        `ধন্যবাদ EcoShop Pro MAX থেকে কেনাকাটার জন্য! 🌿`
+      : `🛒 *EcoShop Pro MAX — Order Confirmation*\n\n` +
+        `👤 *Name:* ${order.customer.name}\n` +
+        `📞 *Phone:* ${order.customer.phone}\n` +
+        `📍 *Address:* ${order.customer.address}${order.customer.city ? ', ' + order.customer.city : ''}\n\n` +
+        `📦 *Items:*\n${itemsList}\n\n` +
+        `💰 *Subtotal:* ৳${order.subtotal || 0}\n` +
+        `🚚 *Delivery:* ৳${order.deliveryCharge || 0}\n` +
+        (order.discount ? `🎁 *Discount:* -৳${order.discount}\n` : '') +
+        `✅ *Total:* ৳${order.total}\n\n` +
+        `💳 *Payment:* ${(order.paymentMethod || 'cod').toUpperCase()}\n` +
+        (order.txnId ? `🔢 *Txn ID:* ${order.txnId}\n` : '') +
+        `\n🆔 *Order ID:* ${order.id}\n` +
+        `📊 *Status:* ${Orders.statusLabel(order.status)}\n` +
+        `🕐 *Time:* ${new Date(order.date).toLocaleString('en-US')}\n\n` +
+        `Thanks for shopping with EcoShop Pro MAX! 🌿`;
+    return msg;
+  },
+  sendOrder(order, toPhone){
+    if(!order) return;
+    const phone = toPhone ? this.formatBD(toPhone) : this.formatBD(order.customer.phone);
+    if(!phone){ Toast.show('Invalid phone', 'error'); return; }
+    const msg = encodeURIComponent(this.buildOrderMessage(order));
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+    Toast.show(LANG==='bn'?'WhatsApp খোলা হচ্ছে...':'Opening WhatsApp...','success');
+  },
+  sendToAdmin(order){
+    const adminPhone = DB.settings.whatsappNumber || '8801700000000';
+    const phone = this.formatBD(adminPhone);
+    const msg = encodeURIComponent(this.buildOrderMessage(order));
+    window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PDF Invoice
+   ═══════════════════════════════════════════════════════════ */
+const PDFInvoice = {
+  generate(orderId, lang){
+    const o = DB.orders.find(x => x.id === orderId);
+    if(!o) return;
+    const useLang = lang || LANG;
+    const isBn = useLang === 'bn';
+    const siteName = DB.settings.siteName || 'EcoShop Pro MAX';
+
+    const T = isBn ? {
+      title:'ইনভয়েস', invoice:'ইনভয়েস নং', date:'তারিখ', status:'স্ট্যাটাস',
+      from:'প্রেরক', to:'প্রাপক', phone:'ফোন', address:'ঠিকানা',
+      item:'পণ্য', qty:'পরিমাণ', price:'দর', total:'মোট',
+      subtotal:'সাবটোটাল', delivery:'ডেলিভারি', discount:'ডিসকাউন্ট',
+      grand:'সর্বমোট', payment:'পেমেন্ট', txn:'ট্রানজেকশন',
+      thankYou:'ধন্যবাদ!', footer:'কম্পিউটার-জেনারেটেড'
+    } : {
+      title:'INVOICE', invoice:'Invoice', date:'Date', status:'Status',
+      from:'From', to:'Bill To', phone:'Phone', address:'Address',
+      item:'Item', qty:'Qty', price:'Price', total:'Total',
+      subtotal:'Subtotal', delivery:'Delivery', discount:'Discount',
+      grand:'Grand Total', payment:'Payment', txn:'Transaction',
+      thankYou:'Thank you!', footer:'Computer-generated'
+    };
+
+    const trackUrl = `${location.origin}${location.pathname}?track=${o.id}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(trackUrl)}`;
+
+    const html = `<!DOCTYPE html>
+<html lang="${useLang}">
+<head><meta charset="UTF-8"><title>Invoice ${o.id}</title>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:${isBn?"'Hind Siliguri',":"'Plus Jakarta Sans',"}sans-serif;background:#f5f6fa;padding:30px 20px;color:#0f1021;line-height:1.55}
+.invoice{max-width:800px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(15,16,33,.08)}
+.header{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:32px 36px;display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{width:52px;height:52px;background:rgba(255,255,255,.2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px}
+.brand-text h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:22px;font-weight:800}
+.brand-text h1 span{color:#ffe49a}
+.brand-text p{font-size:12px;opacity:.9;margin-top:2px}
+.invoice-meta{text-align:right;font-size:13px}
+.invoice-meta h2{font-size:26px;font-weight:800;letter-spacing:1px;margin-bottom:8px}
+.invoice-meta .row{display:flex;justify-content:flex-end;gap:8px;opacity:.95}
+.status-badge{display:inline-block;padding:4px 12px;background:rgba(255,255,255,.25);border-radius:100px;font-size:11px;font-weight:800;text-transform:uppercase;margin-top:8px}
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:28px 36px;border-bottom:1px dashed #e5e8f0}
+@media(max-width:560px){.parties{grid-template-columns:1fr}}
+.party-label{font-size:10.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.party-name{font-size:15px;font-weight:800;margin-bottom:6px}
+.party-detail{font-size:13px;color:#64748b;line-height:1.65}
+.items-wrap{padding:28px 36px 0}
+.items-table{width:100%;border-collapse:collapse}
+.items-table th{background:#f8f9fd;padding:12px 14px;text-align:left;font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;border-bottom:2px solid #e5e8f0}
+.items-table th:last-child,.items-table td:last-child{text-align:right}
+.items-table th:nth-child(2),.items-table td:nth-child(2){text-align:center;width:70px}
+.items-table th:nth-child(3),.items-table td:nth-child(3){text-align:right;width:110px}
+.items-table td{padding:14px;font-size:13.5px;border-bottom:1px solid #e5e8f0}
+.items-table td:first-child{font-weight:600}
+.totals{display:flex;justify-content:flex-end;padding:20px 36px 0}
+.totals-box{width:100%;max-width:320px}
+.total-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;color:#64748b}
+.total-row span:last-child{font-weight:700;color:#0f1021}
+.total-row.grand{border-top:2px solid #e5e8f0;margin-top:8px;padding-top:14px;font-size:18px;font-weight:800}
+.total-row.grand span:last-child{color:#6366f1;font-size:22px}
+.payment-info{margin:24px 36px 0;padding:16px 20px;background:#f8f9fd;border-radius:12px;border-left:4px solid #6366f1}
+.payment-info h4{font-size:12px;font-weight:800;color:#64748b;text-transform:uppercase;margin-bottom:10px}
+.payment-info .info-row{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}
+.payment-info .info-row span:first-child{color:#64748b}
+.payment-info .info-row span:last-child{font-weight:700}
+.footer-section{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:28px 36px;margin-top:20px;background:#f8f9fd;flex-wrap:wrap}
+.qr-section{display:flex;align-items:center;gap:14px}
+.qr-section img{width:80px;height:80px;border-radius:8px;background:#fff;padding:4px}
+.qr-text{font-size:12px;color:#64748b}
+.qr-text b{display:block;color:#0f1021;font-size:13px;margin-bottom:3px}
+.thank-you{text-align:right;flex:1;min-width:200px}
+.thank-you h3{font-size:18px;font-weight:800;color:#6366f1;margin-bottom:4px}
+.thank-you p{font-size:12px;color:#64748b}
+.print-bar{position:fixed;top:20px;right:20px;display:flex;gap:8px;z-index:100}
+.print-bar button{padding:12px 20px;border:none;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;box-shadow:0 8px 24px rgba(99,102,241,.3);font-family:inherit}
+.print-bar .btn-print{background:#6366f1;color:#fff}
+.print-bar .btn-close{background:#fff;color:#64748b;border:1.5px solid #e5e8f0}
+@media print{body{background:#fff;padding:0}.print-bar{display:none}.invoice{box-shadow:none;border-radius:0}}
+</style></head><body>
+<div class="print-bar">
+<button class="btn-print" onclick="window.print()">🖨️ ${isBn?'প্রিন্ট / PDF':'Print / Save PDF'}</button>
+<button class="btn-close" onclick="window.close()">✕</button>
+</div>
+<div class="invoice">
+<div class="header">
+<div class="brand">
+<div class="brand-icon">🌿</div>
+<div class="brand-text"><h1>EcoShop<span>Pro</span></h1><p>${DB.settings.supportEmail || ''} • ${DB.settings.supportPhone || ''}</p></div>
+</div>
+<div class="invoice-meta">
+<h2>${T.invoice}</h2>
+<div class="row"><span>${T.invoice}:</span><strong>${o.id}</strong></div>
+<div class="row"><span>${T.date}:</span><strong>${new Date(o.date).toLocaleDateString(isBn?'bn-BD':'en-US')}</strong></div>
+<div class="status-badge">${Orders.statusLabel(o.status)}</div>
+</div>
+</div>
+<div class="parties">
+<div class="party">
+<div class="party-label">${T.from}</div>
+<div class="party-name">${siteName}</div>
+<div class="party-detail">
+<div>📍 ${isBn?'ঢাকা, বাংলাদেশ':'Dhaka, Bangladesh'}</div>
+<div>📞 ${DB.settings.supportPhone || ''}</div>
+<div>✉️ ${DB.settings.supportEmail || ''}</div>
+</div>
+</div>
+<div class="party">
+<div class="party-label">${T.to}</div>
+<div class="party-name">${o.customer.name}</div>
+<div class="party-detail">
+<div>📞 ${o.customer.phone || ''}</div>
+<div>📍 ${o.customer.address || ''}${o.customer.city?', '+o.customer.city:''}</div>
+</div>
+</div>
+</div>
+<div class="items-wrap">
+<table class="items-table">
+<thead><tr><th>${T.item}</th><th>${T.qty}</th><th>${T.price}</th><th>${T.total}</th></tr></thead>
+<tbody>${(o.items||[]).map(it=>`<tr>
+<td>${it.name}</td><td>${it.qty}</td>
+<td>৳${Number(it.price).toLocaleString(isBn?'bn-BD':'en-US')}</td>
+<td>৳${Number(it.qty*it.price).toLocaleString(isBn?'bn-BD':'en-US')}</td>
+</tr>`).join('')}</tbody>
+</table>
+</div>
+<div class="totals"><div class="totals-box">
+<div class="total-row"><span>${T.subtotal}</span><span>৳${Number(o.subtotal||0).toLocaleString(isBn?'bn-BD':'en-US')}</span></div>
+<div class="total-row"><span>${T.delivery}</span><span>৳${Number(o.deliveryCharge||0).toLocaleString(isBn?'bn-BD':'en-US')}</span></div>
+${o.discount?`<div class="total-row"><span>${T.discount}</span><span>-৳${Number(o.discount).toLocaleString(isBn?'bn-BD':'en-US')}</span></div>`:''}
+<div class="total-row grand"><span>${T.grand}</span><span>৳${Number(o.total).toLocaleString(isBn?'bn-BD':'en-US')}</span></div>
+</div></div>
+<div class="payment-info">
+<h4>${T.payment}</h4>
+<div class="info-row"><span>${isBn?'পদ্ধতি':'Method'}</span><span>${(o.paymentMethod||'cod').toUpperCase()}</span></div>
+${o.txnId?`<div class="info-row"><span>${T.txn}</span><span>${o.txnId}</span></div>`:''}
+</div>
+<div class="footer-section">
+<div class="qr-section">
+<img src="${qrUrl}" alt="QR" onerror="this.style.display='none'">
+<div class="qr-text"><b>${isBn?'ট্র্যাক করুন':'Track Order'}</b><span>${o.id}</span></div>
+</div>
+<div class="thank-you">
+<h3>${T.thankYou}</h3>
+<p>${T.footer}</p>
+<p style="margin-top:6px;font-size:11px;color:#94a3b8;">© ${new Date().getFullYear()} ${siteName}</p>
+</div>
+</div>
+</div>
+</body></html>`;
+
+    const w = window.open('', '_blank', 'width=900,height=1000');
+    if(!w){ Toast.show('Popup blocked', 'error'); return; }
+    w.document.write(html);
+    w.document.close();
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Chatbot
+   ═══════════════════════════════════════════════════════════ */
+const Chatbot = {
+  open: false,
+  messages: [],
+  isTyping: false,
+
+  init(){
+    const toggle = document.getElementById('chatbotToggle');
+    const closeBtn = document.getElementById('chatbotClose');
+    const sendBtn = document.getElementById('chatbotSend');
+    const input = document.getElementById('chatbotInput');
+    const badge = document.getElementById('chatbotBadge');
+    if(toggle) toggle.onclick = () => this.toggle();
+    if(closeBtn) closeBtn.onclick = () => this.close();
+    if(sendBtn) sendBtn.onclick = () => this.sendFromInput();
+    if(input) input.addEventListener('keydown', e => { if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); this.sendFromInput(); } });
+    if(badge) setTimeout(()=>{ badge.style.display = 'none'; }, 8000);
+  },
+  toggle(){ if(this.open) this.close(); else this.openChat(); },
+  openChat(){
+    this.open = true;
+    document.getElementById('chatbotWidget')?.classList.add('open');
+    const badge = document.getElementById('chatbotBadge');
+    if(badge) badge.style.display = 'none';
+    if(!this.messages.length){
+      this.addBotMessage(t('botGreeting'));
+      this.renderQuickReplies();
+    }
+    setTimeout(()=> document.getElementById('chatbotInput')?.focus(), 300);
+  },
+  close(){
+    this.open = false;
+    document.getElementById('chatbotWidget')?.classList.remove('open');
+  },
+  addBotMessage(text, extraHTML){
+    this.messages.push({ type:'bot', text, extra: extraHTML });
+    this.render();
+  },
+  addUserMessage(text){
+    this.messages.push({ type:'user', text });
+    this.render();
+  },
+  render(){
+    const box = document.getElementById('chatbotMessages');
+    if(!box) return;
+    box.innerHTML = this.messages.map(m => {
+      if(m.type === 'typing'){
+        return `<div class="chat-msg bot typing"><span></span><span></span><span></span></div>`;
+      }
+      return `<div class="chat-msg ${m.type}">
+        <div>${this.escapeHtml(m.text).replace(/\n/g, '<br>')}</div>
+        ${m.extra || ''}
+      </div>`;
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+  },
+  escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  },
+  showTyping(){ this.messages.push({ type:'typing' }); this.render(); },
+  hideTyping(){ this.messages = this.messages.filter(m => m.type !== 'typing'); this.render(); },
+  renderQuickReplies(){
+    const box = document.getElementById('chatbotQuick');
+    if(!box) return;
+    const replies = LANG === 'bn'
+      ? ['পণ্য দেখুন', 'অর্ডার ট্র্যাক', 'সাহায্য', 'যোগাযোগ']
+      : ['Browse Products', 'Track Order', 'Help', 'Contact'];
+    box.innerHTML = replies.map(r =>
+      `<button onclick="Chatbot.quick('${r.replace(/'/g, "\\'")}')">${r}</button>`
+    ).join('');
+  },
+  quick(text){ this.addUserMessage(text); this.processMessage(text); },
+  sendFromInput(){
+    const input = document.getElementById('chatbotInput');
+    if(!input) return;
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    this.addUserMessage(text);
+    this.processMessage(text);
+  },
+  async processMessage(text){
+    this.showTyping();
+    await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+    this.hideTyping();
+    const lower = text.toLowerCase();
+    const trackMatch = text.match(/ord-?\d+/i);
+    if(trackMatch){
+      const orderId = trackMatch[0].toUpperCase();
+      const order = DB.orders.find(o => o.id.toUpperCase() === orderId);
+      if(order){
+        this.addBotMessage(`${t('botOrderStatus')}\n\n🆔 ${order.id}\n📦 ${Orders.statusLabel(order.status)}\n💰 ৳${order.total}\n📅 ${new Date(order.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}`);
+      } else {
+        this.addBotMessage(t('botInvalidOrder'));
+      }
+      return;
+    }
+    if(/^(hi|hello|hey|হাই|হ্যালো|সালাম|assalam|আসসালামু)/i.test(lower)){ this.addBotMessage(t('botGreeting')); return; }
+    if(/(thanks|thank you|ধন্যবাদ|শুকরিয়া)/i.test(lower)){ this.addBotMessage(t('botThanks')); return; }
+    if(/(help|সাহায্য|সহায়তা|কি করতে|কীভাবে)/i.test(lower)){ this.addBotMessage(t('botHelpMessage')); return; }
+    if(/(contact|যোগাযোগ|ফোন|phone|call)/i.test(lower)){ this.addBotMessage(t('botContact')); return; }
+    if(/(track|ট্র্যাক|tracking)/i.test(lower)){ this.addBotMessage(t('botOrderTracking')); return; }
+    if(/(product|পণ্য|প্রোডাক্ট|item|buy|কিনবো|show)/i.test(lower)){
+      this.addBotMessage(t('botSearchingProducts'));
+      await new Promise(r => setTimeout(r, 500));
+      const featured = DB.products.filter(p => p.featured && p.stock > 0).slice(0, 3);
+      if(!featured.length){ this.addBotMessage(t('botNoProducts')); return; }
+      const cards = featured.map(p => `
+        <div class="chat-product" onclick="Chatbot.goToProduct('${p.id}')">
+          <img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'">
+          <div class="chat-product-info">
+            <h6>${LANG === 'bn' ? p.name : (p.nameEn || p.name)}</h6>
+            <span>৳${p.price}</span>
+          </div>
+        </div>`).join('');
+      this.addBotMessage(t('botFoundProducts'), cards);
+      return;
+    }
+    const words = lower.split(/\s+/).filter(w => w.length > 2);
+    const matches = DB.products.filter(p =>
+      words.some(w => (p.name + ' ' + (p.nameEn||'') + ' ' + (p.cat||'')).toLowerCase().includes(w))
+    ).slice(0, 3);
+    if(matches.length){
+      const cards = matches.map(p => `
+        <div class="chat-product" onclick="Chatbot.goToProduct('${p.id}')">
+          <img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'">
+          <div class="chat-product-info">
+            <h6>${LANG === 'bn' ? p.name : (p.nameEn || p.name)}</h6>
+            <span>৳${p.price}</span>
+          </div>
+        </div>`).join('');
+      this.addBotMessage(t('botFoundProducts'), cards);
+      return;
+    }
+    this.addBotMessage(LANG === 'bn'
+      ? 'দুঃখিত, আমি বুঝতে পারিনি। আপনি জিজ্ঞেস করতে পারেন:\n• "পণ্য দেখুন"\n• "অর্ডার ট্র্যাক ORD-12345678"\n• "সাহায্য"\n• "যোগাযোগ"'
+      : 'Sorry, I didn\'t understand. Try:\n• "Browse products"\n• "Track order ORD-12345678"\n• "Help"\n• "Contact"'
+    );
+  },
+  goToProduct(id){ this.close(); App.go('product', id); }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   PWA / Push
    ═══════════════════════════════════════════════════════════ */
 const PWA = {
   deferredPrompt: null,
   registerSW(){
     if('serviceWorker' in navigator){
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('✅ SW:', reg.scope))
-        .catch(err => console.warn('SW failed:', err));
+      navigator.serviceWorker.register('./sw.js').then(r => console.log('✅ SW:', r.scope)).catch(e => console.warn('SW:', e));
     }
   },
   initInstallPrompt(){
     const banner = document.getElementById('installBanner');
-    window.addEventListener('beforeinstallprompt', (e)=>{
+    window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault();
       this.deferredPrompt = e;
-      if(banner && !localStorage.getItem('eco_install_dismissed')){
-        setTimeout(()=>banner.classList.add('show'), 2500);
-      }
+      if(banner && !localStorage.getItem('eco_install_dismissed')) setTimeout(() => banner.classList.add('show'), 2500);
     });
     const installBtn = document.getElementById('installBtn');
     const installClose = document.getElementById('installClose');
-    if(installBtn){
-      installBtn.onclick = async ()=>{
-        if(!this.deferredPrompt) return;
-        this.deferredPrompt.prompt();
-        const result = await this.deferredPrompt.userChoice;
-        if(result.outcome === 'accepted') Toast.show('Installing...','success');
-        this.deferredPrompt = null;
-        banner?.classList.remove('show');
-      };
-    }
-    if(installClose){
-      installClose.onclick = ()=>{
-        banner?.classList.remove('show');
-        localStorage.setItem('eco_install_dismissed', '1');
-      };
-    }
+    if(installBtn) installBtn.onclick = async () => {
+      if(!this.deferredPrompt) return;
+      this.deferredPrompt.prompt();
+      await this.deferredPrompt.userChoice;
+      this.deferredPrompt = null;
+      banner?.classList.remove('show');
+    };
+    if(installClose) installClose.onclick = () => {
+      banner?.classList.remove('show');
+      localStorage.setItem('eco_install_dismissed', '1');
+    };
   }
 };
 
-/* ═══════════════════════════════════════════════════════════
-   PushNotif
-   ═══════════════════════════════════════════════════════════ */
 const PushNotif = {
   async requestPermission(){
     if(!('Notification' in window)) return false;
     try {
       const perm = await Notification.requestPermission();
-      if(perm === 'granted'){
-        Toast.show(t('pushEnabled'),'success');
-        const u = Auth.user();
-        if(u) try { await db.ref('fcm_tokens/'+u.id).set({ token: 'web-'+Date.now(), time: Date.now(), user: u.email }); } catch(e){}
-        return true;
-      }
+      if(perm === 'granted'){ Toast.show(t('pushEnabled'), 'success'); return true; }
       return false;
     } catch(e){ return false; }
   },
   init(){
     const btn = document.getElementById('pushNotifBtn');
-    if(btn) btn.onclick = async ()=>{ if(await this.requestPermission()) btn.textContent = '✓'; };
+    if(btn) btn.onclick = async () => { if(await this.requestPermission()) btn.textContent = '✓'; };
   },
   async localNotif(title, body){
     if(!('Notification' in window) || Notification.permission !== 'granted') return;
-    try { new Notification(title, { body, icon: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxOTIgMTkyIj48cmVjdCB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgZmlsbD0iIzYzNjZmMSIgcng9IjMyIi8+PC9zdmc+' }); } catch(e){}
+    try { new Notification(title, { body }); } catch(e){}
   }
 };
 
@@ -617,15 +979,15 @@ const Toast = {
     const icons = { info:'fa-circle-info', success:'fa-circle-check', error:'fa-circle-exclamation', warning:'fa-triangle-exclamation' };
     el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i><span>${msg}</span>`;
     box.appendChild(el);
-    setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(40px)'; setTimeout(()=>el.remove(),250); }, ms);
+    setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(40px)'; setTimeout(() => el.remove(), 250); }, ms);
   },
-  progress(){ const p=document.getElementById('topProgress'); if(!p) return; p.style.width='70%'; setTimeout(()=>{p.style.width='100%';setTimeout(()=>p.style.width='0',300);},300); }
+  progress(){ const p = document.getElementById('topProgress'); if(!p) return; p.style.width='70%'; setTimeout(()=>{p.style.width='100%';setTimeout(()=>p.style.width='0',300);},300); }
 };
 
 const Modal = {
   open(html, cls=''){
     document.getElementById('modalRoot').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)Modal.close()"><div class="modal-box ${cls}">${html}</div></div>`;
-    document.body.style.overflow='hidden';
+    document.body.style.overflow = 'hidden';
   },
   close(){ document.getElementById('modalRoot').innerHTML=''; document.body.style.overflow=''; },
   confirm(msg, onYes, yesLabel){
@@ -637,7 +999,7 @@ const Modal = {
         <button class="btn btn-danger btn-block" id="modalConfirmYes">${yesLabel||t('yes')}</button>
       </div>
     </div>`, 'sm');
-    document.getElementById('modalConfirmYes').onclick = ()=>{ Modal.close(); onYes && onYes(); };
+    document.getElementById('modalConfirmYes').onclick = () => { Modal.close(); onYes && onYes(); };
   }
 };
 
@@ -667,17 +1029,12 @@ function starHTML(rating, size){
 }
 
 /* ═══════════════════════════════════════════════════════════
-   Auth — Firebase-based email uniqueness
+   Auth
    ═══════════════════════════════════════════════════════════ */
 const Auth = {
   user(){ return Session.get(); },
   isAdmin(){ const u=this.user(); return u && u.role==='admin'; },
-
-  normalizeEmail(email){
-    if(!email) return '';
-    return String(email).trim().toLowerCase();
-  },
-
+  normalizeEmail(email){ return email ? String(email).trim().toLowerCase() : ''; },
   checkEmailStatus(email){
     const target = this.normalizeEmail(email);
     if(!target) return { status: 'free' };
@@ -685,53 +1042,34 @@ const Auth = {
     const exists = (DB.users || []).some(u => this.normalizeEmail(u.email) === target);
     return { status: exists ? 'taken' : 'free' };
   },
-
-  isEmailTaken(email){
-    return this.checkEmailStatus(email).status === 'taken';
-  },
-
+  isEmailTaken(email){ return this.checkEmailStatus(email).status === 'taken'; },
   async login(email, password){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
     const target = this.normalizeEmail(email);
-    const u = DB.users.find(x =>
-      this.normalizeEmail(x.email) === target && x.password === password
-    );
+    const u = DB.users.find(x => this.normalizeEmail(x.email) === target && x.password === password);
     if(!u) return { ok:false, msg:t('invalidCredentials') };
     if(u.blocked) return { ok:false, msg:t('accountBlocked') };
     Session.set(u);
     return { ok:true, user:u };
   },
-
   async register(data){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
     const target = this.normalizeEmail(data.email);
-    if(this.isEmailTaken(target)){
-      return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
-    }
+    if(this.isEmailTaken(target)) return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
     const u = {
       id: 'u_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-      name: data.name,
-      email: target,
-      password: data.password,
-      phone: data.phone || '',
-      role: 'customer',
-      blocked: false,
-      joined: Date.now(),
-      emailVerified: true,
+      name: data.name, email: target, password: data.password,
+      phone: data.phone || '', role: 'customer', blocked: false,
+      joined: Date.now(), emailVerified: true,
       avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff`
     };
     try {
-      if(this.isEmailTaken(target)){
-        return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
-      }
+      if(this.isEmailTaken(target)) return { ok:false, msg:t('emailExists'), code:'EMAIL_TAKEN' };
       await DB.saveUser(u);
       Session.set(u);
       return { ok:true, user:u };
-    } catch(e){
-      return { ok:false, msg:'Save failed: ' + e.message };
-    }
+    } catch(e){ return { ok:false, msg:'Save failed: ' + e.message }; }
   },
-
   logout(){ Session.clear(); Toast.show(t('logoutSuccess'),'success'); App.go('home'); }
 };
 
@@ -743,40 +1081,39 @@ const Cart = {
   save(items){ CartStore.set(items); this.refresh(); },
   add(id, qty=1){
     const items = this.items();
-    const found = items.find(i=>i.id===id);
-    const p = DB.products.find(x=>x.id===id);
+    const found = items.find(i => i.id === id);
+    const p = DB.products.find(x => x.id === id);
     if(!p) return;
     if(p.stock < qty) return Toast.show(t('outOfStock'),'error');
-    if(found){ if(found.qty+qty > p.stock) return Toast.show(t('outOfStock'),'error'); found.qty += qty; }
+    if(found){ if(found.qty + qty > p.stock) return Toast.show(t('outOfStock'),'error'); found.qty += qty; }
     else items.push({ id, qty });
     this.save(items);
     Toast.show(LANG==='bn'?'কার্টে যোগ হয়েছে':'Added to cart','success');
   },
-  remove(id){ this.save(this.items().filter(i=>i.id!==id)); },
+  remove(id){ this.save(this.items().filter(i => i.id !== id)); },
   setQty(id, qty){
     const items = this.items();
-    const it = items.find(i=>i.id===id); if(!it) return;
-    const p = DB.products.find(x=>x.id===id);
+    const it = items.find(i => i.id === id); if(!it) return;
+    const p = DB.products.find(x => x.id === id);
     if(p && qty > p.stock) return Toast.show(t('outOfStock'),'error');
     it.qty = Math.max(1, qty); this.save(items);
   },
-  count(){ return this.items().reduce((s,i)=>s+i.qty,0); },
-  subtotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); return s+(p?p.price*i.qty:0); },0); },
-  discountTotal(){ return this.items().reduce((s,i)=>{ const p=DB.products.find(x=>x.id===i.id); if(!p||!p.oldPrice) return s; return s+((p.oldPrice-p.price)*i.qty); },0); },
+  count(){ return this.items().reduce((s, i) => s + i.qty, 0); },
+  subtotal(){ return this.items().reduce((s, i) => { const p = DB.products.find(x => x.id === i.id); return s + (p ? p.price * i.qty : 0); }, 0); },
   shippingCharge(zone){
-    if(this.count()<=0) return 0;
-    return (zone==='outside') ? (DB.settings.shippingOutsideDhaka||120) : (DB.settings.shippingInsideDhaka||100);
+    if(this.count() <= 0) return 0;
+    return (zone === 'outside') ? (DB.settings.shippingOutsideDhaka || 120) : (DB.settings.shippingInsideDhaka || 100);
   },
   total(zone){ return this.subtotal() + this.shippingCharge(zone); },
   refresh(){
     const c = this.count();
-    const setT = (id, val) => { const el=document.getElementById(id); if(el) el.textContent=val; };
-    const badge = document.getElementById('cartBadge'); if(badge) badge.textContent = c>0?c:'';
-    const bnBadge = document.getElementById('bnCartBadge'); if(bnBadge) bnBadge.textContent = c>0?c:'';
+    const setT = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    const badge = document.getElementById('cartBadge'); if(badge) badge.textContent = c > 0 ? c : '';
+    const bnBadge = document.getElementById('bnCartBadge'); if(bnBadge) bnBadge.textContent = c > 0 ? c : '';
     setT('cartCount', `${c} ${t('items')}`);
     setT('cartSubtotal', money(this.subtotal()));
     setT('cartShipping', money(this.shippingCharge('inside')));
-    setT('cartDiscount', '-'+money(this.discountTotal()));
+    setT('cartDiscount', '-' + money(0));
     setT('cartTotal', money(this.total('inside')));
     this.renderDrawer();
   },
@@ -787,8 +1124,8 @@ const Cart = {
       body.innerHTML = `<div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>${t('emptyCart')}</h3><button class="btn btn-primary" onclick="Modal.close();App.go('shop')">${t('shop')}</button></div>`;
       return;
     }
-    body.innerHTML = items.map(i=>{
-      const p = DB.products.find(x=>x.id===i.id); if(!p) return '';
+    body.innerHTML = items.map(i => {
+      const p = DB.products.find(x => x.id === i.id); if(!p) return '';
       return `<div class="cart-item">
         <img src="${p.img}" onerror="this.src='https://via.placeholder.com/70'">
         <div class="cart-item-info">
@@ -809,7 +1146,7 @@ const Cart = {
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Wish / Orders / Notifs
+   Wish
    ═══════════════════════════════════════════════════════════ */
 const Wish = {
   all(){ return WishStore.get(); },
@@ -817,7 +1154,7 @@ const Wish = {
   toggle(id){
     const list = this.all();
     const idx = list.indexOf(id);
-    if(idx>-1){ list.splice(idx,1); Toast.show(LANG==='bn'?'সরানো হয়েছে':'Removed','info'); }
+    if(idx > -1){ list.splice(idx, 1); Toast.show(LANG==='bn'?'সরানো হয়েছে':'Removed','info'); }
     else { list.push(id); Toast.show(LANG==='bn'?'যোগ হয়েছে':'Added','success'); }
     WishStore.set(list);
     if(['wishlist','shop','home','product'].includes(App.route)) App.render();
@@ -825,14 +1162,22 @@ const Wish = {
   }
 };
 
+/* ═══════════════════════════════════════════════════════════
+   Orders v11.0 — Advanced Order Management
+   ═══════════════════════════════════════════════════════════ */
 const Orders = {
+  STATUS_FLOW: ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered'],
+  STATUS_ALL: ['pending', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'rejected'],
+
   all(){ return DB.orders; },
-  mine(){ const u=Auth.user(); if(!u) return []; return DB.orders.filter(o=>o.userId===u.id); },
+  mine(){ const u = Auth.user(); if(!u) return []; return DB.orders.filter(o => o.userId === u.id); },
+  pending(){ return DB.orders.filter(o => o.status === 'pending'); },
+
   async create(data){
     const u = Auth.user();
     const order = {
-      id:'ORD-'+Date.now().toString().slice(-8),
-      userId: u?u.id:0,
+      id: 'ORD-' + Date.now().toString().slice(-8),
+      userId: u ? u.id : 0,
       customer: data.customer,
       items: data.items,
       subtotal: data.subtotal,
@@ -845,175 +1190,654 @@ const Orders = {
       paymentNumber: data.paymentNumber || null,
       txnId: data.txnId || null,
       screenshot: data.screenshot || null,
-      status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending',
-      paymentStatus: data.paymentMethod === 'cod' ? 'pending' : 'awaiting_verification',
+      status: 'pending',
+      paymentStatus: data.paymentMethod === 'cod' ? 'cod_pending' : 'awaiting_verification',
+      courier: null,
+      trackingNumber: null,
+      eta: null,
+      adminNote: '',
+      internalNotes: [],
       date: Date.now(),
-      history: [{ status: data.paymentMethod === 'cod' ? 'confirmed' : 'pending', time: Date.now(), comment: data.paymentMethod === 'cod' ? 'COD order' : 'Awaiting verification' }]
+      history: [{
+        status: 'pending',
+        time: Date.now(),
+        comment: t('orderReceived'),
+        by: 'Customer'
+      }]
     };
     const saved = await DB.saveOrder(order);
-    data.items.forEach(async i=>{
-      const p = DB.products.find(x=>x.id===i.id);
+    data.items.forEach(async i => {
+      const p = DB.products.find(x => x.id === i.id);
       if(p) try { await DB.updateStock(p.id, Math.max(0, p.stock - i.qty)); } catch(e){}
     });
-    try { await DB.pushNotif({ title:LANG==='bn'?'নতুন অর্ডার!':'New Order!', body:`${data.customer.name} — ${money(data.total)}`, type:'order' }); } catch(e){}
+    try {
+      await DB.pushNotif({
+        title: LANG === 'bn' ? '🛒 নতুন অর্ডার!' : '🛒 New Order!',
+        body: `${data.customer.name} — ${money(data.total)} — ${data.paymentMethod.toUpperCase()}`,
+        type: 'order'
+      });
+    } catch(e){}
     Cart.save([]);
     return saved;
   },
-  async updateStatus(id, status, comment){
-    const o = DB.orders.find(x=>x.id===id);
-    const history = (o?.history || []).concat([{ status, time: Date.now(), comment: comment||'' }]);
-    return DB.updateOrder(id, { status, history });
+
+  async updateStatus(id, status, comment, extra){
+    const o = DB.orders.find(x => x.id === id);
+    if(!o) return;
+    const history = (o.history || []).concat([{
+      status,
+      time: Date.now(),
+      comment: comment || '',
+      by: (Auth.user() && Auth.user().name) || 'System'
+    }]);
+    const patch = { status, history };
+    if(extra && typeof extra === 'object') Object.assign(patch, extra);
+    return DB.updateOrder(id, patch);
   },
+
   async updateDeliveryCharge(id, newCharge){
-    const o = DB.orders.find(x=>x.id===id); if(!o) return;
+    const o = DB.orders.find(x => x.id === id); if(!o) return;
     const newTotal = (o.subtotal || 0) + newCharge - (o.discount || 0);
-    const history = (o.history || []).concat([{ status: o.status, time: Date.now(), comment: `Delivery: ${money(o.deliveryCharge)} → ${money(newCharge)}` }]);
+    const history = (o.history || []).concat([{
+      status: o.status, time: Date.now(),
+      comment: `Delivery charge: ${money(o.deliveryCharge)} → ${money(newCharge)}`,
+      by: (Auth.user() && Auth.user().name) || 'Admin'
+    }]);
     return DB.updateOrder(id, { deliveryCharge: newCharge, total: newTotal, history });
   },
-  remove(id){ return DB.deleteOrder(id); }
+
+  async update(id, patch){ return DB.updateOrder(id, patch); },
+
+  async addNote(id, note){
+    const o = DB.orders.find(x => x.id === id); if(!o) return;
+    const notes = (o.internalNotes || []).concat([{
+      text: note,
+      time: Date.now(),
+      by: (Auth.user() && Auth.user().name) || 'Admin'
+    }]);
+    return DB.updateOrder(id, { internalNotes: notes });
+  },
+
+  async bulkUpdateStatus(ids, status, comment){
+    for(const id of ids){ await this.updateStatus(id, status, comment); }
+  },
+
+  async cancel(id, reason){
+    const o = DB.orders.find(x => x.id === id); if(!o) return;
+    return this.updateStatus(id, 'cancelled', reason || t('cancelledByAdmin'));
+  },
+
+  async reject(id, reason){
+    const o = DB.orders.find(x => x.id === id); if(!o) return;
+    (o.items || []).forEach(async item => {
+      const p = DB.products.find(x => x.id === item.id);
+      if(p) try { await DB.updateStock(p.id, p.stock + item.qty); } catch(e){}
+    });
+    return this.updateStatus(id, 'rejected', reason || t('rejectedByAdmin'), { paymentStatus: 'rejected' });
+  },
+
+  remove(id){ return DB.deleteOrder(id); },
+
+  counts(){
+    const c = { pending:0, confirmed:0, processing:0, shipped:0, out_for_delivery:0, delivered:0, cancelled:0, rejected:0 };
+    DB.orders.forEach(o => { c[o.status] = (c[o.status] || 0) + 1; });
+    return c;
+  },
+
+  statusLabel(status){ return t(status) || status; },
+  statusIcon(status){
+    const icons = {
+      pending:'fa-clock', confirmed:'fa-check-circle', processing:'fa-gears',
+      shipped:'fa-truck', out_for_delivery:'fa-motorcycle', delivered:'fa-circle-check',
+      cancelled:'fa-xmark-circle', rejected:'fa-ban'
+    };
+    return icons[status] || 'fa-circle';
+  },
+
+  /* Detail modal */
+  detail(orderId){
+    const o = DB.orders.find(x => x.id === orderId);
+    if(!o) return;
+    const isBn = LANG === 'bn';
+
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-receipt"></i> ${o.id}</h3></div>
+      <div class="modal-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <span class="status-badge status-${o.status}">
+            <i class="fa-solid ${Orders.statusIcon(o.status)}"></i>
+            ${Orders.statusLabel(o.status)}
+          </span>
+          <span class="order-amount">${money(o.total)}</span>
+        </div>
+        <div class="order-detail-grid">
+          <div class="order-detail-section">
+            <h5><i class="fa-solid fa-user"></i> ${isBn?'কাস্টমার':'Customer'}</h5>
+            <div class="detail-row"><span>${isBn?'নাম':'Name'}</span><span>${o.customer.name}</span></div>
+            <div class="detail-row"><span>${isBn?'ফোন':'Phone'}</span><span>${o.customer.phone}</span></div>
+            <div class="detail-row"><span>${isBn?'ঠিকানা':'Address'}</span><span>${o.customer.address}${o.customer.city?', '+o.customer.city:''}</span></div>
+          </div>
+          <div class="order-detail-section">
+            <h5><i class="fa-solid fa-credit-card"></i> ${isBn?'পেমেন্ট':'Payment'}</h5>
+            <div class="detail-row"><span>${isBn?'পদ্ধতি':'Method'}</span><span>${(o.paymentMethod||'cod').toUpperCase()}</span></div>
+            <div class="detail-row"><span>Status</span><span>${o.paymentStatus||'—'}</span></div>
+            ${o.txnId?`<div class="detail-row"><span>Txn ID</span><span>${o.txnId}</span></div>`:''}
+          </div>
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-box"></i> ${isBn?'পণ্যসমূহ':'Items'}</h5>
+            <div class="order-items-list">
+              ${(o.items||[]).map(it => {
+                const p = DB.products.find(x => x.id === it.id);
+                return `<div class="order-item-row">
+                  <img src="${p?p.img:''}" onerror="this.src='https://via.placeholder.com/48'">
+                  <div class="order-item-info"><h6>${it.name}</h6><p>${it.qty} × ${money(it.price)}</p></div>
+                  <span class="order-item-price">${money(it.qty * it.price)}</span>
+                </div>`;
+              }).join('')}
+            </div>
+            <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
+              <div class="detail-row"><span>${isBn?'সাবটোটাল':'Subtotal'}</span><span>${money(o.subtotal||0)}</span></div>
+              <div class="detail-row"><span>${isBn?'ডেলিভারি':'Delivery'}</span><span>${money(o.deliveryCharge||0)}</span></div>
+              ${o.discount?`<div class="detail-row"><span>${isBn?'ডিসকাউন্ট':'Discount'}</span><span>-${money(o.discount)}</span></div>`:''}
+              <div class="detail-row" style="border-top:2px solid var(--border);margin-top:6px;padding-top:10px"><span><b>${isBn?'সর্বমোট':'Total'}</b></span><span style="color:var(--brand);font-size:16px;font-weight:800">${money(o.total)}</span></div>
+            </div>
+          </div>
+          ${o.courier || o.trackingNumber || o.eta ? `
+            <div class="order-detail-section" style="grid-column:1/-1">
+              <h5><i class="fa-solid fa-truck-fast"></i> ${isBn?'ডেলিভারি তথ্য':'Delivery Info'}</h5>
+              ${o.courier?`<div class="detail-row"><span>${t('courier')}</span><span>${o.courier}</span></div>`:''}
+              ${o.trackingNumber?`<div class="detail-row"><span>${t('trackingNumber')}</span><span>${o.trackingNumber}</span></div>`:''}
+              ${o.eta?`<div class="detail-row"><span>${t('eta')}</span><span>${o.eta}</span></div>`:''}
+            </div>
+          ` : ''}
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-clock-rotate-left"></i> ${t('orderHistory')}</h5>
+            <ul class="order-history">
+              ${(o.history||[]).slice().reverse().map((h, i) => `
+                <li class="${i===0?'current':''}">
+                  <span class="h-dot"></span>
+                  <h6>${Orders.statusLabel(h.status)}</h6>
+                  <small>${new Date(h.time).toLocaleString(isBn?'bn-BD':'en-US')}${h.by?' • '+h.by:''}</small>
+                  ${h.comment?`<div class="h-comment">${h.comment}</div>`:''}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-pdf btn-block" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        <button class="btn btn-whatsapp btn-block" onclick="WhatsApp.sendOrder(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button>
+      </div>
+    `, 'lg');
+  },
+
+  reorder(orderId){
+    const o = DB.orders.find(x => x.id === orderId);
+    if(!o) return;
+    let added = 0;
+    (o.items || []).forEach(it => {
+      const p = DB.products.find(x => x.id === it.id);
+      if(p && p.stock > 0){ Cart.add(p.id, Math.min(it.qty, p.stock)); added++; }
+    });
+    if(added){
+      Toast.show(LANG==='bn'?`${added}টি পণ্য কার্টে যোগ হয়েছে`:`${added} items added`,'success');
+      App.openCart();
+    } else {
+      Toast.show(LANG==='bn'?'পণ্য স্টকে নেই':'Out of stock','error');
+    }
+  }
 };
 
+/* ═══════════════════════════════════════════════════════════
+   Notifs
+   ═══════════════════════════════════════════════════════════ */
 const Notifs = {
   all(){ return DB.notifs; },
-  unread(){ return this.all().filter(n=>!n.read).length; },
-  markAllRead(){ this.all().forEach(n=>{ if(!n.read) db.ref('notifications/'+n.id+'/read').set(true).catch(()=>{}); }); },
+  unread(){ return this.all().filter(n => !n.read).length; },
+  markAllRead(){ this.all().forEach(n => { if(!n.read) db.ref('notifications/'+n.id+'/read').set(true).catch(()=>{}); }); },
   refresh(){
-    const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread()||'';
+    const b = document.getElementById('notifBadge'); if(b) b.textContent = this.unread() || '';
     const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} unread`;
     const list = document.getElementById('notifList'); if(!list) return;
     const arr = this.all();
-    list.innerHTML = arr.length ? arr.map(n=>`
+    list.innerHTML = arr.length ? arr.map(n => `
       <div class="notif-item ${n.read?'':'unread'}">
         <div class="notif-icon"><i class="fa-solid fa-bell"></i></div>
         <div><h5>${n.title}</h5><p>${n.body}</p><small>${timeAgo(n.time)}</small></div>
-      </div>`).join('') : `<div class="empty-state"><i class="fa-solid fa-bell-slash"></i><h3>${LANG==='bn'?'নোটিফিকেশন নেই':'No notifications'}</h3></div>`;
+      </div>
+    `).join('') : `<div class="empty-state"><i class="fa-solid fa-bell-slash"></i><h3>No notifications</h3></div>`;
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   QuickView / Invoice
+   Compare
    ═══════════════════════════════════════════════════════════ */
-const QuickView = {
-  open(productId){
-    const p = DB.products.find(x=>x.id===productId); if(!p) return;
-    const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
-    document.getElementById('quickViewRoot').innerHTML = `
-      <div class="qv-overlay" onclick="if(event.target===this)QuickView.close()">
-        <div class="qv-box">
-          <button class="modal-close" onclick="QuickView.close()"><i class="fa-solid fa-xmark"></i></button>
-          <div class="qv-content">
-            <div class="qv-img"><img src="${p.img}" onerror="this.src='https://via.placeholder.com/400'"></div>
-            <div class="qv-info">
-              <span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span>
-              <h3>${name}</h3>
-              <div class="rating" style="margin:8px 0">${starHTML(p.rating||0,'13px')} <span>${p.rating?(p.rating).toFixed(1):'0'} (${p.reviewCount||0})</span></div>
-              <div class="detail-price" style="margin:12px 0">
-                <span class="price">${money(p.price)}</span>
-                ${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}
-                ${p.discount?`<span class="discount-tag">-${p.discount}%</span>`:''}
-              </div>
-              <p class="detail-desc">${LANG==='bn'?p.desc:(p.descEn||p.desc||'')}</p>
-              <div class="detail-actions" style="margin-top:16px">
-                <button class="btn btn-primary btn-block" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}');QuickView.close()"><i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}</button>
-                <button class="btn btn-outline" onclick="QuickView.close();App.go('product','${p.id}')" style="min-width:auto;flex:0"><i class="fa-solid fa-arrow-right"></i></button>
-              </div>
+const Compare = {
+  MAX: 4,
+  key: 'eco_compare',
+  all(){ try{ return JSON.parse(localStorage.getItem(this.key)) || []; }catch(e){ return []; } },
+  save(list){ localStorage.setItem(this.key, JSON.stringify(list)); this.updateBar(); },
+  has(id){ return this.all().includes(id); },
+  toggle(id){
+    const list = this.all();
+    const idx = list.indexOf(id);
+    if(idx > -1){ list.splice(idx, 1); Toast.show(LANG==='bn'?'সরানো হয়েছে':'Removed','info'); }
+    else {
+      if(list.length >= this.MAX){ Toast.show(`Max ${this.MAX}`, 'warning'); return; }
+      list.push(id); Toast.show(LANG==='bn'?'যোগ হয়েছে':'Added','success');
+    }
+    this.save(list);
+    if(['home','shop','wishlist','product'].includes(App.route)) App.render();
+  },
+  clear(){ this.save([]); },
+  updateBar(){
+    const bar = document.getElementById('compareBar');
+    const thumbs = document.getElementById('compareThumbs');
+    const count = document.getElementById('compareCount');
+    if(!bar || !thumbs) return;
+    const list = this.all();
+    if(!list.length){ bar.style.display = 'none'; return; }
+    bar.style.display = 'block';
+    if(count) count.textContent = list.length;
+    thumbs.innerHTML = list.map(id => {
+      const p = DB.products.find(x => x.id === id);
+      if(!p) return '';
+      return `<div class="compare-thumb">
+        <img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'">
+        <button onclick="event.stopPropagation();Compare.toggle('${id}')"><i class="fa-solid fa-xmark"></i></button>
+      </div>`;
+    }).join('');
+  },
+  open(){
+    const list = this.all();
+    if(list.length < 2){ Toast.show(LANG==='bn'?'অন্তত ২টি নির্বাচন করুন':'Select 2+','warning'); return; }
+    const products = list.map(id => DB.products.find(p => p.id === id)).filter(Boolean);
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-scale-balanced"></i> ${t('compare')}</h3></div>
+      <div class="modal-body" style="padding-left:0;padding-right:0">
+        <div class="compare-table-wrap">
+          <table class="compare-table">
+            <thead><tr><th>${t('features')}</th>${products.map(p => `<th style="text-align:center"><div class="compare-product-head"><img src="${p.img}" onerror="this.src='https://via.placeholder.com/80'"><h5>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h5></div></th>`).join('')}</tr></thead>
+            <tbody>
+              <tr><td><b>${t('price')}</b></td>${products.map(p => `<td style="text-align:center"><span class="price">${money(p.price)}</span>${p.oldPrice?`<br><span class="old-price">${money(p.oldPrice)}</span>`:''}</td>`).join('')}</tr>
+              <tr><td><b>${t('category')}</b></td>${products.map(p => `<td style="text-align:center">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</td>`).join('')}</tr>
+              <tr><td><b>${t('reviews')}</b></td>${products.map(p => `<td style="text-align:center">${starHTML(p.rating||0)}<br><small>${p.reviewCount||0}</small></td>`).join('')}</tr>
+              <tr><td><b>${t('stock')}</b></td>${products.map(p => `<td style="text-align:center">${p.stock<=0?`<span style="color:var(--danger)">${t('outOfStock')}</span>`:p.stock}</td>`).join('')}</tr>
+              <tr><td><b>${t('discount')}</b></td>${products.map(p => `<td style="text-align:center">${p.discount?`<span class="chip">-${p.discount}%</span>`:'—'}</td>`).join('')}</tr>
+              <tr><td><b>${t('addToCart')}</b></td>${products.map(p => `<td style="text-align:center"><button class="btn btn-primary btn-sm" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i></button></td>`).join('')}</tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button>
+        <button class="btn btn-danger btn-block" onclick="Compare.clear();Modal.close()">${t('clearCompare')}</button>
+      </div>
+    `, 'lg');
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Wallet / Referral / Loyalty
+   ═══════════════════════════════════════════════════════════ */
+const Wallet = {
+  getBalance(userId){
+    if(!userId) return 0;
+    try { const d = JSON.parse(localStorage.getItem('eco_wallet_balance') || '{}'); return d[userId] || 0; } catch(e){ return 0; }
+  },
+  setBalance(userId, amount){
+    if(!userId) return;
+    try { const d = JSON.parse(localStorage.getItem('eco_wallet_balance') || '{}'); d[userId] = amount; localStorage.setItem('eco_wallet_balance', JSON.stringify(d)); } catch(e){}
+  },
+  addBalance(userId, amount, reason){
+    if(!userId) return;
+    const cur = this.getBalance(userId);
+    const nb = Math.max(0, cur + amount);
+    this.setBalance(userId, nb);
+    this.addTransaction(userId, { amount, type: amount > 0 ? 'credit' : 'debit', reason: reason || 'Transaction', time: Date.now(), balance: nb });
+    return nb;
+  },
+  addTransaction(userId, tx){
+    if(!userId) return;
+    try {
+      const all = JSON.parse(localStorage.getItem('eco_wallet_tx') || '{}');
+      if(!all[userId]) all[userId] = [];
+      all[userId].unshift({ ...tx, id: 'tx_' + Date.now() });
+      all[userId] = all[userId].slice(0, 50);
+      localStorage.setItem('eco_wallet_tx', JSON.stringify(all));
+    } catch(e){}
+  },
+  getTransactions(userId){
+    if(!userId) return [];
+    try { const all = JSON.parse(localStorage.getItem('eco_wallet_tx') || '{}'); return all[userId] || []; } catch(e){ return []; }
+  },
+  open(){
+    const u = Auth.user();
+    if(!u){ Toast.show(t('loginRequired'),'warning'); return; }
+    const balance = this.getBalance(u.id);
+    const txs = this.getTransactions(u.id);
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-wallet"></i> ${t('wallet')}</h3></div>
+      <div class="modal-body">
+        <div class="wallet-card">
+          <div class="wallet-card-inner">
+            <label>${t('balance')}</label>
+            <span class="wallet-amount">${money(balance)}</span>
+            <div class="wallet-actions">
+              <button class="btn btn-sm btn-solid" onclick="Wallet.topUpPrompt()"><i class="fa-solid fa-plus"></i> ${t('addMoney')}</button>
             </div>
           </div>
         </div>
-      </div>`;
-    document.body.style.overflow='hidden';
+        <h4 style="font-size:14px;font-weight:800;margin:20px 0 10px"><i class="fa-solid fa-list"></i> ${t('transactions')}</h4>
+        ${txs.length ? txs.map(tx => `
+          <div class="tx-item">
+            <div class="tx-icon ${tx.type}"><i class="fa-solid fa-${tx.type === 'credit' ? 'arrow-down' : 'arrow-up'}"></i></div>
+            <div class="tx-info"><h5>${tx.reason}</h5><p>${new Date(tx.time).toLocaleString(LANG==='bn'?'bn-BD':'en-US')}</p></div>
+            <span class="tx-amount ${tx.type}">${tx.type === 'credit' ? '+' : ''}${money(tx.amount)}</span>
+          </div>
+        `).join('') : `<p class="muted">${t('noTransactions')}</p>`}
+      </div>
+      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button></div>
+    `);
   },
-  close(){ document.getElementById('quickViewRoot').innerHTML = ''; document.body.style.overflow=''; }
+  topUpPrompt(){
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-plus"></i> ${t('addMoney')}</h3></div>
+      <div class="modal-body">
+        <div class="form-group"><label>${t('amount')} (৳)</label><input type="number" id="walletTopUp" min="50" step="50" value="500" autofocus></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          ${[100, 500, 1000, 2000].map(a => `<button class="btn btn-outline btn-sm" onclick="document.getElementById('walletTopUp').value=${a}">৳${a}</button>`).join('')}
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-primary btn-block" onclick="Wallet.processTopUp()"><i class="fa-solid fa-check"></i> ${t('save')}</button>
+      </div>
+    `);
+  },
+  processTopUp(){
+    const amount = +document.getElementById('walletTopUp').value;
+    if(!amount || amount < 50){ Toast.show('Min ৳50','error'); return; }
+    const u = Auth.user(); if(!u) return;
+    Wallet.addBalance(u.id, amount, 'Top up');
+    Modal.close();
+    Toast.show(`${money(amount)} added`, 'success');
+    App.render();
+  }
 };
 
-const Invoice = {
-  print(orderId){
-    const o = DB.orders.find(x=>x.id===orderId); if(!o) return;
-    const w = window.open('', '_blank', 'width=800,height=900');
-    w.document.write(`<html><head><title>Invoice ${o.id}</title>
-      <style>body{font-family:'Hind Siliguri',sans-serif;padding:32px;color:#0f1021;max-width:720px;margin:auto;}h1{color:#6366f1;}.head{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:16px;margin-bottom:20px;}.box{background:#f8f9fd;padding:16px;border-radius:12px;margin-bottom:16px;}table{width:100%;border-collapse:collapse;margin:16px 0;}th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e8f0;font-size:13px;}th{background:#f1f3fa;font-size:11px;}.totals{text-align:right;margin-top:12px;}.grand{font-size:20px;font-weight:800;color:#6366f1;}.foot{text-align:center;color:#64748b;font-size:12px;margin-top:32px;padding-top:20px;border-top:1px solid #e5e8f0;}</style>
-      </head><body><h1>EcoShop Pro MAX</h1>
-      <div class="head"><div><b>Invoice #${o.id}</b><br><small>Date: ${new Date(o.date).toLocaleDateString('en-US')}</small></div><div style="text-align:right"><b>Status: ${o.status.toUpperCase()}</b><br><small>Payment: ${o.paymentMethod.toUpperCase()}</small></div></div>
-      <div class="box"><b>Customer</b><br>${o.customer.name}<br>${o.customer.phone||''}<br>${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</div>
-      ${o.txnId?`<div class="box"><b>Txn ID:</b> ${o.txnId}</div>`:''}
-      <table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
-      <tbody>${(o.items||[]).map(i=>`<tr><td>${i.name}</td><td>${i.qty}</td><td>৳${i.price}</td><td>৳${i.price*i.qty}</td></tr>`).join('')}</tbody></table>
-      <div class="totals"><div>Subtotal: ৳${o.subtotal||0}</div><div>Delivery: ৳${o.deliveryCharge||0}</div>${o.discount?`<div>Discount: -৳${o.discount}</div>`:''}<div class="grand">Total: ৳${o.total}</div></div>
-      <div class="foot">Thank you!</div></body></html>`);
-    w.document.close();
-    setTimeout(()=>w.print(), 300);
+const Referral = {
+  BONUS: 50,
+  generateCode(userId){
+    if(!userId) return 'ECO000';
+    return ('ECO' + userId.slice(-5).toUpperCase()).replace(/[^A-Z0-9]/g, '').slice(0, 10);
+  },
+  async applyCode(code){
+    const u = Auth.user();
+    if(!u){ Toast.show(t('loginRequired'),'warning'); return; }
+    if(!code){ Toast.show('Enter code','error'); return; }
+    const cleanCode = code.trim().toUpperCase();
+    if(cleanCode === this.generateCode(u.id)){ Toast.show('Own code', 'error'); return; }
+    if(u.referralApplied){ Toast.show('Already applied','warning'); return; }
+    const referrer = DB.users.find(x => this.generateCode(x.id) === cleanCode);
+    if(!referrer){ Toast.show('Invalid code','error'); return; }
+    Wallet.addBalance(u.id, this.BONUS, 'Referral bonus');
+    Wallet.addBalance(referrer.id, this.BONUS, 'Referral bonus');
+    Session.set({ ...u, referralApplied: true, referralCode: cleanCode });
+    await DB.updateUser(u.id, { referralApplied: true, referralCode: cleanCode });
+    Toast.show(`🎉 ৳${this.BONUS} for both!`, 'success', 5000);
+    App.render();
+  },
+  open(){
+    const u = Auth.user();
+    if(!u){ Toast.show(t('loginRequired'),'warning'); return; }
+    const code = this.generateCode(u.id);
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-users"></i> ${t('referral')}</h3></div>
+      <div class="modal-body">
+        <div class="referral-card">
+          <div style="font-size:14px;font-weight:700;margin-bottom:8px">${t('inviteFriends')}</div>
+          <p style="font-size:12.5px;opacity:.9">${LANG==='bn'?`আপনার কোড শেয়ার করুন। দুজনেই ৳${this.BONUS} পাবেন!`:`Share your code. Both get ৳${this.BONUS}!`}</p>
+          <div class="referral-code">
+            <span>${code}</span>
+            <button onclick="Referral.copyCode('${code}')"><i class="fa-solid fa-copy"></i></button>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:20px">
+          <label>${t('applyCode')}</label>
+          <div style="display:flex;gap:8px">
+            <input id="applyCodeInput" placeholder="ECO..." style="flex:1">
+            <button class="btn btn-primary" onclick="Referral.applyCode(document.getElementById('applyCodeInput').value)"><i class="fa-solid fa-check"></i></button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button>
+        <button class="btn btn-primary btn-block" onclick="Referral.share('${code}')"><i class="fa-brands fa-whatsapp"></i> ${t('whatsappSend')}</button>
+      </div>
+    `);
+  },
+  copyCode(code){ navigator.clipboard.writeText(code).then(() => Toast.show('Copied','success')); },
+  async share(code){
+    const text = LANG==='bn'
+      ? `EcoShop Pro MAX-এ যোগ দিন আমার কোড দিয়ে: ${code}\nদুজনেই ৳50 বোনাস পাবেন!`
+      : `Join EcoShop Pro MAX with my code: ${code}\nBoth get ৳50 bonus!`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  }
+};
+
+const Loyalty = {
+  RATE: 0.01,
+  REDEEM: 100,
+  getPoints(userId){
+    if(!userId) return 0;
+    try { const d = JSON.parse(localStorage.getItem('eco_loyalty') || '{}'); return d[userId] || 0; } catch(e){ return 0; }
+  },
+  setPoints(userId, points){
+    try { const d = JSON.parse(localStorage.getItem('eco_loyalty') || '{}'); d[userId] = points; localStorage.setItem('eco_loyalty', JSON.stringify(d)); } catch(e){}
+  },
+  addFromOrder(userId, orderTotal){
+    if(!userId) return 0;
+    const points = Math.floor(orderTotal * this.RATE);
+    this.setPoints(userId, this.getPoints(userId) + points);
+    return points;
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Search Suggest
+   Analytics
    ═══════════════════════════════════════════════════════════ */
-const SearchSuggest = {
-  init(){
-    const inp = document.getElementById('globalSearch');
-    const box = document.getElementById('searchSuggest');
-    if(!inp || !box) return;
-    inp.addEventListener('input', ()=>{
-      const q = inp.value.trim().toLowerCase();
-      if(!q){ box.classList.remove('active'); return; }
-      const results = DB.products.filter(p=>(p.name+(p.nameEn||'')+(p.cat||'')).toLowerCase().includes(q)).slice(0, 6);
-      box.innerHTML = results.length ? results.map(p=>`
-        <div class="suggest-item" onclick="App.go('product','${p.id}');SearchSuggest.hide()">
-          <img src="${p.img}" onerror="this.src='https://via.placeholder.com/42'">
-          <div class="suggest-info"><h5>${LANG==='bn'?p.name:(p.nameEn||p.name)}</h5><p>${LANG==='bn'?p.cat:(p.catEn||p.cat)}</p></div>
-          <span class="price">${money(p.price)}</span>
-        </div>`).join('') : `<div class="suggest-empty">${LANG==='bn'?'পাওয়া যায়নি':'Not found'}</div>`;
-      box.classList.add('active');
-    });
-    inp.addEventListener('blur', ()=> setTimeout(()=>this.hide(), 200));
-    inp.addEventListener('focus', ()=>{ if(inp.value.trim()) box.classList.add('active'); });
+const Analytics = {
+  period: '7d',
+  setPeriod(p){ this.period = p; Admin.refreshContent(); },
+  getData(){
+    const orders = DB.orders;
+    let days = this.period === '30d' ? 30 : this.period === '90d' ? 90 : 7;
+    const points = [];
+    for(let i = days - 1; i >= 0; i--){
+      const dayStart = new Date(); dayStart.setHours(0, 0, 0, 0);
+      dayStart.setDate(dayStart.getDate() - i);
+      const dayEnd = new Date(dayStart); dayEnd.setDate(dayEnd.getDate() + 1);
+      const dayOrders = orders.filter(o => o.date >= dayStart.getTime() && o.date < dayEnd.getTime() && o.status !== 'cancelled');
+      points.push({
+        date: dayStart,
+        sales: dayOrders.reduce((s, o) => s + (o.total || 0), 0),
+        orders: dayOrders.length,
+        label: days <= 7 ? dayStart.toLocaleDateString(LANG==='bn'?'bn-BD':'en-US', { weekday: 'short' }) : dayStart.getDate()
+      });
+    }
+    return points;
   },
-  hide(){ document.getElementById('searchSuggest')?.classList.remove('active'); }
+  renderChart(){
+    const data = this.getData();
+    if(!data.length) return '';
+    const maxSales = Math.max(...data.map(d => d.sales), 100);
+    const W = 600, H = 220, PAD = 30;
+    const chartW = W - PAD * 2, chartH = H - PAD * 2;
+    const bars = data.map((d, i) => {
+      const x = PAD + i * (chartW / data.length) + (chartW / data.length) * 0.15;
+      const h = (d.sales / maxSales) * chartH;
+      const y = H - PAD - h;
+      const barW = (chartW / data.length) * 0.7;
+      return `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="url(#barGrad)"><title>${d.label}: ${money(d.sales)}</title></rect>`;
+    }).join('');
+    return `
+      <svg class="chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+        <defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--brand)"/><stop offset="100%" stop-color="var(--brand-light)"/></linearGradient></defs>
+        ${bars}
+      </svg>
+    `;
+  },
+  render(){
+    const data = this.getData();
+    const totalSales = data.reduce((s, d) => s + d.sales, 0);
+    const totalOrders = data.reduce((s, d) => s + d.orders, 0);
+    return `
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <h3><i class="fa-solid fa-chart-line"></i> ${t('salesTrend')}</h3>
+          <div class="chart-period">
+            <button class="${this.period==='7d'?'active':''}" onclick="Analytics.setPeriod('7d')">7D</button>
+            <button class="${this.period==='30d'?'active':''}" onclick="Analytics.setPeriod('30d')">30D</button>
+            <button class="${this.period==='90d'?'active':''}" onclick="Analytics.setPeriod('90d')">90D</button>
+          </div>
+        </div>
+        ${this.renderChart()}
+        <div class="chart-legend">
+          <span>${t('totalSalesLabel')}: ${money(totalSales)}</span>
+          <span>${t('ordersLabel')}: ${totalOrders}</span>
+        </div>
+      </div>
+    `;
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Tracking
+   ═══════════════════════════════════════════════════════════ */
+const Tracking = {
+  open(){
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-truck-fast"></i> ${t('trackOrder')}</h3></div>
+      <div class="modal-body">
+        <p class="pr-desc">${LANG==='bn'?'আপনার অর্ডার আইডি লিখুন (যেমন: ORD-12345678)':'Enter your order ID (e.g. ORD-12345678)'}</p>
+        <div class="tracking-input-group">
+          <input id="trackOrderInput" placeholder="ORD-XXXXXXXX">
+          <button class="btn btn-primary" onclick="Tracking.lookup()"><i class="fa-solid fa-magnifying-glass"></i></button>
+        </div>
+        <div id="trackingResult"></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button></div>
+    `);
+    setTimeout(() => {
+      const inp = document.getElementById('trackOrderInput');
+      if(inp){ inp.focus(); inp.addEventListener('keydown', e => { if(e.key === 'Enter') Tracking.lookup(); }); }
+    }, 100);
+  },
+  lookup(){
+    const inp = document.getElementById('trackOrderInput');
+    const res = document.getElementById('trackingResult');
+    if(!inp || !res) return;
+    const orderId = inp.value.trim().toUpperCase();
+    if(!orderId) return;
+    const order = DB.orders.find(o => o.id.toUpperCase() === orderId);
+    if(!order){
+      res.innerHTML = `<div class="error-banner" style="margin:0"><i class="fa-solid fa-triangle-exclamation"></i><div>${t('botInvalidOrder')}</div></div>`;
+      return;
+    }
+    const statuses = Orders.STATUS_FLOW;
+    const currentIdx = statuses.indexOf(order.status);
+    const isCancelled = ['cancelled', 'rejected'].includes(order.status);
+    res.innerHTML = `
+      <div class="tracking-result">
+        <h3>${order.id}</h3>
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+          <div><p style="font-size:12px;color:var(--text-dim)">${t('orderDate')}</p><p style="font-weight:700">${new Date(order.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</p></div>
+          <div><p style="font-size:12px;color:var(--text-dim)">${t('total')}</p><p style="font-weight:800;color:var(--brand)">${money(order.total)}</p></div>
+        </div>
+        <span class="status-badge status-${order.status}">${Orders.statusLabel(order.status)}</span>
+        ${!isCancelled ? `
+          <div class="order-timeline">
+            ${statuses.map((s, i) => `
+              <div class="timeline-step ${i < currentIdx ? 'done' : ''} ${i === currentIdx ? 'current' : ''}">
+                ${i < statuses.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                <div class="dot"><i class="fa-solid ${i <= currentIdx ? 'fa-check' : Orders.statusIcon(s)}"></i></div>
+                <div class="label">${Orders.statusLabel(s)}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }
+};
+
+/* ═══════════════════════════════════════════════════════════
+   Quick Actions
+   ═══════════════════════════════════════════════════════════ */
+const QuickActions = {
+  render(){
+    const u = Auth.user();
+    if(!u) return '';
+    return `
+      <div class="quick-actions">
+        <div class="quick-action" onclick="App.go('orders')"><i class="fa-solid fa-box"></i><span>${t('myOrders')}</span></div>
+        <div class="quick-action" onclick="Wallet.open()"><i class="fa-solid fa-wallet"></i><span>${t('wallet')}</span></div>
+        <div class="quick-action" onclick="Referral.open()"><i class="fa-solid fa-users"></i><span>${t('referral')}</span></div>
+        <div class="quick-action" onclick="Tracking.open()"><i class="fa-solid fa-truck-fast"></i><span>${t('track')}</span></div>
+      </div>
+    `;
+  }
 };
 
 /* ═══════════════════════════════════════════════════════════
    App Router
    ═══════════════════════════════════════════════════════════ */
 const App = {
-  route:'home',
-  _shopCat:'all', _shopSort:'default', _shopQ:'', _shopMinPrice:'', _shopMaxPrice:'',
-  _adminTab:'dashboard', _pQuery:'', _uQuery:'', _oQuery:'', _selectedUsers:[],
-  _authTab:'login', _authRedirect:null, _lastRoute:'home', _param:null,
-  _otpStep:null, _pendingReg:null, _checkoutState:null,
+  route: 'home',
+  _shopCat: 'all', _shopSort: 'default', _shopQ: '',
+  _adminTab: 'dashboard', _pQuery: '', _uQuery: '',
+  _orderFilter: { status:'all', payment:'all', search:'', from:'', to:'' },
+  _selectedOrders: [],
+  _orderFilterUser: 'all',
+  _authTab: 'login', _authRedirect: null, _param: null,
+  _otpStep: null, _pendingReg: null, _checkoutState: null,
 
   hideSplash(){
     const s = document.getElementById('splash');
     if(s && !s.classList.contains('hidden')){
-      const bar = document.getElementById('splashBar'); if(bar) bar.style.width='100%';
+      const bar = document.getElementById('splashBar'); if(bar) bar.style.width = '100%';
       const st = document.getElementById('splashStatus'); if(st) st.textContent = LANG==='bn'?'স্বাগতম!':'Welcome!';
-      setTimeout(()=>s.classList.add('hidden'), 400);
+      setTimeout(() => s.classList.add('hidden'), 400);
     }
   },
-
   rerenderIfVisible(){
     if(['home','shop','admin','orders','wishlist','profile','auth','product','checkout'].includes(this.route)) this.render();
     else { Cart.refresh(); Notifs.refresh(); this.syncUI(); }
   },
-
   go(route, param){
     if(['orders','profile','checkout'].includes(route) && !Auth.user()){
       Toast.show(t('loginRequired'),'warning');
-      this._authRedirect = route;
-      this.route = 'auth';
-    } else if(route==='admin' && !Auth.isAdmin()){
+      this._authRedirect = route; this.route = 'auth';
+    } else if(route === 'admin' && !Auth.isAdmin()){
       Toast.show(t('adminOnly'),'warning');
-      this._authRedirect = 'admin';
-      this.route = 'auth';
+      this._authRedirect = 'admin'; this.route = 'auth';
     } else {
-      this._lastRoute = this.route;
       this.route = route;
       if(param) this._param = param;
     }
-    document.querySelectorAll('[data-nav]').forEach(a=>a.classList.toggle('active', a.dataset.nav===this.route));
+    document.querySelectorAll('[data-nav]').forEach(a => a.classList.toggle('active', a.dataset.nav === this.route));
     this.render();
-    window.scrollTo({top:0,behavior:'smooth'});
+    window.scrollTo({ top:0, behavior:'smooth' });
   },
-
   render(){
     const el = document.getElementById('app'); if(!el) return;
     Toast.progress();
@@ -1032,40 +1856,38 @@ const App = {
         default: html = Pages.home();
       }
     } catch(e){
-      console.error('Render error:', e);
-      html = `<div class="page"><div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Error</b>${e.message}</div></div></div>`;
+      console.error(e);
+      html = `<div class="page"><div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div>${e.message}</div></div></div>`;
     }
     el.innerHTML = html;
     this.syncUI();
     Cart.refresh();
     Notifs.refresh();
     this.applyI18n();
+    Compare.updateBar();
     this.initPageScripts();
   },
-
   applyI18n(){
-    document.querySelectorAll('[data-i18n]').forEach(el=>{
+    document.querySelectorAll('[data-i18n]').forEach(el => {
       const k = el.dataset.i18n; const val = t(k);
       if(val && val !== k) el.textContent = val;
     });
-    document.querySelectorAll('[data-i18n-ph]').forEach(el=>{
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
       const k = el.dataset.i18nPh; const val = t(k);
       if(val && val !== k) el.placeholder = val;
     });
   },
-
   initPageScripts(){
-    document.querySelectorAll('.detail-thumb').forEach(thumb=>{
-      thumb.onclick = ()=>{
+    document.querySelectorAll('.detail-thumb').forEach(thumb => {
+      thumb.onclick = () => {
         const src = thumb.querySelector('img').src;
         const main = document.querySelector('.detail-main-img img');
         if(main) main.src = src;
-        document.querySelectorAll('.detail-thumb').forEach(t2=>t2.classList.remove('active'));
+        document.querySelectorAll('.detail-thumb').forEach(t2 => t2.classList.remove('active'));
         thumb.classList.add('active');
       };
     });
   },
-
   syncUI(){
     const u = Auth.user();
     const loginBtn = document.getElementById('loginBtn');
@@ -1073,36 +1895,35 @@ const App = {
     if(!loginBtn || !avatarBtn) return;
     const adminLink = document.querySelector('.nav-admin-link');
     if(u){
-      loginBtn.style.display='none';
+      loginBtn.style.display = 'none';
       avatarBtn.classList.add('show');
       document.getElementById('navAvatar').src = u.avatar;
       document.getElementById('ddName').textContent = u.name;
       document.getElementById('ddEmail').textContent = u.email;
-      document.getElementById('ddAdmin').style.display = u.role==='admin' ? 'flex' : 'none';
+      document.getElementById('ddAdmin').style.display = u.role === 'admin' ? 'flex' : 'none';
       document.getElementById('pmName').textContent = u.name;
       document.getElementById('pmEmail').textContent = u.email;
       document.getElementById('pmAvatar').src = u.avatar;
       document.getElementById('pmRole').textContent = u.role.toUpperCase();
-      document.getElementById('pmAdminSection').style.display = u.role==='admin' ? 'block' : 'none';
-      document.getElementById('pmLoginBtn').style.display='none';
-      document.getElementById('pmLogoutBtn').style.display='flex';
+      document.getElementById('pmAdminSection').style.display = u.role === 'admin' ? 'block' : 'none';
+      document.getElementById('pmLoginBtn').style.display = 'none';
+      document.getElementById('pmLogoutBtn').style.display = 'flex';
       document.getElementById('pmOrderCount').textContent = Orders.mine().length;
       document.getElementById('pmWishCount').textContent = Wish.all().length;
-      if(adminLink) adminLink.style.display = u.role==='admin' ? 'flex' : 'none';
+      if(adminLink) adminLink.style.display = u.role === 'admin' ? 'flex' : 'none';
     } else {
-      loginBtn.style.display='inline-flex';
+      loginBtn.style.display = 'inline-flex';
       avatarBtn.classList.remove('show');
       document.getElementById('pmName').textContent = LANG==='bn'?'অতিথি':'Guest';
       document.getElementById('pmEmail').textContent = LANG==='bn'?'লগইন করুন':'Login';
       document.getElementById('pmRole').textContent = 'GUEST';
-      document.getElementById('pmAdminSection').style.display='none';
-      document.getElementById('pmLoginBtn').style.display='flex';
-      document.getElementById('pmLogoutBtn').style.display='none';
+      document.getElementById('pmAdminSection').style.display = 'none';
+      document.getElementById('pmLoginBtn').style.display = 'flex';
+      document.getElementById('pmLogoutBtn').style.display = 'none';
       if(adminLink) adminLink.style.display = 'flex';
     }
   },
-
-  openCart(){ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; }
+  openCart(){ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow = 'hidden'; }
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -1111,10 +1932,8 @@ const App = {
 const Pages = {
   home(){
     if(!DB.isReady()) return loadingHTML(t('loadingData'));
-    const featured = DB.products.filter(p=>p.featured).slice(0,6);
-    const newArr = [...DB.products].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,8);
-    const bestDeals = [...DB.products].filter(p=>p.discount>0).sort((a,b)=>b.discount-a.discount).slice(0,4);
-    const recent = RecentStore.get().map(id=>DB.products.find(p=>p.id===id)).filter(Boolean).slice(0,6);
+    const featured = DB.products.filter(p => p.featured).slice(0, 6);
+    const newArr = [...DB.products].sort((a,b) => (b.createdAt||0) - (a.createdAt||0)).slice(0, 8);
     return `
       <section class="hero">
         <div class="hero-inner">
@@ -1130,44 +1949,37 @@ const Pages = {
         </div>
       </section>
       <div class="page">
-        ${DB.error?`<div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div><b>Firebase:</b> ${DB.error}</div></div>`:''}
         <div class="section-head"><h2><i class="fa-solid fa-fire" style="color:var(--accent)"></i> ${t('featured')}</h2><span class="count-chip">${featured.length} ${t('items')}</span></div>
         <div class="product-grid">${featured.length ? featured.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${t('empty')}</h3></div>`}</div>
-        ${bestDeals.length?`<div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-tags" style="color:var(--danger)"></i> ${LANG==='bn'?'সেরা অফার':'Best Deals'}</h2></div><div class="product-grid">${bestDeals.map(Components.productCard).join('')}</div>`:''}
         <div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-star" style="color:var(--brand)"></i> ${t('newArrivals')}</h2><button class="btn btn-outline btn-sm" onclick="App.go('shop')">${LANG==='bn'?'সব দেখুন':'View All'} <i class="fa-solid fa-arrow-right"></i></button></div>
         <div class="product-grid">${newArr.map(Components.productCard).join('')}</div>
-        ${recent.length?`<div class="section-head" style="margin-top:34px"><h2><i class="fa-solid fa-clock-rotate-left"></i> ${LANG==='bn'?'সম্প্রতি দেখা':'Recently Viewed'}</h2></div><div class="product-grid">${recent.map(Components.productCard).join('')}</div>`:''}
       </div>`;
   },
 
   shop(){
     if(!DB.isReady()) return loadingHTML(t('loadingData'));
     let list = DB.products.slice();
-    if(App._shopCat && App._shopCat!=='all') list = list.filter(p=>p.cat===App._shopCat);
-    if(App._shopQ){ const s=App._shopQ.toLowerCase(); list = list.filter(p=>(p.name+(p.nameEn||'')+(p.desc||'')).toLowerCase().includes(s)); }
-    if(App._shopMinPrice !== '' && App._shopMinPrice !== null) list = list.filter(p=>p.price >= +App._shopMinPrice);
-    if(App._shopMaxPrice !== '' && App._shopMaxPrice !== null) list = list.filter(p=>p.price <= +App._shopMaxPrice);
-    if(App._shopSort==='low') list.sort((a,b)=>a.price-b.price);
-    else if(App._shopSort==='high') list.sort((a,b)=>b.price-a.price);
-    else if(App._shopSort==='new') list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    else if(App._shopSort==='popular') list.sort((a,b)=>(b.reviewCount||0)-(a.reviewCount||0));
+    if(App._shopCat && App._shopCat !== 'all') list = list.filter(p => p.cat === App._shopCat);
+    if(App._shopQ){ const s = App._shopQ.toLowerCase(); list = list.filter(p => (p.name + (p.nameEn||'') + (p.desc||'')).toLowerCase().includes(s)); }
+    if(App._shopSort === 'low') list.sort((a,b) => a.price - b.price);
+    else if(App._shopSort === 'high') list.sort((a,b) => b.price - a.price);
+    else if(App._shopSort === 'new') list.sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+    else if(App._shopSort === 'popular') list.sort((a,b) => (b.reviewCount||0) - (a.reviewCount||0));
     return `
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-store"></i> ${t('allProducts')}</h2><span class="count-chip">${list.length} ${t('items')}</span></div>
         <div class="filter-chips">
           <div class="filter-chip ${App._shopCat==='all'?'active':''}" onclick="App._shopCat='all';App.render()">${LANG==='bn'?'সব':'All'}</div>
-          ${DB.categories.map(c=>`<div class="filter-chip ${App._shopCat===c?'active':''}" onclick="App._shopCat='${c}';App.render()">${c}</div>`).join('')}
+          ${DB.categories.map(c => `<div class="filter-chip ${App._shopCat===c?'active':''}" onclick="App._shopCat='${c}';App.render()">${c}</div>`).join('')}
         </div>
         <div class="filters-bar">
           <select onchange="App._shopSort=this.value;App.render()">
-            <option value="default" ${App._shopSort==='default'?'selected':''}>${t('defaultSort')}</option>
+            <option value="default">${t('defaultSort')}</option>
             <option value="new" ${App._shopSort==='new'?'selected':''}>${t('newest')}</option>
             <option value="popular" ${App._shopSort==='popular'?'selected':''}>${t('popular')}</option>
             <option value="low" ${App._shopSort==='low'?'selected':''}>${t('priceLowHigh')}</option>
             <option value="high" ${App._shopSort==='high'?'selected':''}>${t('priceHighLow')}</option>
           </select>
-          <input type="number" placeholder="${t('minPrice')}" value="${App._shopMinPrice}" oninput="App._shopMinPrice=this.value;clearTimeout(window._mf);window._mf=setTimeout(()=>App.render(),400)">
-          <input type="number" placeholder="${t('maxPrice')}" value="${App._shopMaxPrice}" oninput="App._shopMaxPrice=this.value;clearTimeout(window._xf);window._xf=setTimeout(()=>App.render(),400)">
         </div>
         <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3></div>`}</div>
       </div>`;
@@ -1175,20 +1987,20 @@ const Pages = {
 
   productDetail(id){
     if(!DB.isReady()) return loadingHTML(t('loadingData'));
-    const p = DB.products.find(x=>x.id===id);
-    if(!p) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${LANG==='bn'?'পাওয়া যায়নি':'Not found'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
+    const p = DB.products.find(x => x.id === id);
+    if(!p) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>Not found</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
     RecentStore.add(p.id);
     const reviews = DB.getProductReviews(p.id);
     const imgs = p.images && p.images.length ? p.images : [p.img];
-    const related = DB.products.filter(x=>x.cat===p.cat && x.id!==p.id).slice(0,4);
-    const stockCls = p.stock<=0 ? 'out' : (p.stock<10 ? 'low':'');
+    const related = DB.products.filter(x => x.cat === p.cat && x.id !== p.id).slice(0, 4);
+    const stockCls = p.stock <= 0 ? 'out' : (p.stock < 10 ? 'low' : '');
     return `
       <div class="page">
         <button class="btn btn-outline btn-sm" onclick="App.go('shop')" style="margin-bottom:14px"><i class="fa-solid fa-arrow-left"></i> ${t('shop')}</button>
         <div class="product-detail">
           <div class="detail-gallery">
             <div class="detail-main-img"><img id="mainImg" src="${imgs[0]}" onerror="this.src='https://via.placeholder.com/500'"></div>
-            ${imgs.length>1?`<div class="detail-thumbs">${imgs.map((u,i)=>`<div class="detail-thumb ${i===0?'active':''}"><img src="${u}"></div>`).join('')}</div>`:''}
+            ${imgs.length > 1 ? `<div class="detail-thumbs">${imgs.map((u, i) => `<div class="detail-thumb ${i===0?'active':''}"><img src="${u}"></div>`).join('')}</div>` : ''}
           </div>
           <div class="detail-info">
             <span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span>
@@ -1206,18 +2018,9 @@ const Pages = {
             <div class="detail-actions">
               <button class="btn btn-primary btn-lg" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}</button>
               <button class="btn btn-outline btn-lg" onclick="Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart" style="${Wish.has(p.id)?'color:var(--danger)':''}"></i></button>
+              <button class="btn btn-outline btn-lg" onclick="Compare.toggle('${p.id}')"><i class="fa-solid fa-scale-balanced"></i></button>
             </div>
           </div>
-        </div>
-        <div class="admin-card" style="margin-top:20px">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-comments"></i> ${t('reviews')} (${reviews.length})</h3>${Auth.user()?`<button class="btn btn-primary btn-sm" onclick="Components.openReviewModal('${p.id}')"><i class="fa-solid fa-pen"></i> ${t('writeReview')}</button>`:''}</div>
-          ${reviews.length ? reviews.map(r=>{
-            const u = DB.users.find(x=>x.id===r.userId);
-            return `<div class="review-item">
-              <img class="review-avatar" src="${u?.avatar||'https://ui-avatars.com/api/?name=U'}">
-              <div class="review-body"><div class="review-head"><h5>${r.userName||'User'}</h5><span class="rating">${starHTML(r.rating,'14px')}</span></div><p>${r.text}</p><small style="font-size:11px;color:var(--text-soft)">${timeAgo(r.date)}</small></div>
-            </div>`;
-          }).join('') : `<p class="muted">${LANG==='bn'?'এখনো কোনো রিভিউ নেই।':'No reviews yet.'}</p>`}
         </div>
         ${related.length?`<div class="section-head" style="margin-top:26px"><h2><i class="fa-solid fa-layer-group"></i> ${t('relatedProducts')}</h2></div><div class="product-grid">${related.map(Components.productCard).join('')}</div>`:''}
       </div>`;
@@ -1226,49 +2029,38 @@ const Pages = {
   orders(){
     if(!Auth.user()) return this.authPage('orders');
     const mine = Orders.mine();
+    const counts = {
+      all: mine.length,
+      active: mine.filter(o => ['pending','confirmed','processing','shipped','out_for_delivery'].includes(o.status)).length,
+      delivered: mine.filter(o => o.status === 'delivered').length,
+      cancelled: mine.filter(o => ['cancelled','rejected'].includes(o.status)).length
+    };
+    const filter = App._orderFilterUser || 'all';
+    const filtered = filter === 'all' ? mine :
+      filter === 'active' ? mine.filter(o => ['confirmed','processing','shipped','out_for_delivery','pending'].includes(o.status)) :
+      filter === 'delivered' ? mine.filter(o => o.status === 'delivered') :
+      filter === 'cancelled' ? mine.filter(o => ['cancelled','rejected'].includes(o.status)) : mine;
     return `
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-box"></i> ${t('myOrders')}</h2><span class="count-chip">${mine.length}</span></div>
-        ${mine.length ? `<div class="orders-list">${mine.map(o=>{
-          const statuses = ['pending','confirmed','shipped','delivered'];
-          const currentIdx = statuses.indexOf(o.status);
-          const cancelled = o.status==='cancelled';
-          const payment = o.paymentMethod || 'cod';
-          return `<div class="order-row" style="flex-direction:column;align-items:stretch">
-            <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;width:100%">
-              <div class="order-info">
-                <h4>${o.id}</h4>
-                <p>${new Date(o.date).toLocaleString(LANG==='bn'?'bn-BD':'en-US')} • ${o.items?.length||0} ${t('items')}</p>
-                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
-                  <span class="payment-badge ${payment}">${payment==='cod'?'COD':payment.toUpperCase()}</span>
-                  ${o.txnId?`<span class="chip" style="font-size:10.5px">TXN: ${o.txnId}</span>`:''}
-                </div>
-              </div>
-              <div class="order-right">
-                <span class="price">${money(o.total)}</span>
-                <span class="status-badge status-${o.status}">${t(o.status)}</span>
-                <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')" title="${t('printInvoice')}"><i class="fa-solid fa-print"></i></button>
-              </div>
-            </div>
-            ${!cancelled?`<div class="order-timeline">${statuses.map((s,i)=>`
-              <div class="timeline-step ${i<currentIdx?'done':''} ${i===currentIdx?'current':''}">
-                ${i<statuses.length-1?'<div class="timeline-line"></div>':''}
-                <div class="dot"><i class="fa-solid ${i<=currentIdx?'fa-check':'fa-circle'}"></i></div>
-                <div class="label">${t(s)}</div>
-              </div>`).join('')}</div>`:''}
-            ${o.history && o.history.filter(h=>h.comment).length ? `<div class="order-comment-box"><b><i class="fa-solid fa-comment"></i> ${t('adminComment')}</b>${o.history.filter(h=>h.comment).slice(-1)[0].comment}</div>` : ''}
-          </div>`;
-        }).join('')}</div>` : `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${LANG==='bn'?'কোনো অর্ডার নেই':'No orders yet'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}
+        <div class="filter-chips">
+          <div class="filter-chip ${filter==='all'?'active':''}" onclick="App._orderFilterUser='all';App.render()">${t('allOrders')} (${counts.all})</div>
+          <div class="filter-chip ${filter==='active'?'active':''}" onclick="App._orderFilterUser='active';App.render()">${t('activeOrders')} (${counts.active})</div>
+          <div class="filter-chip ${filter==='delivered'?'active':''}" onclick="App._orderFilterUser='delivered';App.render()">${t('delivered')} (${counts.delivered})</div>
+          <div class="filter-chip ${filter==='cancelled'?'active':''}" onclick="App._orderFilterUser='cancelled';App.render()">${t('cancelled')} (${counts.cancelled})</div>
+        </div>
+        ${filtered.length ? filtered.map(o => Components.orderCard(o, 'user')).join('') :
+          `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${LANG==='bn'?'কোনো অর্ডার নেই':'No orders yet'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}
       </div>`;
   },
 
   wishlist(){
     const ids = Wish.all();
-    const list = DB.products.filter(p=>ids.includes(p.id));
+    const list = DB.products.filter(p => ids.includes(p.id));
     return `
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-heart" style="color:var(--danger)"></i> ${t('wishlist')}</h2><span class="count-chip">${list.length}</span></div>
-        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-regular fa-heart"></i><h3>${LANG==='bn'?'উইশলিস্ট খালি':'Wishlist empty'}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}</div>
+        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-regular fa-heart"></i><h3>Wishlist empty</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div>`}</div>
       </div>`;
   },
 
@@ -1276,7 +2068,10 @@ const Pages = {
     const u = Auth.user();
     if(!u) return this.authPage('profile');
     const mine = Orders.mine();
-    const totalSpent = mine.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
+    const spent = mine.filter(o => o.status !== 'cancelled').reduce((s, o) => s + o.total, 0);
+    const balance = Wallet.getBalance(u.id);
+    const points = Loyalty.getPoints(u.id);
+    const refCode = Referral.generateCode(u.id);
     return `
       <div class="page">
         <div class="profile-header">
@@ -1285,14 +2080,43 @@ const Pages = {
             <h2>${u.name}</h2>
             <p><i class="fa-solid fa-envelope"></i> ${u.email}</p>
             ${u.phone?`<p><i class="fa-solid fa-phone"></i> ${u.phone}</p>`:''}
-            <p><i class="fa-solid fa-user-tag"></i> ${u.role==='admin'?t('adminRole'):t('customer')}</p>
+          </div>
+        </div>
+        ${QuickActions.render()}
+        <div style="display:grid;gap:14px;margin-bottom:20px">
+          <div class="wallet-card">
+            <div class="wallet-card-inner">
+              <label>${t('walletBalance')}</label>
+              <span class="wallet-amount">${money(balance)}</span>
+              <div class="wallet-actions">
+                <button class="btn btn-sm btn-solid" onclick="Wallet.open()"><i class="fa-solid fa-wallet"></i> ${t('wallet')}</button>
+                <button class="btn btn-sm" onclick="Wallet.topUpPrompt()"><i class="fa-solid fa-plus"></i> ${t('addMoney')}</button>
+              </div>
+            </div>
+          </div>
+          <div class="loyalty-card">
+            <div>
+              <div style="font-size:12px;opacity:.9;font-weight:700;text-transform:uppercase">${t('loyalty')}</div>
+              <div class="loyalty-points">${points}</div>
+              <div style="font-size:11.5px;opacity:.85;margin-top:4px">≈ ${money(Math.floor(points/100))}</div>
+            </div>
+            <i class="fa-solid fa-gift" style="font-size:42px;opacity:.4"></i>
+          </div>
+          <div class="referral-card">
+            <div style="font-size:13px;font-weight:700;margin-bottom:6px">${t('inviteFriends')}</div>
+            <div class="referral-code">
+              <span>${refCode}</span>
+              <button onclick="Referral.copyCode('${refCode}')"><i class="fa-solid fa-copy"></i></button>
+            </div>
+            <button class="btn btn-block btn-sm" style="background:rgba(255,255,255,.2);color:#fff;border:none;margin-top:8px" onclick="Referral.open()">
+              <i class="fa-solid fa-users"></i> ${t('referral')}
+            </button>
           </div>
         </div>
         <div class="dash-grid">
           <div class="dash-card clickable" onclick="App.go('orders')"><i class="fa-solid fa-box"></i><h3>${mine.length}</h3><p>${t('totalOrders')}</p></div>
           <div class="dash-card clickable" onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i><h3>${Wish.all().length}</h3><p>${t('wishlist')}</p></div>
-          <div class="dash-card clickable" onclick="App.openCart()"><i class="fa-solid fa-cart-shopping"></i><h3>${Cart.count()}</h3><p>${t('cart')}</p></div>
-          <div class="dash-card"><i class="fa-solid fa-wallet"></i><h3>${money(totalSpent)}</h3><p>${LANG==='bn'?'মোট খরচ':'Total Spent'}</p></div>
+          <div class="dash-card"><i class="fa-solid fa-wallet"></i><h3>${money(spent)}</h3><p>Total Spent</p></div>
         </div>
         <div class="admin-card">
           <div class="admin-card-head"><h3><i class="fa-solid fa-pen"></i> ${t('editProfile')}</h3></div>
@@ -1304,7 +2128,7 @@ const Pages = {
       </div>`;
   },
 
-  auth(){ return this.authPage(App._authRedirect||'home'); },
+  auth(){ return this.authPage(App._authRedirect || 'home'); },
 
   authPage(redirect){
     const tab = App._authTab || 'login';
@@ -1321,10 +2145,6 @@ const Pages = {
             <button class="${tab==='reg'?'active':''}" id="tabReg" onclick="AuthUI.tab('reg')">${t('register')}</button>
           </div>
           <div id="authForm">${tab==='login' ? AuthUI.loginForm(redirect) : AuthUI.regForm(redirect)}</div>
-          <div class="info-banner" style="margin-top:16px;font-size:12px">
-            <i class="fa-solid fa-circle-info"></i>
-            <div>${LANG==='bn'?'ডেমো অ্যাডমিন:':'Demo Admin:'}<br><b>admin@eco.pro</b> / <b>admin123</b></div>
-          </div>
         </div>
       </div>`;
   },
@@ -1339,13 +2159,10 @@ const Pages = {
         <div class="admin-main">
           <div class="admin-header">
             <button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button>
-            <div class="admin-header-title">
-              <h1>${Admin.titles[tab]||t('dashboard')}</h1>
-              <p>EcoShop Pro MAX v8.0</p>
-            </div>
+            <div class="admin-header-title"><h1>${Admin.titles[tab]||t('dashboard')}</h1><p>EcoShop Pro MAX v11.0</p></div>
             <div class="admin-header-actions">
-              <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i><span> ${t('shop')}</span></button>
-              <button class="btn btn-primary btn-sm" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i><span> ${t('addProduct')}</span></button>
+              <button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i></button>
+              <button class="btn btn-primary btn-sm" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i></button>
             </div>
           </div>
           <div class="admin-content" id="adminContent">${Admin.render(tab)}</div>
@@ -1357,86 +2174,59 @@ const Pages = {
     const u = Auth.user();
     if(!u) return this.authPage('checkout');
     if(!Cart.count()) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>${t('emptyCart')}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
-
     const s = DB.settings;
     const methods = [];
-    if(s.enableCOD) methods.push({id:'cod', label:t('cod'), desc:t('codDesc'), icon:'fa-money-bill-wave', cls:'cod'});
-    if(s.enableBkash) methods.push({id:'bkash', label:t('bkash'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'bkash'});
-    if(s.enableNagad) methods.push({id:'nagad', label:t('nagad'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'nagad'});
-    if(s.enableRocket) methods.push({id:'rocket', label:t('rocket'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'rocket'});
-
+    if(s.enableCOD) methods.push({ id:'cod', label:t('cod'), icon:'fa-money-bill-wave', cls:'cod' });
+    if(s.enableBkash) methods.push({ id:'bkash', label:t('bkash'), icon:'fa-mobile-screen', cls:'bkash' });
+    if(s.enableNagad) methods.push({ id:'nagad', label:t('nagad'), icon:'fa-mobile-screen', cls:'nagad' });
+    if(s.enableRocket) methods.push({ id:'rocket', label:t('rocket'), icon:'fa-mobile-screen', cls:'rocket' });
     const zone = App._checkoutState?.zone || 'inside';
-    const selectedPay = App._checkoutState?.payment || 'cod';
-    const ship = zone==='inside' ? (s.shippingInsideDhaka||100) : (s.shippingOutsideDhaka||120);
-    const subtotal = Cart.subtotal();
-    const discount = App._checkoutState?.couponDiscount || 0;
-    const total = subtotal + ship - discount;
-
+    const pay = App._checkoutState?.payment || 'cod';
+    const ship = zone === 'inside' ? (s.shippingInsideDhaka||100) : (s.shippingOutsideDhaka||120);
     return `
       <div class="page" style="max-width:760px">
         <div class="section-head"><h2><i class="fa-solid fa-credit-card"></i> ${t('checkout')}</h2></div>
         <div class="admin-card">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-location-dot"></i> ${LANG==='bn'?'শিপিং তথ্য':'Shipping'}</h3></div>
-          <div class="form-group"><label>${t('fullName')} <span class="req">*</span></label><input id="coName" value="${u.name}"></div>
+          <div class="admin-card-head"><h3>${t('address')}</h3></div>
+          <div class="form-group"><label>${t('fullName')}</label><input id="coName" value="${u.name}"></div>
           <div class="form-row">
-            <div class="form-group"><label>${t('phone')} <span class="req">*</span></label><input id="coPhone" value="${u.phone||''}" placeholder="017XXXXXXXX"></div>
+            <div class="form-group"><label>${t('phone')}</label><input id="coPhone" value="${u.phone||''}"></div>
             <div class="form-group"><label>${t('city')}</label><input id="coCity" value="ঢাকা"></div>
           </div>
-          <div class="form-group"><label>${t('address')} <span class="req">*</span></label><textarea id="coAddr" rows="3"></textarea></div>
+          <div class="form-group"><label>${t('address')}</label><textarea id="coAddr" rows="3"></textarea></div>
         </div>
-
         <div class="admin-card">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-truck"></i> ${t('deliveryZone')}</h3></div>
+          <div class="admin-card-head"><h3>${t('deliveryZone')}</h3></div>
           <div class="delivery-zones">
             <div class="delivery-zone ${zone==='inside'?'active':''}" onclick="Checkout.setZone('inside')">
-              <b>${t('insideDhaka')}</b>
-              <div class="zone-price">${money(s.shippingInsideDhaka||100)}</div>
-              <small>${LANG==='bn'?'১-২ দিন':'1-2 days'}</small>
+              <b>${t('insideDhaka')}</b><div class="zone-price">${money(s.shippingInsideDhaka||100)}</div>
             </div>
             <div class="delivery-zone ${zone==='outside'?'active':''}" onclick="Checkout.setZone('outside')">
-              <b>${t('outsideDhaka')}</b>
-              <div class="zone-price">${money(s.shippingOutsideDhaka||120)}</div>
-              <small>${LANG==='bn'?'২-৪ দিন':'2-4 days'}</small>
+              <b>${t('outsideDhaka')}</b><div class="zone-price">${money(s.shippingOutsideDhaka||120)}</div>
             </div>
           </div>
         </div>
-
         <div class="admin-card">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-wallet"></i> ${t('selectPayment')}</h3></div>
+          <div class="admin-card-head"><h3>${t('selectPayment')}</h3></div>
           <div class="payment-methods">
-            ${methods.map(m=>`
-              <div class="payment-method ${selectedPay===m.id?'active':''}" onclick="Checkout.setPayment('${m.id}')">
-                <div class="pm-logo ${m.cls}"><i class="fa-solid ${m.icon}"></i></div>
-                <b>${m.label}</b>
-                <small>${m.desc}</small>
-              </div>
-            `).join('')}
+            ${methods.map(m => `<div class="payment-method ${pay===m.id?'active':''}" onclick="Checkout.setPayment('${m.id}')"><div class="pm-logo ${m.cls}"><i class="fa-solid ${m.icon}"></i></div><b>${m.label}</b></div>`).join('')}
           </div>
-          <div id="paymentDetail">${Checkout.renderPaymentDetail(selectedPay)}</div>
+          <div id="paymentDetail">${Checkout.renderPaymentDetail(pay)}</div>
         </div>
-
         <div class="admin-card">
-          <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${LANG==='bn'?'সারাংশ':'Summary'}</h3></div>
-          <div class="form-group">
-            <label>${t('couponCode')}</label>
-            <div style="display:flex;gap:8px"><input id="coCoupon" placeholder="ECO10"><button class="btn btn-outline" onclick="Checkout.applyCoupon()">${t('applyFilter')}</button></div>
-            <div id="couponStatus" class="form-hint"></div>
-          </div>
-          <div class="cart-summary-row"><span>${t('subtotal')}</span><span>${money(subtotal)}</span></div>
-          <div class="cart-summary-row"><span>${t('deliveryCharge')}</span><span id="coShip">${money(ship)}</span></div>
-          <div class="cart-summary-row"><span>${t('discount')}</span><span id="coDiscount">-${money(discount)}</span></div>
-          <div class="cart-summary-row total"><span>${t('total')}</span><span id="coTotal">${money(total)}</span></div>
-          <button class="btn btn-primary btn-block btn-lg" id="coSubmit" style="margin-top:14px" onclick="Checkout.place()"><i class="fa-solid fa-check"></i> ${t('confirmOrder')}</button>
+          <div class="cart-summary-row"><span>${t('subtotal')}</span><span>${money(Cart.subtotal())}</span></div>
+          <div class="cart-summary-row"><span>${t('deliveryCharge')}</span><span>${money(ship)}</span></div>
+          <div class="cart-summary-row total"><span>${t('total')}</span><span>${money(Cart.subtotal() + ship)}</span></div>
+          <button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" id="coSubmit" onclick="Checkout.place()"><i class="fa-solid fa-check"></i> ${t('confirmOrder')}</button>
         </div>
       </div>`;
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Checkout Logic
+   Checkout
    ═══════════════════════════════════════════════════════════ */
 const Checkout = {
-  coupon: null,
   ensureState(){
     if(!App._checkoutState) App._checkoutState = { zone:'inside', payment:'cod', couponDiscount:0, couponCode:null };
     return App._checkoutState;
@@ -1444,71 +2234,39 @@ const Checkout = {
   setZone(zone){
     const s = this.ensureState();
     s.zone = zone;
-    const shipping = zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
-    const sub = Cart.subtotal();
-    const total = sub + shipping - s.couponDiscount;
-    const shipEl = document.getElementById('coShip'); if(shipEl) shipEl.textContent = money(shipping);
-    const totEl = document.getElementById('coTotal'); if(totEl) totEl.textContent = money(total);
-    document.querySelectorAll('.delivery-zone').forEach(el=>el.classList.remove('active'));
-    document.querySelectorAll('.delivery-zone')[zone==='inside'?0:1]?.classList.add('active');
+    App.render();
   },
   setPayment(method){
     const s = this.ensureState();
     s.payment = method;
-    document.querySelectorAll('.payment-method').forEach(el=>el.classList.remove('active'));
-    const idx = ['cod','bkash','nagad','rocket'].indexOf(method);
-    document.querySelectorAll('.payment-method')[idx]?.classList.add('active');
+    document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('active'));
     const detail = document.getElementById('paymentDetail');
     if(detail) detail.innerHTML = this.renderPaymentDetail(method);
     this.bindScreenshotUpload();
   },
   renderPaymentDetail(method){
     const s = DB.settings;
-    if(method === 'cod'){
-      return `<div class="payment-info" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)">
-        <h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${t('cod')}</h4>
-        <p style="font-size:13.5px;color:var(--text-dim);line-height:1.65">${LANG==='bn'?'পণ্য হাতে পেয়ে টাকা পরিশোধ করবেন। অর্ডার এখনই কনফার্ম হবে।':'Pay when you receive. Order confirmed immediately.'}</p>
-      </div>`;
-    }
-    const num = method==='bkash' ? (s.bkashNumber||'01700000000') : method==='nagad' ? (s.nagadNumber||'01700000000') : (s.rocketNumber||'01700000000');
-    const brandName = method==='bkash' ? 'বিকাশ' : method==='nagad' ? 'নগদ' : 'রকেট';
-    const dialFull = method==='bkash' ? `*247*${num}*` : method==='nagad' ? `*167*${num}*` : `*322*1*${num}*`;
+    if(method === 'cod') return `<div class="payment-info" style="background:rgba(16,185,129,.08)"><h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${t('cod')}</h4><p style="font-size:13px;color:var(--text-dim)">${LANG==='bn'?'পণ্য হাতে পেয়ে টাকা পরিশোধ করুন।':'Pay when you receive.'}</p></div>`;
+    const num = method === 'bkash' ? s.bkashNumber : method === 'nagad' ? s.nagadNumber : s.rocketNumber;
+    const brandName = method === 'bkash' ? 'বিকাশ' : method === 'nagad' ? 'নগদ' : 'রকেট';
     return `
       <div class="payment-info">
-        <h4><span class="pm-brand ${method}">${brandName}</span> ${LANG==='bn'?'সেন্ড মানি':'Send Money'}</h4>
+        <h4><span class="pm-brand ${method}">${brandName}</span></h4>
         <div class="copy-number-box">
-          <div>
-            <small style="font-size:11.5px;color:var(--text-dim);display:block;margin-bottom:2px">${t('paymentNumber')}</small>
-            <span class="number" id="payNum">${num}</span>
-          </div>
-          <button class="copy-btn" id="copyNumBtn" onclick="Checkout.copyNumber('${num}')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button>
-        </div>
-        <h5 style="font-size:13px;font-weight:800;margin:12px 0 8px">📋 ${t('sendMoneySteps')}:</h5>
-        <ol class="steps-list">
-          <li>${LANG==='bn'?`<b>${brandName}</b> অ্যাপ খুলুন বা ডায়াল করুন`:`Open <b>${brandName}</b> app or dial`}</li>
-          <li>${LANG==='bn'?'<b>Send Money</b> অপশন বেছে নিন':'Choose <b>Send Money</b>'}</li>
-          <li>${LANG==='bn'?'উপরের নাম্বারে সম্পূর্ণ টাকা সেন্ড করুন':'Send full amount to the number'}</li>
-          <li>${LANG==='bn'?'সফল হলে <b>Transaction ID</b> নিচে লিখুন':'Enter the <b>Transaction ID</b> below'}</li>
-        </ol>
-        <div class="dial-code-box">
-          <div style="flex:1">
-            <small style="font-size:11px;color:var(--text-dim);display:block;margin-bottom:3px">${t('useDialCode')}</small>
-            <code id="dialCode">${dialFull}</code>
-          </div>
-          <button onclick="Checkout.copyDial('${dialFull}')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button>
+          <div><small style="font-size:11px;color:var(--text-dim)">${t('paymentNumber')}</small><br><span class="number">${num}</span></div>
+          <button class="copy-btn" onclick="navigator.clipboard.writeText('${num}').then(()=>Toast.show('${t('numberCopied')}','success'))"><i class="fa-solid fa-copy"></i> ${t('copy')}</button>
         </div>
         <div class="txn-input-group">
-          <label>${t('txnId')} <span class="req">*</span></label>
-          <input id="txnIdInput" placeholder="${t('txnIdPlaceholder')}" autocomplete="off">
+          <label>${t('txnId')} *</label>
+          <input id="txnIdInput" placeholder="${t('txnIdPlaceholder')}">
         </div>
         <div class="txn-input-group">
-          <label>${t('screenshot')} <span class="optional">${t('screenshotOptional')}</span></label>
-          <div class="payment-screenshot" style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-top:10px">
-            <div class="img-preview" id="ssPreview" style="width:96px;height:96px;border-radius:14px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;background:var(--surface-2);flex-shrink:0;"><i class="fa-solid fa-image" style="font-size:34px;color:var(--text-soft)"></i></div>
-            <div class="upload-btn-wrap" style="flex:1;min-width:180px">
+          <label>${t('screenshot')} ${t('screenshotOptional')}</label>
+          <div class="img-upload" style="margin-top:10px">
+            <div class="img-preview" id="ssPreview"><i class="fa-solid fa-image"></i></div>
+            <div class="upload-btn-wrap">
               <button type="button" class="upload-btn" id="ssUploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}</button>
               <input type="file" id="ssFile" accept="image/*" style="display:none">
-              <div class="upload-progress" id="ssProgress"><span></span></div>
             </div>
           </div>
           <input type="hidden" id="ssUrl" value="">
@@ -1520,57 +2278,21 @@ const Checkout = {
     const file = document.getElementById('ssFile');
     const prev = document.getElementById('ssPreview');
     const hidden = document.getElementById('ssUrl');
-    const prog = document.getElementById('ssProgress');
     if(!btn || btn._bound) return;
     btn._bound = true;
-    btn.onclick = ()=> file.click();
-    file.onchange = async ()=>{
+    btn.onclick = () => file.click();
+    file.onchange = async () => {
       const f = file.files[0]; if(!f) return;
-      const reader = new FileReader();
-      reader.onload = e => prev.innerHTML = `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover">`;
-      reader.readAsDataURL(f);
-      btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> Uploading...`;
-      if(prog){ prog.style.display='block'; prog.firstElementChild.style.width='40%'; }
+      const r = new FileReader();
+      r.onload = e => prev.innerHTML = `<img src="${e.target.result}">`;
+      r.readAsDataURL(f);
       try {
         const res = await ImageUpload.upload(f);
         hidden.value = res.url;
-        prev.innerHTML = `<img src="${res.url}" style="width:100%;height:100%;object-fit:cover">`;
-        if(prog) prog.firstElementChild.style.width='100%';
-        Toast.show(LANG==='bn'?'স্ক্রিনশট আপলোড হয়েছে':'Screenshot uploaded','success');
-      } catch(err){
-        Toast.show('Upload failed: '+err.message,'error');
-        prev.innerHTML = '<i class="fa-solid fa-image" style="font-size:34px;color:var(--text-soft)"></i>';
-      } finally {
-        btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}`;
-        if(prog) setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
-      }
+        prev.innerHTML = `<img src="${res.url}">`;
+        Toast.show('Uploaded', 'success');
+      } catch(e){ Toast.show('Failed', 'error'); }
     };
-  },
-  copyNumber(num){
-    navigator.clipboard.writeText(num).then(()=>{
-      Toast.show(t('numberCopied'),'success');
-      const btn = document.getElementById('copyNumBtn');
-      if(btn){ btn.classList.add('copied'); btn.innerHTML = `<i class="fa-solid fa-check"></i> ${t('copied')}`;
-        setTimeout(()=>{ btn.classList.remove('copied'); btn.innerHTML = `<i class="fa-solid fa-copy"></i> ${t('copy')}`; }, 2000); }
-    });
-  },
-  copyDial(code){ navigator.clipboard.writeText(code).then(()=> Toast.show(t('dialCodeCopied'),'success')); },
-  applyCoupon(){
-    const code = document.getElementById('coCoupon').value.trim().toUpperCase();
-    const c = DB.coupons.find(x=>x.code===code);
-    const status = document.getElementById('couponStatus');
-    if(!c){ Toast.show(t('invalidCoupon'),'error'); if(status) status.textContent=''; return; }
-    this.coupon = c;
-    const s = this.ensureState();
-    const ship = s.zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
-    const subtotal = Cart.subtotal();
-    const off = c.type==='percent' ? Math.round(subtotal * c.value/100) : c.value;
-    s.couponDiscount = off; s.couponCode = c.code;
-    const total = subtotal + ship - off;
-    if(status){ status.textContent = `✓ ${c.code} — ${LANG==='bn'?'ছাড়':'Save'} ${money(off)}`; status.style.color='var(--success)'; }
-    const dEl = document.getElementById('coDiscount'); if(dEl) dEl.textContent = '-'+money(off);
-    const tEl = document.getElementById('coTotal'); if(tEl) tEl.textContent = money(total);
-    Toast.show(t('couponApplied'),'success');
   },
   async place(){
     const name = document.getElementById('coName').value.trim();
@@ -1588,34 +2310,41 @@ const Checkout = {
       const ss = document.getElementById('ssUrl');
       screenshot = ss ? ss.value.trim() : '';
     }
-    const ship = s.zone==='inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
+    const ship = s.zone === 'inside' ? (DB.settings.shippingInsideDhaka||100) : (DB.settings.shippingOutsideDhaka||120);
     const subtotal = Cart.subtotal();
-    const total = subtotal + ship - (s.couponDiscount||0);
-    const items = Cart.items().map(i=>{
-      const p = DB.products.find(x=>x.id===i.id);
-      return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty, img:p?.img||'' };
+    const total = subtotal + ship;
+    const items = Cart.items().map(i => {
+      const p = DB.products.find(x => x.id === i.id);
+      return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty };
     });
     const btn = document.getElementById('coSubmit');
     btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
     try {
       const order = await Orders.create({
-        customer: { name, phone, city, address },
-        items, subtotal,
-        deliveryCharge: ship,
-        deliveryZone: s.zone,
-        discount: s.couponDiscount||0,
-        total, coupon: s.couponCode,
-        paymentMethod: method,
-        paymentNumber: method==='cod' ? null : (DB.settings[method+'Number'] || ''),
-        txnId, screenshot
+        customer: { name, phone, city, address }, items, subtotal,
+        deliveryCharge: ship, deliveryZone: s.zone, discount: 0, total,
+        paymentMethod: method, paymentNumber: method==='cod'?null:DB.settings[method+'Number'], txnId, screenshot
       });
+      if(Auth.user()) Loyalty.addFromOrder(Auth.user().id, total);
       App._checkoutState = null;
-      this.coupon = null;
-      Toast.show(method==='cod' ? t('orderSuccessCOD') : t('orderSuccessPaid'),'success',4000);
-      PushNotif.localNotif(LANG==='bn'?'অর্ডার সফল':'Order placed', order.id);
-      App.go('orders');
+      Toast.show(method === 'cod' ? t('orderSuccessCOD') : t('orderSuccessPaid'), 'success', 4000);
+      setTimeout(() => {
+        Modal.open(`
+          <div style="padding:28px 24px;text-align:center">
+            <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 18px">
+              <i class="fa-brands fa-whatsapp"></i>
+            </div>
+            <h3 style="font-size:19px;font-weight:800;margin-bottom:8px">${t('whatsappOrder')}</h3>
+            <p style="font-size:13.5px;color:var(--text-dim);line-height:1.6;margin-bottom:22px">${t('whatsappDesc')}</p>
+            <button class="btn btn-whatsapp btn-block" onclick="WhatsApp.sendOrder(DB.orders.find(x=>x.id==='${order.id}'), '${phone}');Modal.close();App.go('orders')">
+              <i class="fa-brands fa-whatsapp"></i> ${t('whatsappSend')}
+            </button>
+            <button class="btn btn-outline btn-block" style="margin-top:8px" onclick="Modal.close();App.go('orders')">${t('close')}</button>
+          </div>
+        `, 'sm');
+      }, 500);
     } catch(e){
-      Toast.show(t('orderFailed') + ': ' + e.message,'error');
+      Toast.show('Failed: ' + e.message, 'error');
       btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check"></i> ${t('confirmOrder')}`;
     }
   }
@@ -1626,15 +2355,14 @@ const Checkout = {
    ═══════════════════════════════════════════════════════════ */
 const Components = {
   productCard(p){
-    const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
-    const stockCls = p.stock<=0 ? 'out' : (p.stock<10 ? 'low':'');
-    const stockTxt = p.stock<=0 ? t('outOfStock') : (p.stock<10 ? `${t('stock')}: ${p.stock}` : t('inStock'));
+    const name = LANG === 'bn' ? p.name : (p.nameEn || p.name);
+    const stockCls = p.stock <= 0 ? 'out' : (p.stock < 10 ? 'low' : '');
+    const stockTxt = p.stock <= 0 ? t('outOfStock') : t('inStock');
     const isNew = Date.now() - (p.createdAt||0) < 7*24*60*60*1000;
-    const isHot = (p.reviewCount||0) > 20;
     let badge = '';
     if(p.discount) badge = `<span class="product-badge">-${p.discount}%</span>`;
     else if(isNew) badge = `<span class="product-badge new">NEW</span>`;
-    else if(isHot) badge = `<span class="product-badge hot">HOT</span>`;
+    const inCompare = Compare.has(p.id);
     return `
       <div class="product-card" onclick="App.go('product','${p.id}')">
         <div class="product-img-wrap">
@@ -1642,7 +2370,7 @@ const Components = {
           ${badge}
           <span class="stock-badge ${stockCls}">${stockTxt}</span>
           <button class="wish-btn ${Wish.has(p.id)?'active':''}" onclick="event.stopPropagation();Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart"></i></button>
-          <button class="quick-view-btn" onclick="event.stopPropagation();QuickView.open('${p.id}')"><i class="fa-solid fa-eye"></i> ${t('quickView')}</button>
+          <button class="product-compare-btn ${inCompare?'active':''}" onclick="event.stopPropagation();Compare.toggle('${p.id}')"><i class="fa-solid fa-scale-balanced"></i></button>
         </div>
         <div class="product-body">
           <span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span>
@@ -1653,19 +2381,75 @@ const Components = {
         </div>
       </div>`;
   },
+
+  orderCard(o, mode = 'user'){
+    const statusFlow = Orders.STATUS_FLOW;
+    const idx = statusFlow.indexOf(o.status);
+    const isCancelled = ['cancelled', 'rejected'].includes(o.status);
+    const isBn = LANG === 'bn';
+    return `
+      <div class="order-card" data-order-id="${o.id}">
+        <div class="order-card-head">
+          <div class="order-id-block">
+            <h4><i class="fa-solid fa-receipt" style="color:var(--brand)"></i> ${o.id}</h4>
+            <p><i class="fa-regular fa-calendar"></i> ${new Date(o.date).toLocaleString(isBn ? 'bn-BD' : 'en-US')} • ${(o.items || []).length} ${t('items')}</p>
+          </div>
+          <div class="order-meta">
+            <span class="order-amount">${money(o.total)}</span>
+            <span class="status-badge status-${o.status}">
+              <i class="fa-solid ${Orders.statusIcon(o.status)}"></i>
+              ${Orders.statusLabel(o.status)}
+            </span>
+          </div>
+        </div>
+        ${!isCancelled ? `
+          <div class="order-timeline">
+            ${statusFlow.map((s, i) => `
+              <div class="timeline-step ${i < idx ? 'done' : ''} ${i === idx ? 'current' : ''}">
+                ${i < statusFlow.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                <div class="dot"><i class="fa-solid ${i <= idx ? 'fa-check' : Orders.statusIcon(s)}"></i></div>
+                <div class="label">${Orders.statusLabel(s)}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div style="background:rgba(239,68,68,.08);border-left:3px solid var(--danger);padding:10px 14px;border-radius:8px;margin:10px 0">
+            <b style="color:var(--danger);font-size:13px"><i class="fa-solid fa-ban"></i> ${Orders.statusLabel(o.status)}</b>
+            ${(o.history || []).slice(-1)[0]?.comment ? `<p style="font-size:12.5px;color:var(--text-dim);margin-top:4px">${(o.history || []).slice(-1)[0].comment}</p>` : ''}
+          </div>
+        `}
+        <div class="invoice-actions" style="margin-top:14px">
+          <button class="btn btn-outline btn-sm" onclick="Orders.detail('${o.id}')">
+            <i class="fa-solid fa-eye"></i> ${isBn ? 'বিস্তারিত' : 'Details'}
+          </button>
+          <button class="btn btn-pdf btn-sm" onclick="PDFInvoice.generate('${o.id}', '${LANG}')">
+            <i class="fa-solid fa-file-pdf"></i> ${isBn ? 'ইনভয়েস' : 'Invoice'}
+          </button>
+          <button class="btn btn-whatsapp btn-sm" onclick="WhatsApp.sendOrder(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')">
+            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+          </button>
+          ${['delivered','cancelled','rejected'].includes(o.status) ? `
+            <button class="btn btn-outline btn-sm" onclick="Orders.reorder('${o.id}')">
+              <i class="fa-solid fa-rotate-right"></i> ${t('reorder')}
+            </button>
+          ` : ''}
+        </div>
+      </div>`;
+  },
+
   adminSidebar(tab){
-    const pendingCount = DB.orders.filter(o=>o.status==='pending').length;
+    const pending = DB.orders.filter(o => o.status === 'pending').length;
     const items = [
-      {sec:LANG==='bn'?'মেইন':'Main', list:[
-        {id:'dashboard', icon:'fa-chart-line', label:t('dashboard')},
-        {id:'products', icon:'fa-box', label:t('products')},
-        {id:'orders', icon:'fa-receipt', label:t('ordersTab'), badge: pendingCount},
-        {id:'users', icon:'fa-users', label:t('users')},
+      { sec: LANG==='bn'?'মেইন':'Main', list: [
+        { id:'dashboard', icon:'fa-chart-line', label:t('dashboard') },
+        { id:'products', icon:'fa-box', label:t('products') },
+        { id:'orders', icon:'fa-receipt', label:t('ordersTab'), badge: pending },
+        { id:'users', icon:'fa-users', label:t('users') }
       ]},
-      {sec:LANG==='bn'?'অতিরিক্ত':'Extras', list:[
-        {id:'categories', icon:'fa-tags', label:t('categories')},
-        {id:'coupons', icon:'fa-ticket', label:t('coupons')},
-        {id:'settings', icon:'fa-gear', label:t('settings')},
+      { sec: LANG==='bn'?'অতিরিক্ত':'Extras', list: [
+        { id:'categories', icon:'fa-tags', label:t('categories') },
+        { id:'coupons', icon:'fa-ticket', label:t('coupons') },
+        { id:'settings', icon:'fa-gear', label:t('settings') }
       ]}
     ];
     return `<aside class="admin-sidebar" id="adminSidebar">
@@ -1675,64 +2459,20 @@ const Components = {
         <span class="admin-pill">ADMIN</span>
       </div>
       <nav class="admin-nav">
-        ${items.map(g=>`
+        ${items.map(g => `
           <div class="nav-section">
             <div class="nav-section-title">${g.sec}</div>
-            ${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')">
+            ${g.list.map(i => `<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')">
               <i class="fa-solid ${i.icon}"></i> ${i.label}
               ${i.badge ? `<span class="nav-count">${i.badge}</span>` : ''}
             </a>`).join('')}
-          </div>`).join('')}
+          </div>
+        `).join('')}
       </nav>
       <div class="admin-footer">
-        <button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> ${LANG==='bn'?'স্টোরে ফিরুন':'Back'}</button>
+        <button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> Back</button>
       </div>
     </aside>`;
-  },
-  openReviewModal(productId){
-    if(!Auth.user()){ Toast.show(t('loginRequired'),'warning'); return; }
-    let rating = 5;
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-star"></i> ${t('writeReview')}</h3></div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>${t('yourRating')}</label>
-          <div class="star-picker" id="starPicker">
-            ${[1,2,3,4,5].map(i=>`<i class="fa-solid fa-star active" data-star="${i}"></i>`).join('')}
-          </div>
-        </div>
-        <div class="form-group">
-          <label>${t('reviews')}</label>
-          <textarea id="reviewText" rows="4" placeholder="${LANG==='bn'?'আপনার মতামত লিখুন...':'Write your review...'}"></textarea>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
-        <button class="btn btn-primary btn-block" onclick="Components.submitReview('${productId}', ${rating})"><i class="fa-solid fa-paper-plane"></i> ${t('submitReview')}</button>
-      </div>
-    `);
-    const picker = document.getElementById('starPicker');
-    if(picker){
-      picker.querySelectorAll('i').forEach(star=>{
-        star.onclick = ()=>{
-          rating = +star.dataset.star;
-          picker.querySelectorAll('i').forEach(s=>s.classList.toggle('active', +s.dataset.star <= rating));
-        };
-      });
-    }
-  },
-  async submitReview(productId, rating){
-    const text = document.getElementById('reviewText').value.trim();
-    if(!text){ Toast.show(t('fillAllFields'),'error'); return; }
-    const u = Auth.user();
-    try {
-      await DB.saveReview({ productId, userId: u.id, userName: u.name, rating, text });
-      await DB.addReviewToProduct(productId, rating);
-      Modal.close();
-      Toast.show(LANG==='bn'?'রিভিউ জমা হয়েছে':'Review submitted','success');
-      App.render();
-    } catch(e){ Toast.show('Failed: '+e.message,'error'); }
   }
 };
 
@@ -1741,8 +2481,7 @@ const Components = {
    ═══════════════════════════════════════════════════════════ */
 const Admin = {
   get titles(){
-    return { dashboard:t('dashboard'), products:t('products'), orders:t('ordersTab'),
-      users:t('users'), categories:t('categories'), coupons:t('coupons'), settings:t('settings') };
+    return { dashboard:t('dashboard'), products:t('products'), orders:t('ordersTab'), users:t('users'), categories:t('categories'), coupons:t('coupons'), settings:t('settings') };
   },
   switchTab(tab){
     App._adminTab = tab;
@@ -1762,62 +2501,53 @@ const Admin = {
         case 'settings': return this.settings();
         default: return this.dashboard();
       }
-    } catch(e){ return `<div class="error-banner"><i class="fa-solid fa-triangle-exclamation"></i><div>${e.message}</div></div>`; }
+    } catch(e){ return `<div class="error-banner">${e.message}</div>`; }
   },
+
   dashboard(){
     const orders = DB.orders, users = DB.users, prods = DB.products;
-    const totalSales = orders.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+(o.total||0),0);
-    const pending = orders.filter(o=>o.status==='pending').length;
-    const lowStock = prods.filter(p=>p.stock<10).length;
-    const recent = orders.slice(0,6);
-    const topProducts = [...prods].sort((a,b)=>(b.reviewCount||0)-(a.reviewCount||0)).slice(0,5);
+    const sales = orders.filter(o => o.status !== 'cancelled').reduce((s, o) => s + (o.total||0), 0);
+    const counts = Orders.counts();
+    const lowStock = prods.filter(p => p.stock < 10).length;
     return `
+      ${Analytics.render()}
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-icon brand"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div><div class="stat-info"><p>${t('totalSales')}</p><h3>${money(totalSales)}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon brand"><i class="fa-solid fa-bangladeshi-taka-sign"></i></div><div class="stat-info"><p>${t('totalSales')}</p><h3>${money(sales)}</h3></div></div>
         <div class="stat-card"><div class="stat-icon success"><i class="fa-solid fa-cart-shopping"></i></div><div class="stat-info"><p>${t('totalOrders')}</p><h3>${orders.length}</h3></div></div>
         <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-users"></i></div><div class="stat-info"><p>${t('totalUsers')}</p><h3>${users.length}</h3></div></div>
         <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-box"></i></div><div class="stat-info"><p>${t('totalProducts')}</p><h3>${prods.length}</h3></div></div>
       </div>
       <div class="stat-grid">
-        <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><p>${t('pendingOrders')}</p><h3>${pending}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><p>${t('pendingOrders')}</p><h3>${counts.pending}</h3></div></div>
         <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="stat-info"><p>${t('lowStock')}</p><h3>${lowStock}</h3></div></div>
-        <div class="stat-card"><div class="stat-icon info"><i class="fa-solid fa-user-check"></i></div><div class="stat-info"><p>${t('activeUsers')}</p><h3>${users.filter(u=>!u.blocked).length}</h3></div></div>
+        <div class="stat-card"><div class="stat-icon info"><i class="fa-solid fa-user-check"></i></div><div class="stat-info"><p>${t('activeUsers')}</p><h3>${users.filter(u => !u.blocked).length}</h3></div></div>
       </div>
       <div class="admin-card">
         <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${t('recentOrders')}</h3><button class="btn btn-outline btn-sm" onclick="Admin.switchTab('orders')">${LANG==='bn'?'সব':'All'}</button></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th>${t('orderDate')}</th></tr></thead>
-            <tbody>${recent.length ? recent.map(o=>`<tr>
+            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th></th></tr></thead>
+            <tbody>${orders.slice(0,6).map(o => `<tr>
               <td><b>${o.id}</b></td>
               <td>${o.customer?.name||'—'}</td>
               <td>${money(o.total)}</td>
               <td><span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span></td>
-              <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
-              <td>${new Date(o.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</td>
-            </tr>`).join('') : `<tr><td colspan="6" class="muted">${t('noData')}</td></tr>`}</tbody>
-          </table>
-        </div>
-      </div>
-      <div class="admin-card">
-        <div class="admin-card-head"><h3><i class="fa-solid fa-trophy"></i> ${LANG==='bn'?'টপ পণ্য':'Top Products'}</h3></div>
-        <div class="admin-table-wrap">
-          <table class="admin-table">
-            <thead><tr><th></th><th>${t('productName')}</th><th>${t('price')}</th><th>${t('stock')}</th><th>${t('reviews')}</th></tr></thead>
-            <tbody>${topProducts.map(p=>`<tr>
-              <td><img class="thumb" src="${p.img}" onerror="this.src='https://via.placeholder.com/44'"></td>
-              <td><b>${p.name}</b></td>
-              <td>${money(p.price)}</td>
-              <td>${p.stock}</td>
-              <td>${starHTML(p.rating||0,'11px')} (${p.reviewCount||0})</td>
+              <td><span class="status-badge status-${o.status}">${Orders.statusLabel(o.status)}</span></td>
+              <td><div class="actions">
+                ${o.status === 'pending' ? `<button class="icon-btn-sm success" onclick="Admin.quickConfirm('${o.id}')"><i class="fa-solid fa-check"></i></button>` : ''}
+                <button class="icon-btn-sm" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button>
+                <button class="icon-btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button>
+                <button class="icon-btn-sm" onclick="WhatsApp.sendOrder(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer?.phone||''}')"><i class="fa-brands fa-whatsapp"></i></button>
+              </div></td>
             </tr>`).join('')}</tbody>
           </table>
         </div>
       </div>`;
   },
+
   products(){
-    const q = App._pQuery||'';
-    const list = DB.products.filter(p=> !q || (p.name+(p.nameEn||'')).toLowerCase().includes(q.toLowerCase()));
+    const q = App._pQuery || '';
+    const list = DB.products.filter(p => !q || (p.name + (p.nameEn||'')).toLowerCase().includes(q.toLowerCase()));
     return `
       <div class="admin-toolbar">
         <input placeholder="${t('productSearch')}" value="${q}" oninput="App._pQuery=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>Admin.refreshContent(),250)">
@@ -1827,204 +2557,87 @@ const Admin = {
         <div class="admin-card-head"><h3>${t('totalProducts')} (${list.length})</h3></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th></th><th>${t('productName')}</th><th>${t('category')}</th><th>${t('price')}</th><th>${t('discount')}</th><th>${t('stock')}</th><th></th></tr></thead>
-            <tbody>${list.length ? list.map(p=>`<tr>
+            <thead><tr><th></th><th>${t('productName')}</th><th>${t('category')}</th><th>${t('price')}</th><th>${t('stock')}</th><th></th></tr></thead>
+            <tbody>${list.map(p => `<tr>
               <td><img class="thumb" src="${p.img}" onerror="this.src='https://via.placeholder.com/44'"></td>
               <td><b>${p.name}</b><br><small style="color:var(--text-dim)">${p.nameEn||''}</small></td>
               <td><span class="chip">${p.cat}</span></td>
-              <td>${money(p.price)} ${p.oldPrice?`<br><small style="text-decoration:line-through;color:var(--text-soft)">${money(p.oldPrice)}</small>`:''}</td>
-              <td>${p.discount?`<span class="chip">-${p.discount}%</span>`:'—'}</td>
-              <td>${p.stock<=0?`<span class="chip blocked">${t('outOfStock')}</span>`:(p.stock<10?`<span class="chip" style="background:rgba(245,158,11,.15);color:#b45309">${p.stock}</span>`:`<span class="chip active-status">${p.stock}</span>`)}</td>
+              <td>${money(p.price)}</td>
+              <td>${p.stock<=0?`<span class="chip blocked">${t('outOfStock')}</span>`:`<span class="chip active-status">${p.stock}</span>`}</td>
               <td><div class="actions">
-                <button class="icon-btn-sm" onclick="Admin.openProductModal('${p.id}')" title="${t('edit')}"><i class="fa-solid fa-pen"></i></button>
-                <button class="icon-btn-sm danger" onclick="Admin.deleteProduct('${p.id}')" title="${t('delete')}"><i class="fa-solid fa-trash"></i></button>
+                <button class="icon-btn-sm" onclick="Admin.openProductModal('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+                <button class="icon-btn-sm danger" onclick="Admin.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
               </div></td>
-            </tr>`).join('') : `<tr><td colspan="7" class="muted">${t('noData')}</td></tr>`}</tbody>
+            </tr>`).join('')}</tbody>
           </table>
         </div>
       </div>`;
   },
+
   openProductModal(id){
-    const p = id ? DB.products.find(x=>x.id===id) : {name:'',nameEn:'',cat:'',catEn:'',price:'',oldPrice:'',discount:0,stock:'',img:'',images:[],desc:'',descEn:'',tags:[],featured:false};
-    const cats = DB.categories.length ? DB.categories : ['ইলেকট্রনিকস','গ্যাজেট','ফ্যাশন','ফটোগ্রাফি'];
-    const tags = (p.tags||[]).slice();
-    const images = (p.images||[]).slice();
+    const p = id ? DB.products.find(x => x.id === id) : { name:'', nameEn:'', cat:'', price:'', oldPrice:'', discount:0, stock:'', img:'', desc:'', tags:[], featured:false };
+    const cats = DB.categories.length ? DB.categories : ['ইলেকট্রনিকস','গ্যাজেট','ফ্যাশন'];
     Modal.open(`
       <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-head"><h3>${id?t('editProduct'):t('addProduct')}</h3></div>
       <div class="modal-body">
-        <div class="form-tabs">
-          <button class="active" data-tab="basic"><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'মূল তথ্য':'Basic'}</button>
-          <button data-tab="images"><i class="fa-solid fa-image"></i> ${t('images')}</button>
-          <button data-tab="pricing"><i class="fa-solid fa-tag"></i> ${t('price')}</button>
-          <button data-tab="extra"><i class="fa-solid fa-list"></i> ${LANG==='bn'?'অতিরিক্ত':'Extra'}</button>
+        <div class="form-row">
+          <div class="form-group"><label>${t('productName')} *</label><input id="pName" value="${p.name}"></div>
+          <div class="form-group"><label>${t('productNameEn')}</label><input id="pNameEn" value="${p.nameEn||''}"></div>
         </div>
-        <div class="form-tab-content active" data-content="basic">
-          <div class="form-row">
-            <div class="form-group"><label>${t('productName')} <span class="req">*</span></label><input id="pName" value="${p.name}"></div>
-            <div class="form-group"><label>${t('productNameEn')}</label><input id="pNameEn" value="${p.nameEn||''}"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>${t('category')} <span class="req">*</span></label><select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
-            <div class="form-group"><label>Category (EN)</label><input id="pCatEn" value="${p.catEn||''}"></div>
-          </div>
-          <div class="form-group"><label>${t('description')}</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
-          <div class="form-group"><label>${t('descriptionEn')}</label><textarea id="pDescEn" rows="3">${p.descEn||''}</textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label>${t('category')}</label><select id="pCat">${cats.map(c => `<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select></div>
+          <div class="form-group"><label>Category EN</label><input id="pCatEn" value="${p.catEn||''}"></div>
         </div>
-        <div class="form-tab-content" data-content="images">
-          <div class="form-group">
-            <label>${t('images')}</label>
-            <div class="img-upload">
-              <div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div>
-              <div class="upload-btn-wrap">
-                <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি':'Main Image'}</button>
-                <input type="file" id="imgFile" accept="image/*" style="display:none">
-                <div class="upload-hint">JPG, PNG, WebP — Max 32MB</div>
-                <div class="upload-progress" id="uploadProgress"><span></span></div>
-              </div>
+        <div class="form-group"><label>${t('description')}</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
+        <div class="form-group"><label>${t('images')}</label>
+          <div class="img-upload">
+            <div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div>
+            <div class="upload-btn-wrap">
+              <button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button>
+              <input type="file" id="imgFile" accept="image/*" style="display:none">
             </div>
-            <input type="hidden" id="pImg" value="${p.img||''}">
           </div>
-          <div class="form-group">
-            <label>${LANG==='bn'?'অতিরিক্ত ছবি':'Gallery'}</label>
-            <button type="button" class="upload-btn" id="uploadMultiBtn"><i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি':'Multiple Images'}</button>
-            <input type="file" id="imgMultiFile" accept="image/*" multiple style="display:none">
-            <div class="img-thumbs" id="imgThumbs">
-              ${images.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button>${i===0?'<span class="primary-tag">MAIN</span>':''}</div>`).join('')}
-            </div>
-            <input type="hidden" id="pImages" value='${JSON.stringify(images)}'>
-          </div>
+          <input type="hidden" id="pImg" value="${p.img||''}">
         </div>
-        <div class="form-tab-content" data-content="pricing">
-          <div class="form-row">
-            <div class="form-group"><label>${t('price')} (৳) <span class="req">*</span></label><input id="pPrice" type="number" value="${p.price}" min="0"></div>
-            <div class="form-group"><label>${t('oldPrice')} (৳)</label><input id="pOld" type="number" value="${p.oldPrice||''}" min="0"></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label>${t('discountPercent')}</label><input id="pDisc" type="number" value="${p.discount||0}" min="0" max="99"></div>
-            <div class="form-group"><label>${t('stock')} <span class="req">*</span></label><input id="pStock" type="number" value="${p.stock}" min="0"></div>
-          </div>
+        <div class="form-row">
+          <div class="form-group"><label>${t('price')} *</label><input id="pPrice" type="number" value="${p.price}"></div>
+          <div class="form-group"><label>${t('oldPrice')}</label><input id="pOld" type="number" value="${p.oldPrice||''}"></div>
         </div>
-        <div class="form-tab-content" data-content="extra">
-          <div class="form-group">
-            <label>${t('tags')}</label>
-            <div class="tag-input-wrap" id="tagWrap">
-              ${tags.map(t2=>`<span class="tag-pill" data-tag="${t2}">${t2}<button type="button" onclick="Admin.removeTag('${t2}')"><i class="fa-solid fa-xmark"></i></button></span>`).join('')}
-              <input id="tagInput" placeholder="${LANG==='bn'?'ট্যাগ লিখে Enter':'Type and Enter'}">
-            </div>
-            <input type="hidden" id="pTags" value='${JSON.stringify(tags)}'>
-          </div>
-          <div class="form-group">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
-              <input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto"><span>${t('featured_product')}</span>
-            </label>
-          </div>
+        <div class="form-row">
+          <div class="form-group"><label>${t('discountPercent')}</label><input id="pDisc" type="number" value="${p.discount||0}"></div>
+          <div class="form-group"><label>${t('stock')}</label><input id="pStock" type="number" value="${p.stock}"></div>
         </div>
+        <div class="form-group"><label style="display:flex;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto"><span>${t('featured_product')}</span></label></div>
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
         <button class="btn btn-primary btn-block" id="pSaveBtn" onclick="Admin.saveProduct('${id||''}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
       </div>
-    `, 'lg');
-    this.bindProductForm();
-  },
-  bindProductForm(){
-    document.querySelectorAll('.form-tabs button').forEach(btn=>{
-      btn.onclick = ()=>{
-        document.querySelectorAll('.form-tabs button').forEach(b=>b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.form-tab-content').forEach(c=>c.classList.remove('active'));
-        document.querySelector(`.form-tab-content[data-content="${btn.dataset.tab}"]`)?.classList.add('active');
-      };
-    });
+    `);
     const btn = document.getElementById('uploadBtn');
     const file = document.getElementById('imgFile');
     const prev = document.getElementById('imgPreview');
     const hidden = document.getElementById('pImg');
-    const prog = document.getElementById('uploadProgress');
     if(btn){
-      btn.onclick = ()=> file.click();
-      file.onchange = async ()=>{
+      btn.onclick = () => file.click();
+      file.onchange = async () => {
         const f = file.files[0]; if(!f) return;
-        const reader = new FileReader();
-        reader.onload = e => prev.innerHTML = `<img src="${e.target.result}">`;
-        reader.readAsDataURL(f);
-        btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-        prog.style.display='block'; prog.firstElementChild.style.width='40%';
+        const r = new FileReader();
+        r.onload = e => prev.innerHTML = `<img src="${e.target.result}">`;
+        r.readAsDataURL(f);
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner"></i>';
         try {
           const res = await ImageUpload.upload(f);
           hidden.value = res.url;
           prev.innerHTML = `<img src="${res.url}">`;
-          prog.firstElementChild.style.width='100%';
-          Toast.show(t('imageUploadSuccess'),'success');
-        } catch(err){ Toast.show(t('imageUploadFailed')+': '+err.message,'error'); }
-        finally {
-          btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up"></i> ${LANG==='bn'?'মূল ছবি':'Main Image'}`;
-          setTimeout(()=>{ prog.style.display='none'; prog.firstElementChild.style.width='0'; }, 800);
-        }
-      };
-    }
-    const mBtn = document.getElementById('uploadMultiBtn');
-    const mFile = document.getElementById('imgMultiFile');
-    const thumbs = document.getElementById('imgThumbs');
-    const mHidden = document.getElementById('pImages');
-    if(mBtn){
-      mBtn.onclick = ()=> mFile.click();
-      mFile.onchange = async ()=>{
-        const files = Array.from(mFile.files); if(!files.length) return;
-        mBtn.disabled = true;
-        let current = JSON.parse(mHidden.value || '[]');
-        let done = 0;
-        for(const f of files){
-          try {
-            const res = await ImageUpload.upload(f);
-            current.push(res.url); done++;
-            mBtn.innerHTML = `<i class="fa-solid fa-spinner"></i> (${done}/${files.length})`;
-            thumbs.innerHTML = current.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
-            mHidden.value = JSON.stringify(current);
-          } catch(e){}
-        }
-        mBtn.disabled = false;
-        mBtn.innerHTML = `<i class="fa-solid fa-images"></i> ${LANG==='bn'?'একাধিক ছবি':'Multiple Images'}`;
-        if(done) Toast.show(`${done} uploaded`,'success');
-      };
-    }
-    const tagInput = document.getElementById('tagInput');
-    const tagWrap = document.getElementById('tagWrap');
-    const tagsHidden = document.getElementById('pTags');
-    if(tagInput){
-      tagInput.onkeydown = (e)=>{
-        if(e.key==='Enter' || e.key===','){
-          e.preventDefault();
-          const val = tagInput.value.trim(); if(!val) return;
-          let tags = JSON.parse(tagsHidden.value || '[]');
-          if(!tags.includes(val)){
-            tags.push(val); tagsHidden.value = JSON.stringify(tags);
-            const pill = document.createElement('span');
-            pill.className = 'tag-pill'; pill.dataset.tag = val;
-            pill.innerHTML = `${val}<button type="button" onclick="Admin.removeTag('${val}')"><i class="fa-solid fa-xmark"></i></button>`;
-            tagWrap.insertBefore(pill, tagInput);
-          }
-          tagInput.value = '';
-        }
+          Toast.show('Uploaded','success');
+        } catch(e){ Toast.show('Failed','error'); }
+        btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-cloud-arrow-up"></i> Upload';
       };
     }
   },
-  removeImage(index){
-    const hidden = document.getElementById('pImages');
-    let imgs = JSON.parse(hidden.value || '[]');
-    imgs.splice(index, 1);
-    hidden.value = JSON.stringify(imgs);
-    const thumbs = document.getElementById('imgThumbs');
-    if(thumbs) thumbs.innerHTML = imgs.map((u,i)=>`<div class="img-thumb"><img src="${u}"><button class="remove-img" onclick="Admin.removeImage(${i})"><i class="fa-solid fa-xmark"></i></button></div>`).join('');
-  },
-  removeTag(tag){
-    const hidden = document.getElementById('pTags');
-    let tags = JSON.parse(hidden.value || '[]');
-    tags = tags.filter(x=>x!==tag);
-    hidden.value = JSON.stringify(tags);
-    document.querySelector(`.tag-pill[data-tag="${tag}"]`)?.remove();
-  },
+
   async saveProduct(id){
     const data = {
       id: id || '',
@@ -2036,208 +2649,537 @@ const Admin = {
       oldPrice: +document.getElementById('pOld').value || 0,
       discount: +document.getElementById('pDisc').value || 0,
       stock: +document.getElementById('pStock').value || 0,
-      img: document.getElementById('pImg').value.trim() || 'https://via.placeholder.com/300?text=No+Image',
-      images: JSON.parse(document.getElementById('pImages').value || '[]'),
+      img: document.getElementById('pImg').value.trim() || 'https://via.placeholder.com/300',
       desc: document.getElementById('pDesc').value.trim(),
-      descEn: document.getElementById('pDescEn').value.trim(),
-      tags: JSON.parse(document.getElementById('pTags').value || '[]'),
       featured: document.getElementById('pFeatured').checked
     };
     if(!data.name || !data.price){ Toast.show(t('fillAllFields'),'error'); return; }
-    if(!data.img || data.img.includes('placeholder')) data.img = data.images[0] || data.img;
-    const btn = document.getElementById('pSaveBtn');
-    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
     try { await DB.saveProduct(data); Modal.close(); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed: '+e.message,'error'); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('save')}`; }
+    catch(e){ Toast.show('Failed','error'); }
   },
-  deleteProduct(id){
-    Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteProduct(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } });
-  },
+  deleteProduct(id){ Modal.confirm(t('deleteConfirm'), async () => { try { await DB.deleteProduct(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){} }); },
+
+  /* ═══════ ORDERS — Advanced ═══════ */
   orders(){
-    const q = (App._oQuery||'').toLowerCase();
-    const list = DB.orders.filter(o=> !q || o.id.toLowerCase().includes(q) || (o.customer?.name||'').toLowerCase().includes(q));
+    App._orderFilter = App._orderFilter || { status:'all', payment:'all', search:'', from:'', to:'' };
+    App._selectedOrders = App._selectedOrders || [];
+    const f = App._orderFilter;
+    const counts = Orders.counts();
+    let list = DB.orders.slice();
+    if(f.status !== 'all') list = list.filter(o => o.status === f.status);
+    if(f.payment !== 'all') list = list.filter(o => (o.paymentMethod || 'cod') === f.payment);
+    if(f.search){
+      const s = f.search.toLowerCase();
+      list = list.filter(o =>
+        o.id.toLowerCase().includes(s) ||
+        (o.customer?.name || '').toLowerCase().includes(s) ||
+        (o.customer?.phone || '').includes(f.search)
+      );
+    }
+    if(f.from){ const from = new Date(f.from).getTime(); list = list.filter(o => o.date >= from); }
+    if(f.to){ const to = new Date(f.to).getTime() + 86400000; list = list.filter(o => o.date <= to); }
+    const selected = App._selectedOrders;
+    const isBn = LANG === 'bn';
     return `
-      <div class="admin-toolbar">
-        <input placeholder="${t('orderSearch')}" value="${App._oQuery||''}" oninput="App._oQuery=this.value;clearTimeout(window._oq);window._oq=setTimeout(()=>Admin.refreshContent(),250)">
+      <div class="stat-grid">
+        <div class="stat-card" onclick="App._orderFilter.status='pending';Admin.refreshContent()" style="cursor:pointer">
+          <div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div>
+          <div class="stat-info"><p>${Orders.statusLabel('pending')}</p><h3>${counts.pending}</h3></div>
+        </div>
+        <div class="stat-card" onclick="App._orderFilter.status='confirmed';Admin.refreshContent()" style="cursor:pointer">
+          <div class="stat-icon brand"><i class="fa-solid fa-check-circle"></i></div>
+          <div class="stat-info"><p>${Orders.statusLabel('confirmed')}</p><h3>${counts.confirmed}</h3></div>
+        </div>
+        <div class="stat-card" onclick="App._orderFilter.status='shipped';Admin.refreshContent()" style="cursor:pointer">
+          <div class="stat-icon info"><i class="fa-solid fa-truck"></i></div>
+          <div class="stat-info"><p>${Orders.statusLabel('shipped')}</p><h3>${counts.shipped}</h3></div>
+        </div>
+        <div class="stat-card" onclick="App._orderFilter.status='delivered';Admin.refreshContent()" style="cursor:pointer">
+          <div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div>
+          <div class="stat-info"><p>${Orders.statusLabel('delivered')}</p><h3>${counts.delivered}</h3></div>
+        </div>
       </div>
+
+      <div class="order-filter-panel">
+        <div class="order-filter-grid">
+          <div>
+            <label>${t('filterStatus')}</label>
+            <select onchange="App._orderFilter.status=this.value;Admin.refreshContent()">
+              <option value="all" ${f.status==='all'?'selected':''}>${isBn?'সব':'All'}</option>
+              ${Orders.STATUS_ALL.map(s => `<option value="${s}" ${f.status===s?'selected':''}>${Orders.statusLabel(s)} (${counts[s]||0})</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label>${t('filterPayment')}</label>
+            <select onchange="App._orderFilter.payment=this.value;Admin.refreshContent()">
+              <option value="all" ${f.payment==='all'?'selected':''}>${isBn?'সব':'All'}</option>
+              <option value="cod" ${f.payment==='cod'?'selected':''}>COD</option>
+              <option value="bkash" ${f.payment==='bkash'?'selected':''}>bKash</option>
+              <option value="nagad" ${f.payment==='nagad'?'selected':''}>Nagad</option>
+              <option value="rocket" ${f.payment==='rocket'?'selected':''}>Rocket</option>
+            </select>
+          </div>
+          <div>
+            <label>${t('filterFrom')}</label>
+            <input type="date" value="${f.from}" onchange="App._orderFilter.from=this.value;Admin.refreshContent()">
+          </div>
+          <div>
+            <label>${t('filterTo')}</label>
+            <input type="date" value="${f.to}" onchange="App._orderFilter.to=this.value;Admin.refreshContent()">
+          </div>
+          <div>
+            <label>${t('filterSearch')}</label>
+            <input placeholder="${isBn?'অর্ডার ID / নাম / ফোন':'Order ID / name / phone'}" value="${f.search}" oninput="App._orderFilter.search=this.value;clearTimeout(window._os);window._os=setTimeout(()=>Admin.refreshContent(),300)">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+          <button class="btn btn-outline btn-sm" onclick="App._orderFilter={status:'all',payment:'all',search:'',from:'',to:''};Admin.refreshContent()">
+            <i class="fa-solid fa-rotate-left"></i> ${t('filterReset')}
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="Admin.bulkPrint()">
+            <i class="fa-solid fa-print"></i> ${t('bulkPrint')} (${list.length})
+          </button>
+        </div>
+      </div>
+
+      ${selected.length ? `
+        <div class="bulk-bar">
+          <span><i class="fa-solid fa-check-square"></i> ${selected.length} ${t('bulkSelected')}</span>
+          <button class="btn btn-sm btn-success" onclick="Admin.bulkConfirm()"><i class="fa-solid fa-check"></i> ${t('bulkConfirm')}</button>
+          <button class="btn btn-sm btn-warning" onclick="Admin.bulkStatus('processing')"><i class="fa-solid fa-gears"></i> ${Orders.statusLabel('processing')}</button>
+          <button class="btn btn-sm" style="background:var(--info);color:#fff" onclick="Admin.bulkStatus('shipped')"><i class="fa-solid fa-truck"></i> ${Orders.statusLabel('shipped')}</button>
+          <button class="btn btn-sm btn-primary" onclick="Admin.bulkStatus('delivered')"><i class="fa-solid fa-circle-check"></i> ${Orders.statusLabel('delivered')}</button>
+          <button class="btn btn-sm btn-danger" onclick="Admin.bulkCancel()"><i class="fa-solid fa-ban"></i> ${t('bulkCancel')}</button>
+          <button class="btn btn-sm btn-outline" onclick="App._selectedOrders=[];Admin.refreshContent()">${t('cancel')}</button>
+        </div>
+      ` : ''}
+
       <div class="admin-card">
-        <div class="admin-card-head"><h3>${t('totalOrders')} (${list.length})</h3></div>
+        <div class="admin-card-head"><h3><i class="fa-solid fa-list"></i> ${isBn?'অর্ডার লিস্ট':'Order List'} (${list.length})</h3></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>${t('orderId')}</th><th>${t('customer')}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th></th></tr></thead>
-            <tbody>${list.length ? list.map(o=>`<tr>
-              <td><b>${o.id}</b><br><small style="color:var(--text-dim)">${new Date(o.date).toLocaleDateString(LANG==='bn'?'bn-BD':'en-US')}</small></td>
-              <td>${o.customer?.name||'—'}<br><small style="color:var(--text-dim)">${o.customer?.phone||''}</small></td>
-              <td><b>${money(o.total)}</b><br><small style="color:var(--text-dim)">Delivery: ${money(o.deliveryCharge||0)}</small></td>
-              <td><span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span>${o.txnId?`<br><small style="color:var(--text-dim);font-size:11px">${o.txnId}</small>`:''}</td>
-              <td><span class="status-badge status-${o.status}">${t(o.status)}</span></td>
-              <td><div class="actions">
-                <button class="icon-btn-sm" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button>
-                <button class="icon-btn-sm" onclick="Invoice.print('${o.id}')"><i class="fa-solid fa-print"></i></button>
-                <button class="icon-btn-sm danger" onclick="Admin.deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
-              </div></td>
-            </tr>`).join('') : `<tr><td colspan="6" class="muted">${t('noData')}</td></tr>`}</tbody>
+            <thead>
+              <tr>
+                <th style="width:40px"><input type="checkbox" class="bulk-checkbox" onchange="Admin.toggleAllOrders(this.checked, ${JSON.stringify(list.map(o=>o.id))})"></th>
+                <th>${t('orderId')}</th>
+                <th>${t('customer')}</th>
+                <th>${t('total')}</th>
+                <th>${t('paymentMethod')}</th>
+                <th>${t('orderStatus')}</th>
+                <th>${isBn?'অ্যাকশন':'Actions'}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${list.length ? list.map(o => `
+                <tr style="${o.status === 'pending' ? 'background:rgba(245,158,11,.05)' : ''}">
+                  <td><input type="checkbox" class="bulk-checkbox" data-order="${o.id}" ${selected.includes(o.id)?'checked':''} onchange="Admin.toggleOrderSelect('${o.id}', this.checked)"></td>
+                  <td><b style="font-family:var(--font-en)">${o.id}</b><br><small style="color:var(--text-dim);font-size:11px">${new Date(o.date).toLocaleDateString(isBn?'bn-BD':'en-US')}</small></td>
+                  <td><b>${o.customer?.name||'—'}</b><br><small style="color:var(--text-dim);font-size:11px">${o.customer?.phone||''}</small></td>
+                  <td><b style="font-family:var(--font-en)">${money(o.total)}</b><br><small style="color:var(--text-dim);font-size:11px">${(o.items||[]).length} items</small></td>
+                  <td><span class="payment-badge ${o.paymentMethod||'cod'}">${(o.paymentMethod||'cod').toUpperCase()}</span>${o.txnId?`<br><small style="font-size:10.5px;color:var(--text-dim)">${o.txnId.slice(0,12)}</small>`:''}</td>
+                  <td><span class="status-badge status-${o.status}"><i class="fa-solid ${Orders.statusIcon(o.status)}"></i> ${Orders.statusLabel(o.status)}</span></td>
+                  <td><div class="order-quick-actions">
+                    ${o.status === 'pending' ? `<button class="icon-btn-sm success" title="Confirm" onclick="Admin.quickConfirm('${o.id}')"><i class="fa-solid fa-check"></i></button>` : ''}
+                    <button class="icon-btn-sm info" title="View" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button>
+                    <button class="icon-btn-sm" title="PDF" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button>
+                    <button class="icon-btn-sm" title="WhatsApp" onclick="WhatsApp.sendOrder(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer?.phone||''}')"><i class="fa-brands fa-whatsapp"></i></button>
+                    ${!['delivered','cancelled','rejected'].includes(o.status) ? `<button class="icon-btn-sm danger" title="Cancel" onclick="Admin.quickCancel('${o.id}')"><i class="fa-solid fa-ban"></i></button>` : ''}
+                  </div></td>
+                </tr>
+              `).join('') : `<tr><td colspan="7" class="muted">${t('noData')}</td></tr>`}
+            </tbody>
           </table>
         </div>
       </div>`;
   },
+
   openOrderModal(id){
-    const o = DB.orders.find(x=>x.id===id); if(!o) return;
+    const o = DB.orders.find(x => x.id === id);
+    if(!o) return;
+    const isBn = LANG === 'bn';
+    const statusFlow = Orders.STATUS_FLOW;
+    const idx = statusFlow.indexOf(o.status);
+    const isCancelled = ['cancelled', 'rejected'].includes(o.status);
     Modal.open(`
       <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-head"><h3><i class="fa-solid fa-receipt"></i> ${o.id}</h3></div>
       <div class="modal-body">
-        <div style="background:var(--surface-2);padding:14px;border-radius:12px;margin-bottom:14px">
-          <b style="font-size:14px">${o.customer.name}</b>
-          <p style="font-size:12.5px;color:var(--text-dim);margin-top:4px">${o.customer.phone||''} • ${o.customer.address||''}${o.customer.city?', '+o.customer.city:''}</p>
-        </div>
-        <div class="form-group">
-          <label>${t('orderStatus')}</label>
-          <select id="aoStatus">${['pending','confirmed','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${t(s)}</option>`).join('')}</select>
-        </div>
-        <div class="form-group">
-          <label>${t('adminComment')} <span class="optional">${t('adminCommentOptional')}</span></label>
-          <textarea id="aoComment" rows="2" placeholder="${t('commentPlaceholder')}"></textarea>
-        </div>
-        <div class="form-group">
-          <label>${t('deliveryChargeEdit')} (৳)</label>
-          <input id="aoDelivery" type="number" value="${o.deliveryCharge||0}" min="0">
-          <div class="delivery-edit-hint"><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন করলে সর্বমোট আপডেট হবে':'Total will auto-update'}</div>
-        </div>
-        <div class="form-group">
-          <label>${t('paymentInfo')}</label>
-          <div style="background:var(--surface-2);padding:12px;border-radius:10px;font-size:13px">
-            <div><b>Method:</b> ${(o.paymentMethod||'cod').toUpperCase()}</div>
-            ${o.txnId?`<div style="margin-top:4px"><b>Txn ID:</b> ${o.txnId}</div>`:''}
-            ${o.screenshot?`<div style="margin-top:8px"><b>Screenshot:</b><br><img src="${o.screenshot}" style="max-width:120px;margin-top:6px;border-radius:8px;cursor:pointer" onclick="window.open('${o.screenshot}','_blank')"></div>`:''}
+        ${!isCancelled ? `
+          <div class="order-timeline" style="margin-bottom:20px">
+            ${statusFlow.map((s, i) => `
+              <div class="timeline-step ${i < idx ? 'done' : ''} ${i === idx ? 'current' : ''}">
+                ${i < statusFlow.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                <div class="dot"><i class="fa-solid ${i <= idx ? 'fa-check' : Orders.statusIcon(s)}"></i></div>
+                <div class="label">${Orders.statusLabel(s)}</div>
+              </div>
+            `).join('')}
+          </div>
+        ` : `
+          <div style="background:rgba(239,68,68,.08);border-left:3px solid var(--danger);padding:12px 16px;border-radius:10px;margin-bottom:16px">
+            <b style="color:var(--danger)"><i class="fa-solid fa-ban"></i> ${Orders.statusLabel(o.status)}</b>
+            ${(o.history||[]).slice(-1)[0]?.comment ? `<p style="font-size:12.5px;margin-top:4px;color:var(--text-dim)">${(o.history||[]).slice(-1)[0].comment}</p>` : ''}
+          </div>
+        `}
+
+        <div class="admin-card" style="margin-bottom:14px;padding:14px">
+          <h5 style="font-size:12px;font-weight:800;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px"><i class="fa-solid fa-exchange"></i> ${t('changeStatus')}</h5>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            ${Orders.STATUS_ALL.map(s => `
+              <button class="chip ${o.status===s?'active-status':''}" style="cursor:pointer;border:${o.status===s?'2px solid var(--brand)':'1px solid var(--border)'};background:${o.status===s?'var(--brand-50)':'var(--surface)'}" onclick="Admin.setOrderStatus('${o.id}', '${s}')">
+                <i class="fa-solid ${Orders.statusIcon(s)}"></i> ${Orders.statusLabel(s)}
+              </button>
+            `).join('')}
+          </div>
+          <div class="form-group" style="margin:0">
+            <label>${isBn?'কমেন্ট (ঐচ্ছিক)':'Comment (optional)'}</label>
+            <input id="aoComment" placeholder="${isBn?'কাস্টমারের জন্য কমেন্ট...':'Comment for customer...'}">
           </div>
         </div>
-        ${o.history && o.history.length ? `<div class="form-group"><label>History</label><div style="font-size:12px;line-height:1.8">${o.history.map(h=>`<div>• ${new Date(h.time).toLocaleString(LANG==='bn'?'bn-BD':'en-US')} — <b>${t(h.status)}</b>${h.comment?` <i style="color:var(--text-dim)">— ${h.comment}</i>`:''}</div>`).join('')}</div></div>`:''}
+
+        <div class="order-detail-grid">
+          <div class="order-detail-section">
+            <h5><i class="fa-solid fa-user"></i> ${t('customerInfo')}</h5>
+            <div class="detail-row"><span>${isBn?'নাম':'Name'}</span><span>${o.customer.name}</span></div>
+            <div class="detail-row"><span>${isBn?'ফোন':'Phone'}</span><span>${o.customer.phone}</span></div>
+            <div class="detail-row"><span>${isBn?'ঠিকানা':'Address'}</span><span>${o.customer.address}${o.customer.city?', '+o.customer.city:''}</span></div>
+          </div>
+
+          <div class="order-detail-section">
+            <h5><i class="fa-solid fa-credit-card"></i> ${t('paymentDetails')}</h5>
+            <div class="detail-row"><span>${isBn?'পদ্ধতি':'Method'}</span><span>${(o.paymentMethod||'cod').toUpperCase()}</span></div>
+            <div class="detail-row"><span>Status</span><span>${o.paymentStatus||'—'}</span></div>
+            ${o.txnId?`<div class="detail-row"><span>Txn ID</span><span>${o.txnId}</span></div>`:''}
+            ${o.screenshot?`<div style="margin-top:10px"><img src="${o.screenshot}" style="max-width:100%;border-radius:10px;cursor:pointer" onclick="window.open('${o.screenshot}','_blank')"></div>`:''}
+          </div>
+
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-money-bill"></i> ${t('amounts')}</h5>
+            <div class="form-row">
+              <div class="form-group" style="margin:0"><label>${t('deliveryCharge')}</label><input type="number" id="aoDelivery" value="${o.deliveryCharge||0}" min="0"></div>
+              <div class="form-group" style="margin:0"><label>${t('discount')}</label><input type="number" id="aoDiscount" value="${o.discount||0}" min="0"></div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+              <button class="btn btn-outline btn-sm" onclick="Admin.recalcOrder('${o.id}')"><i class="fa-solid fa-calculator"></i> ${t('recalculate')}</button>
+              <span style="font-weight:800;font-size:16px;color:var(--brand)">${t('total')}: <span id="aoTotal">${money(o.total)}</span></span>
+            </div>
+          </div>
+
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-truck-fast"></i> ${isBn?'ডেলিভারি তথ্য':'Delivery Info'}</h5>
+            <div class="form-row">
+              <div class="form-group" style="margin:0"><label>${t('courier')}</label><input id="aoCourier" value="${o.courier||''}" placeholder="Pathao / Steadfast"></div>
+              <div class="form-group" style="margin:0"><label>${t('trackingNumber')}</label><input id="aoTracking" value="${o.trackingNumber||''}"></div>
+            </div>
+            <div class="form-group" style="margin-top:10px"><label>${t('eta')}</label><input id="aoEta" value="${o.eta||''}" placeholder="${isBn?'২-৩ দিন':'2-3 days'}"></div>
+          </div>
+
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-box"></i> ${t('orderItems')}</h5>
+            <div class="order-items-list">
+              ${(o.items||[]).map(it => {
+                const p = DB.products.find(x => x.id === it.id);
+                return `<div class="order-item-row">
+                  <img src="${p?p.img:''}" onerror="this.src='https://via.placeholder.com/48'">
+                  <div class="order-item-info"><h6>${it.name}</h6><p>${it.qty} × ${money(it.price)}</p></div>
+                  <span class="order-item-price">${money(it.qty * it.price)}</span>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>
+
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-lock"></i> ${t('internalNotes')}</h5>
+            ${(o.internalNotes||[]).length ? `<div style="margin-bottom:10px">
+              ${(o.internalNotes||[]).slice().reverse().map(n => `
+                <div style="background:var(--surface);padding:8px 12px;border-radius:8px;margin-bottom:6px;border-left:3px solid var(--warning)">
+                  <p style="font-size:12.5px">${n.text}</p>
+                  <small style="font-size:10.5px;color:var(--text-soft)">${new Date(n.time).toLocaleString(isBn?'bn-BD':'en-US')} • ${n.by||'Admin'}</small>
+                </div>
+              `).join('')}
+            </div>` : ''}
+            <div style="display:flex;gap:8px">
+              <input id="aoNote" placeholder="${t('writeNote')}" style="flex:1">
+              <button class="btn btn-primary btn-sm" onclick="Admin.addNote('${o.id}')"><i class="fa-solid fa-plus"></i></button>
+            </div>
+          </div>
+
+          <div class="order-detail-section" style="grid-column:1/-1">
+            <h5><i class="fa-solid fa-clock-rotate-left"></i> ${t('orderHistory')}</h5>
+            <ul class="order-history">
+              ${(o.history||[]).slice().reverse().map((h, i) => `
+                <li class="${i===0?'current':''}">
+                  <span class="h-dot"></span>
+                  <h6>${Orders.statusLabel(h.status)}</h6>
+                  <small>${new Date(h.time).toLocaleString(isBn?'bn-BD':'en-US')}${h.by?' • '+h.by:''}</small>
+                  ${h.comment?`<div class="h-comment">${h.comment}</div>`:''}
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>
       </div>
       <div class="modal-foot">
-        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-pdf btn-block" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        <button class="btn btn-whatsapp btn-block" onclick="WhatsApp.sendOrder(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
         <button class="btn btn-primary btn-block" onclick="Admin.saveOrderChanges('${o.id}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
       </div>
     `, 'lg');
   },
-  async saveOrderChanges(id){
-    const status = document.getElementById('aoStatus').value;
-    const comment = document.getElementById('aoComment').value.trim();
-    const delivery = +document.getElementById('aoDelivery').value || 0;
-    const o = DB.orders.find(x=>x.id===id); if(!o) return;
-    try {
-      if(delivery !== (o.deliveryCharge||0)) await Orders.updateDeliveryCharge(id, delivery);
-      const o2 = DB.orders.find(x=>x.id===id);
-      if(status !== o2.status || comment) await Orders.updateStatus(id, status, comment);
-      Modal.close();
-      Toast.show(t('saveSuccess'),'success');
-      Admin.refreshContent();
-    } catch(e){ Toast.show('Failed: '+e.message,'error'); }
+
+  setOrderStatus(id, status){
+    const defaults = {
+      confirmed: t('confirmedByAdmin'),
+      processing: t('processingStarted'),
+      shipped: t('shippedByCourier'),
+      out_for_delivery: t('outForDelivery'),
+      delivered: t('deliveredSuccess'),
+      cancelled: t('cancelledByAdmin'),
+      rejected: t('rejectedByAdmin')
+    };
+    const comment = defaults[status] || '';
+    Modal.confirm(
+      LANG === 'bn' ? `স্ট্যাটাস পরিবর্তন করে "${Orders.statusLabel(status)}" করবেন?` : `Change status to "${Orders.statusLabel(status)}"?`,
+      async () => {
+        try {
+          if(status === 'rejected') await Orders.reject(id, comment);
+          else if(status === 'cancelled') await Orders.cancel(id, comment);
+          else await Orders.updateStatus(id, status, comment);
+          Toast.show(LANG === 'bn' ? 'স্ট্যাটাস আপডেট হয়েছে' : 'Status updated', 'success');
+          Modal.close();
+          Admin.refreshContent();
+        } catch(e){ Toast.show('Failed: ' + e.message, 'error'); }
+      }
+    );
   },
-  deleteOrder(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await Orders.remove(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
+
+  async quickConfirm(id){
+    try {
+      await Orders.updateStatus(id, 'confirmed', t('confirmedByAdmin'));
+      Toast.show(LANG === 'bn' ? '✅ অর্ডার কনফার্ম হয়েছে' : '✅ Order confirmed', 'success');
+      Admin.refreshContent();
+    } catch(e){ Toast.show('Failed', 'error'); }
+  },
+
+  quickCancel(id){
+    const isBn = LANG === 'bn';
+    Modal.open(`
+      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-head"><h3><i class="fa-solid fa-ban"></i> ${t('cancelOrder')}</h3></div>
+      <div class="modal-body">
+        <div class="form-group"><label>${t('cancelReason')}</label><textarea id="cancelReason" rows="3" placeholder="${t('writeReason')}"></textarea></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
+        <button class="btn btn-danger btn-block" onclick="Admin.confirmCancel('${id}')"><i class="fa-solid fa-ban"></i> ${t('confirmCancelAction')}</button>
+      </div>
+    `);
+  },
+
+  async confirmCancel(id){
+    const reason = document.getElementById('cancelReason').value.trim() || t('noReasonGiven');
+    try {
+      await Orders.cancel(id, reason);
+      Toast.show(LANG === 'bn' ? 'অর্ডার বাতিল হয়েছে' : 'Order cancelled', 'success');
+      Modal.close();
+      Admin.refreshContent();
+    } catch(e){ Toast.show('Failed', 'error'); }
+  },
+
+  toggleOrderSelect(id, checked){
+    App._selectedOrders = App._selectedOrders || [];
+    if(checked && !App._selectedOrders.includes(id)) App._selectedOrders.push(id);
+    else if(!checked) App._selectedOrders = App._selectedOrders.filter(x => x !== id);
+    Admin.refreshContent();
+  },
+
+  toggleAllOrders(checked, allIds){
+    App._selectedOrders = checked ? [...allIds] : [];
+    Admin.refreshContent();
+  },
+
+  async bulkConfirm(){
+    const ids = App._selectedOrders || []; if(!ids.length) return;
+    Modal.confirm(LANG === 'bn' ? `${ids.length}টি অর্ডার কনফার্ম করবেন?` : `Confirm ${ids.length} orders?`, async () => {
+      try {
+        for(const id of ids) await Orders.updateStatus(id, 'confirmed', t('confirmedByAdmin'));
+        Toast.show(LANG === 'bn' ? `${ids.length}টি অর্ডার কনফার্ম হয়েছে` : `${ids.length} orders confirmed`, 'success');
+        App._selectedOrders = [];
+        Admin.refreshContent();
+      } catch(e){ Toast.show('Failed', 'error'); }
+    });
+  },
+
+  async bulkStatus(status){
+    const ids = App._selectedOrders || []; if(!ids.length) return;
+    Modal.confirm(LANG === 'bn' ? `${ids.length}টি অর্ডার "${Orders.statusLabel(status)}" করবেন?` : `Change ${ids.length} orders to "${Orders.statusLabel(status)}"?`, async () => {
+      try {
+        for(const id of ids) await Orders.updateStatus(id, status, 'Bulk update');
+        Toast.show(LANG === 'bn' ? 'আপডেট সফল' : 'Updated', 'success');
+        App._selectedOrders = [];
+        Admin.refreshContent();
+      } catch(e){ Toast.show('Failed', 'error'); }
+    });
+  },
+
+  async bulkCancel(){
+    const ids = App._selectedOrders || []; if(!ids.length) return;
+    Modal.confirm(LANG === 'bn' ? `${ids.length}টি অর্ডার বাতিল করবেন?` : `Cancel ${ids.length} orders?`, async () => {
+      try {
+        for(const id of ids) await Orders.cancel(id, t('cancelledByAdmin'));
+        Toast.show(LANG === 'bn' ? 'বাতিল সফল' : 'Cancelled', 'success');
+        App._selectedOrders = [];
+        Admin.refreshContent();
+      } catch(e){ Toast.show('Failed', 'error'); }
+    });
+  },
+
+  bulkPrint(){
+    const f = App._orderFilter || {};
+    let list = DB.orders.slice();
+    if(f.status && f.status !== 'all') list = list.filter(o => o.status === f.status);
+    if(!list.length){ Toast.show(LANG === 'bn' ? 'কোনো অর্ডার নেই' : 'No orders', 'warning'); return; }
+    Admin.printOrders(list);
+  },
+
+  printOrders(orders){
+    const w = window.open('', '_blank', 'width=900,height=1000');
+    const isBn = LANG === 'bn';
+    w.document.write(`
+      <!DOCTYPE html>
+      <html><head><meta charset="UTF-8"><title>Orders Print</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:${isBn?"'Hind Siliguri',":""}sans-serif;padding:20px;color:#0f1021}
+        .head{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:20px}
+        .head h1{font-size:22px;margin-bottom:4px}
+        .head p{font-size:12px;opacity:.9}
+        .order-block{background:#fff;border:1px solid #e5e8f0;border-radius:12px;padding:18px;margin-bottom:16px;page-break-inside:avoid}
+        .order-head{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:10px;margin-bottom:12px}
+        .order-head h3{font-size:16px;font-family:monospace}
+        .order-info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;font-size:13px}
+        .order-info div{margin-bottom:4px}
+        .order-info b{font-size:11px;color:#64748b;text-transform:uppercase;display:block;margin-bottom:2px}
+        table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+        th,td{padding:8px;text-align:left;border-bottom:1px solid #e5e8f0}
+        th{background:#f8f9fd;font-size:10px;text-transform:uppercase}
+        .total-row{text-align:right;margin-top:10px;font-size:14px;font-weight:800;color:#6366f1}
+        .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:800;text-transform:uppercase;background:#eef2ff;color:#6366f1}
+        .print-bar{position:fixed;top:20px;right:20px;z-index:100}
+        .print-bar button{padding:10px 18px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}
+        @media print{.print-bar{display:none}}
+      </style></head><body>
+      <div class="print-bar"><button onclick="window.print()">🖨️ Print All</button></div>
+      <div class="head">
+        <h1>EcoShop Pro MAX — ${isBn?'অর্ডার লিস্ট':'Orders List'}</h1>
+        <p>${orders.length} ${isBn?'টি অর্ডার':'orders'} • ${new Date().toLocaleString(isBn?'bn-BD':'en-US')}</p>
+      </div>
+      ${orders.map(o => `
+        <div class="order-block">
+          <div class="order-head"><h3>${o.id}</h3><span class="badge">${Orders.statusLabel(o.status)}</span></div>
+          <div class="order-info">
+            <div><b>${isBn?'কাস্টমার':'Customer'}</b>${o.customer.name}</div>
+            <div><b>${isBn?'ফোন':'Phone'}</b>${o.customer.phone||''}</div>
+            <div style="grid-column:1/-1"><b>${isBn?'ঠিকানা':'Address'}</b>${o.customer.address}${o.customer.city?', '+o.customer.city:''}</div>
+            <div><b>${isBn?'তারিখ':'Date'}</b>${new Date(o.date).toLocaleString(isBn?'bn-BD':'en-US')}</div>
+            <div><b>${isBn?'পেমেন্ট':'Payment'}</b>${(o.paymentMethod||'cod').toUpperCase()}</div>
+          </div>
+          <table>
+            <thead><tr><th>${isBn?'পণ্য':'Item'}</th><th>${isBn?'পরিমাণ':'Qty'}</th><th>${isBn?'দর':'Price'}</th><th>${isBn?'মোট':'Total'}</th></tr></thead>
+            <tbody>${(o.items||[]).map(it => `<tr><td>${it.name}</td><td>${it.qty}</td><td>৳${it.price}</td><td>৳${it.qty*it.price}</td></tr>`).join('')}</tbody>
+          </table>
+          <div class="total-row">${isBn?'সর্বমোট':'Grand Total'}: ৳${o.total}</div>
+        </div>
+      `).join('')}
+      </body></html>
+    `);
+    w.document.close();
+    setTimeout(() => w.print(), 500);
+  },
+
+  recalcOrder(id){
+    const o = DB.orders.find(x => x.id === id); if(!o) return;
+    const delivery = +document.getElementById('aoDelivery').value || 0;
+    const discount = +document.getElementById('aoDiscount').value || 0;
+    const newTotal = (o.subtotal||0) + delivery - discount;
+    document.getElementById('aoTotal').textContent = money(newTotal);
+    Toast.show(LANG === 'bn' ? 'রিক্যালকুলেট হয়েছে' : 'Recalculated', 'info', 1500);
+  },
+
+  async addNote(id){
+    const inp = document.getElementById('aoNote'); if(!inp) return;
+    const text = inp.value.trim(); if(!text) return;
+    try {
+      await Orders.addNote(id, text);
+      Toast.show(LANG === 'bn' ? 'নোট যোগ হয়েছে' : 'Note added', 'success');
+      Admin.openOrderModal(id);
+    } catch(e){ Toast.show('Failed', 'error'); }
+  },
+
+  async saveOrderChanges(id){
+    const o = DB.orders.find(x => x.id === id); if(!o) return;
+    const comment = document.getElementById('aoComment')?.value.trim() || '';
+    const delivery = +document.getElementById('aoDelivery').value || 0;
+    const discount = +document.getElementById('aoDiscount').value || 0;
+    const courier = document.getElementById('aoCourier')?.value.trim() || '';
+    const tracking = document.getElementById('aoTracking')?.value.trim() || '';
+    const eta = document.getElementById('aoEta')?.value.trim() || '';
+    try {
+      const newTotal = (o.subtotal||0) + delivery - discount;
+      const history = (o.history||[]).concat([{
+        status: o.status, time: Date.now(),
+        comment: comment || t('updatedByAdmin'),
+        by: (Auth.user() && Auth.user().name) || 'Admin'
+      }]);
+      await Orders.update(id, {
+        deliveryCharge: delivery,
+        discount,
+        total: newTotal,
+        courier: courier || null,
+        trackingNumber: tracking || null,
+        eta: eta || null,
+        history
+      });
+      Toast.show(LANG === 'bn' ? 'সেভ হয়েছে' : 'Saved', 'success');
+      Modal.close();
+      Admin.refreshContent();
+    } catch(e){ Toast.show('Failed: ' + e.message, 'error'); }
+  },
+
+  deleteOrder(id){ Modal.confirm(t('deleteConfirm'), async () => { try { await Orders.remove(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){} }); },
+
   users(){
     const q = (App._uQuery||'').toLowerCase();
-    const list = DB.users.filter(u=> !q || (u.name+u.email).toLowerCase().includes(q));
-    const selected = App._selectedUsers || [];
+    const list = DB.users.filter(u => !q || (u.name + u.email).toLowerCase().includes(q));
     return `
       <div class="admin-toolbar">
         <input placeholder="${t('userSearch')}" value="${App._uQuery||''}" oninput="App._uQuery=this.value;clearTimeout(window._uq);window._uq=setTimeout(()=>Admin.refreshContent(),250)">
-        <button class="btn btn-primary" onclick="Admin.openUserModal()"><i class="fa-solid fa-user-plus"></i> ${t('addUser')}</button>
       </div>
-      ${selected.length ? `<div class="bulk-bar">
-        <span>${selected.length} ${t('selected')}</span>
-        <button class="btn btn-sm btn-danger" onclick="Admin.bulkAction('delete')"><i class="fa-solid fa-trash"></i> ${t('delete')}</button>
-        <button class="btn btn-sm btn-warning" onclick="Admin.bulkAction('block')"><i class="fa-solid fa-ban"></i> ${t('block')}</button>
-        <button class="btn btn-sm btn-success" onclick="Admin.bulkAction('unblock')"><i class="fa-solid fa-check"></i> ${t('unblock')}</button>
-        <button class="btn btn-sm btn-outline" onclick="App._selectedUsers=[];Admin.refreshContent()">${t('cancel')}</button>
-      </div>` : ''}
       <div class="admin-card">
         <div class="admin-card-head"><h3>${t('totalUsers')} (${list.length})</h3></div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr>
-              <th><input type="checkbox" onchange="Admin.toggleAllUsers(this.checked)"></th>
-              <th></th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('role')}</th><th>${t('active')}</th><th></th>
-            </tr></thead>
-            <tbody>${list.length ? list.map(u=>`<tr>
-              <td><input type="checkbox" ${selected.includes(u.id)?'checked':''} onchange="Admin.toggleUser('${u.id}', this.checked)"></td>
+            <thead><tr><th></th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('role')}</th><th>${t('active')}</th><th></th></tr></thead>
+            <tbody>${list.map(u => `<tr>
               <td><img class="thumb" style="border-radius:50%" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U'"></td>
               <td><b>${u.name}</b></td>
               <td>${u.email}</td>
               <td><span class="chip ${u.role==='admin'?'active-status':''}">${u.role}</span></td>
               <td>${u.blocked?`<span class="chip blocked">${t('blocked')}</span>`:`<span class="chip active-status">${t('active')}</span>`}</td>
               <td><div class="actions">
-                <button class="icon-btn-sm" onclick="Admin.openUserModal('${u.id}')"><i class="fa-solid fa-pen"></i></button>
                 <button class="icon-btn-sm ${u.blocked?'success':''}" onclick="Admin.toggleBlock('${u.id}')"><i class="fa-solid ${u.blocked?'fa-unlock':'fa-ban'}"></i></button>
                 ${u.role!=='admin'?`<button class="icon-btn-sm danger" onclick="Admin.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>`:''}
               </div></td>
-            </tr>`).join('') : `<tr><td colspan="7" class="muted">${t('noData')}</td></tr>`}</tbody>
+            </tr>`).join('')}</tbody>
           </table>
         </div>
       </div>`;
   },
-  toggleUser(id, checked){
-    const sel = App._selectedUsers || [];
-    if(checked && !sel.includes(id)) sel.push(id);
-    else if(!checked) sel.splice(sel.indexOf(id),1);
-    App._selectedUsers = sel; this.refreshContent();
-  },
-  toggleAllUsers(checked){ App._selectedUsers = checked ? DB.users.map(u=>u.id) : []; this.refreshContent(); },
-  bulkAction(type){
-    const ids = App._selectedUsers || []; if(!ids.length) return;
-    Modal.confirm(`${ids.length} ${t('selected')}?`, async ()=>{
-      for(const id of ids){
-        const u = DB.users.find(x=>x.id===id);
-        if(!u || u.role==='admin') continue;
-        try { if(type==='delete') await DB.deleteUser(id); else await DB.updateUser(id, { blocked: type==='block' }); } catch(e){}
-      }
-      App._selectedUsers = []; Toast.show(t('saveSuccess'),'success');
-    });
-  },
-  openUserModal(id){
-    const u = id ? DB.users.find(x=>x.id===id) : {name:'',email:'',password:'',phone:'',role:'customer'};
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3>${id?t('editUser'):t('addUser')}</h3></div>
-      <div class="modal-body">
-        <div class="form-group"><label>${t('fullName')}</label><input id="uName" value="${u.name}"></div>
-        <div class="form-group"><label>${t('email')}</label><input id="uEmail" type="email" value="${u.email}"></div>
-        <div class="form-group"><label>${t('phone')}</label><input id="uPhone" value="${u.phone||''}"></div>
-        <div class="form-group"><label>${t('password')}</label><input id="uPass" value="${u.password}"></div>
-        <div class="form-group"><label>${t('role')}</label>
-          <select id="uRole">
-            <option value="customer" ${u.role==='customer'?'selected':''}>${t('customer')}</option>
-            <option value="admin" ${u.role==='admin'?'selected':''}>${t('adminRole')}</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-foot">
-        <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button>
-        <button class="btn btn-primary btn-block" onclick="Admin.saveUser('${id||''}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
-      </div>
-    `);
-  },
-  async saveUser(id){
-    const name = document.getElementById('uName').value.trim();
-    const email = Auth.normalizeEmail(document.getElementById('uEmail').value);
-    const password = document.getElementById('uPass').value.trim();
-    const phone = document.getElementById('uPhone').value.trim();
-    const role = document.getElementById('uRole').value;
-    if(!name || !email || !password){ Toast.show(t('fillAllFields'),'error'); return; }
-    if(!id && DB.users.find(x=>Auth.normalizeEmail(x.email)===email)){ Toast.show(t('emailExists'),'error'); return; }
-    const existing = id ? DB.users.find(x=>x.id===id) : null;
-    const data = { id, name, email, phone, password, role,
-      blocked: existing?.blocked || false,
-      joined: existing?.joined || Date.now(),
-      avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff` };
-    try { await DB.saveUser(data); Modal.close(); Toast.show(t('saveSuccess'),'success'); }
-    catch(e){ Toast.show('Failed: '+e.message,'error'); }
-  },
   async toggleBlock(id){
-    const u = DB.users.find(x=>x.id===id); if(!u || u.role==='admin') return;
-    try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
+    const u = DB.users.find(x => x.id === id); if(!u || u.role === 'admin') return;
+    try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(t('saveSuccess'),'success'); } catch(e){}
   },
-  deleteUser(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteUser(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
+  deleteUser(id){ Modal.confirm(t('deleteConfirm'), async () => { try { await DB.deleteUser(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){} }); },
+
   categories(){
     const keys = Object.entries(DB.catRaw);
     return `
@@ -2248,18 +3190,17 @@ const Admin = {
           <button class="btn btn-primary" onclick="Admin.addCat()"><i class="fa-solid fa-plus"></i> ${t('addCategory')}</button>
         </div>
         <div class="chips-wrap">
-          ${keys.length ? keys.map(([k,v])=>`<div class="chip-large">${v}<button onclick="Admin.delCat('${k}')"><i class="fa-solid fa-xmark"></i></button></div>`).join('') : `<p class="muted">${t('noData')}</p>`}
+          ${keys.map(([k, v]) => `<div class="chip-large">${v}<button onclick="Admin.delCat('${k}')"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}
         </div>
       </div>`;
   },
   async addCat(){
     const v = document.getElementById('newCat').value.trim(); if(!v) return;
-    if(DB.categories.includes(v)) return Toast.show(t('emailExists'),'warning');
-    try { await DB.saveCategory(v); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
+    try { await DB.saveCategory(v); Toast.show(t('saveSuccess'),'success'); } catch(e){}
   },
-  delCat(key){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteCategory(key); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } }); },
+  delCat(key){ Modal.confirm(t('deleteConfirm'), async () => { try { await DB.deleteCategory(key); } catch(e){} }); },
+
   coupons(){
-    const list = DB.coupons;
     return `
       <div class="admin-card">
         <div class="admin-card-head"><h3><i class="fa-solid fa-ticket"></i> ${t('coupons')}</h3></div>
@@ -2271,13 +3212,13 @@ const Admin = {
         </div>
         <div class="admin-table-wrap">
           <table class="admin-table">
-            <thead><tr><th>${t('couponCode')}</th><th>${t('role')}</th><th>${t('price')}</th><th></th></tr></thead>
-            <tbody>${list.length ? list.map(c=>`<tr>
+            <thead><tr><th>${t('couponCode')}</th><th>Type</th><th>Value</th><th></th></tr></thead>
+            <tbody>${DB.coupons.map(c => `<tr>
               <td><b>${c.code}</b></td>
               <td><span class="chip">${c.type}</span></td>
-              <td>${c.type==='percent'?c.value+'%':money(c.value)}</td>
+              <td>${c.type === 'percent' ? c.value + '%' : money(c.value)}</td>
               <td><button class="icon-btn-sm danger" onclick="Admin.delCoupon('${c.id}')"><i class="fa-solid fa-trash"></i></button></td>
-            </tr>`).join('') : `<tr><td colspan="4" class="muted">${t('noData')}</td></tr>`}</tbody>
+            </tr>`).join('')}</tbody>
           </table>
         </div>
       </div>`;
@@ -2286,385 +3227,205 @@ const Admin = {
     const code = document.getElementById('cCode').value.trim().toUpperCase();
     const type = document.getElementById('cType').value;
     const value = +document.getElementById('cVal').value;
-    if(!code || !value) return Toast.show(t('fillAllFields'),'error');
-    if(DB.coupons.find(c=>c.code===code)) return Toast.show(t('emailExists'),'warning');
-    try { await DB.saveCoupon({ code, type, value }); Toast.show(t('saveSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); }
+    if(!code || !value){ Toast.show(t('fillAllFields'),'error'); return; }
+    try { await DB.saveCoupon({ code, type, value }); Toast.show(t('saveSuccess'),'success'); } catch(e){}
   },
-  async delCoupon(id){ try { await DB.deleteCoupon(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){ Toast.show('Failed','error'); } },
+  async delCoupon(id){ try { await DB.deleteCoupon(id); } catch(e){} },
+
   settings(){
     const s = DB.settings;
     return `
       <div class="admin-card">
-        <div class="settings-section">
-          <h4><i class="fa-solid fa-globe"></i> ${LANG==='bn'?'সাইট তথ্য':'Site Info'}</h4>
-          <div class="form-group"><label>${t('siteName')}</label><input id="stName" value="${s.siteName||''}"></div>
-          <div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${s.supportPhone||''}"></div>
-          <div class="form-group"><label>${t('email')}</label><input id="stEmail" value="${s.supportEmail||''}"></div>
+        <div class="admin-card-head"><h3><i class="fa-solid fa-gear"></i> ${t('settings')}</h3></div>
+        <div class="form-group"><label>${t('siteName')}</label><input id="stName" value="${s.siteName||''}"></div>
+        <div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${s.supportPhone||''}"></div>
+        <div class="form-group"><label>WhatsApp Number</label><input id="stWhatsapp" value="${s.whatsappNumber||''}" placeholder="8801700000000"></div>
+        <div class="form-row">
+          <div class="form-group"><label>${t('insideDhaka')} (৳)</label><input id="stShipIn" type="number" value="${s.shippingInsideDhaka||100}"></div>
+          <div class="form-group"><label>${t('outsideDhaka')} (৳)</label><input id="stShipOut" type="number" value="${s.shippingOutsideDhaka||120}"></div>
         </div>
-        <div class="settings-section">
-          <h4><i class="fa-solid fa-truck"></i> ${LANG==='bn'?'ডেলিভারি চার্জ':'Delivery'}</h4>
-          <div class="form-row">
-            <div class="form-group"><label>${t('insideDhaka')} (৳)</label><input id="stShipIn" type="number" value="${s.shippingInsideDhaka||100}"></div>
-            <div class="form-group"><label>${t('outsideDhaka')} (৳)</label><input id="stShipOut" type="number" value="${s.shippingOutsideDhaka||120}"></div>
-          </div>
-        </div>
-        <div class="settings-section">
-          <h4><i class="fa-solid fa-mobile-screen"></i> ${t('paymentNumberConfig')}</h4>
-          <div class="form-group"><label>${t('bkash')} ${t('paymentNumber')}</label><input id="stBkash" value="${s.bkashNumber||''}"></div>
-          <div class="form-group"><label>${t('nagad')} ${t('paymentNumber')}</label><input id="stNagad" value="${s.nagadNumber||''}"></div>
-          <div class="form-group"><label>${t('rocket')} ${t('paymentNumber')}</label><input id="stRocket" value="${s.rocketNumber||''}"></div>
-        </div>
-        <div class="settings-section">
-          <h4><i class="fa-solid fa-toggle-on"></i> ${LANG==='bn'?'পেমেন্ট চালু/বন্ধ':'Enable Payments'}</h4>
-          <div style="display:grid;gap:10px">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stCOD" ${s.enableCOD?'checked':''} style="width:auto"><b>${t('cod')}</b></label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stBkashEn" ${s.enableBkash?'checked':''} style="width:auto"><b>${t('bkash')}</b></label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stNagadEn" ${s.enableNagad?'checked':''} style="width:auto"><b>${t('nagad')}</b></label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px;background:var(--surface-2);border-radius:10px"><input type="checkbox" id="stRocketEn" ${s.enableRocket?'checked':''} style="width:auto"><b>${t('rocket')}</b></label>
-          </div>
-        </div>
-        <div class="settings-save-bar">
-          <span><i class="fa-solid fa-circle-info"></i> ${LANG==='bn'?'পরিবর্তন সেভ করুন':'Save'}</span>
-          <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
-        </div>
-      </div>
-      <div class="admin-card">
-        <div class="admin-card-head"><h3><i class="fa-solid fa-database"></i> ${t('exportData')}</h3></div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button class="btn btn-danger" onclick="Admin.resetAll()"><i class="fa-solid fa-trash"></i> ${t('resetAll')}</button>
-          <button class="btn btn-outline" onclick="Admin.exportData()"><i class="fa-solid fa-download"></i> ${t('exportData')}</button>
-        </div>
+        <div class="form-group"><label>${t('bkash')} ${t('paymentNumber')}</label><input id="stBkash" value="${s.bkashNumber||''}"></div>
+        <div class="form-group"><label>${t('nagad')} ${t('paymentNumber')}</label><input id="stNagad" value="${s.nagadNumber||''}"></div>
+        <div class="form-group"><label>${t('rocket')} ${t('paymentNumber')}</label><input id="stRocket" value="${s.rocketNumber||''}"></div>
+        <button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button>
       </div>`;
   },
   async saveSettings(){
     const settings = {
+      ...DB.settings,
       siteName: document.getElementById('stName').value.trim(),
       supportPhone: document.getElementById('stPhone').value.trim(),
-      supportEmail: document.getElementById('stEmail').value.trim(),
+      whatsappNumber: document.getElementById('stWhatsapp').value.trim(),
       shippingInsideDhaka: +document.getElementById('stShipIn').value || 100,
       shippingOutsideDhaka: +document.getElementById('stShipOut').value || 120,
       bkashNumber: document.getElementById('stBkash').value.trim(),
       nagadNumber: document.getElementById('stNagad').value.trim(),
-      rocketNumber: document.getElementById('stRocket').value.trim(),
-      enableCOD: document.getElementById('stCOD').checked,
-      enableBkash: document.getElementById('stBkashEn').checked,
-      enableNagad: document.getElementById('stNagadEn').checked,
-      enableRocket: document.getElementById('stRocketEn').checked
+      rocketNumber: document.getElementById('stRocket').value.trim()
     };
-    try { await DB.saveSettings(settings); Toast.show(t('settingsSaved'),'success'); }
-    catch(e){ Toast.show('Failed: '+e.message,'error'); }
+    try { await DB.saveSettings(settings); Toast.show(t('settingsSaved'),'success'); } catch(e){ Toast.show('Failed','error'); }
   },
-  resetAll(){
-    Modal.confirm(t('resetConfirm'), async ()=>{
-      try { await db.ref().set({ settings: DEFAULT_SETTINGS }); localStorage.clear(); location.reload(); }
-      catch(e){ Toast.show('Failed','error'); }
-    });
-  },
-  exportData(){
-    const data = { products:DB.products, users:DB.users, orders:DB.orders, categories:DB.categories, coupons:DB.coupons, reviews:DB.reviews, settings:DB.settings };
-    const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `ecoshop-backup-${Date.now()}.json`; a.click();
-    Toast.show(t('saveSuccess'),'success');
-  },
-  refreshContent(){
-    const el = document.getElementById('adminContent');
-    if(el) el.innerHTML = this.render(App._adminTab||'dashboard');
-  }
+  refreshContent(){ const el = document.getElementById('adminContent'); if(el) el.innerHTML = this.render(App._adminTab||'dashboard'); }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   Password Reset — EmailJS OTP based
+   Password Reset
    ═══════════════════════════════════════════════════════════ */
 const PasswordReset = {
-  step: 1,
-  email: null,
-  otpCode: null,
-  otpExpiresAt: 0,
-  otpAttempts: 0,
-  cooldownTimer: null,
-  verified: false,
+  step: 1, email: null, otpCode: null, otpExpiresAt: 0, otpAttempts: 0,
+  cooldownTimer: null, verified: false,
 
-  open(){
-    this.reset();
-    this.step = 1;
-    this.renderModal();
-  },
+  open(){ this.reset(); this.step = 1; this.renderModal(); },
+  close(){ Modal.close(); this.reset(); if(this.cooldownTimer) clearInterval(this.cooldownTimer); },
+  reset(){ this.step = 1; this.email = null; this.otpCode = null; this.otpExpiresAt = 0; this.otpAttempts = 0; this.verified = false; },
+  renderModal(){ if(this.step === 1) this.renderStep1(); else if(this.step === 2) this.renderStep2(); else this.renderStep3(); },
 
-  close(){
-    Modal.close();
-    this.reset();
-    if(this.cooldownTimer){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
-  },
-
-  reset(){
-    this.step = 1;
-    this.email = null;
-    this.otpCode = null;
-    this.otpExpiresAt = 0;
-    this.otpAttempts = 0;
-    this.verified = false;
-  },
-
-  renderModal(){
-    if(this.step === 1) this.renderStep1();
-    else if(this.step === 2) this.renderStep2();
-    else this.renderStep3();
-  },
-
-  /* ───────── Step 1: Email ───────── */
   renderStep1(){
     Modal.open(`
       <button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head">
-        <h3><i class="fa-solid fa-key"></i> ${t('resetPassword')}</h3>
-      </div>
+      <div class="modal-head"><h3><i class="fa-solid fa-key"></i> ${t('resetPassword')}</h3></div>
       <div class="modal-body">
-        <div class="pr-steps">
-          <div class="pr-step active"><span>1</span><label>${t('stepEmail')}</label></div>
-          <div class="pr-step-line"></div>
-          <div class="pr-step"><span>2</span><label>${t('stepOtp')}</label></div>
-          <div class="pr-step-line"></div>
-          <div class="pr-step"><span>3</span><label>${t('stepNew')}</label></div>
+        <div class="reg-steps">
+          <div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">${t('stepEmail')}</span></div>
+          <div class="reg-step-line"></div>
+          <div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">${t('stepOtp')}</span></div>
+          <div class="reg-step-line"></div>
+          <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div>
         </div>
-
         <p class="pr-desc">${t('resetPasswordDesc')}</p>
-
         <div class="form-group">
           <label>${t('email')}</label>
-          <div class="input-wrap">
-            <i class="fa-solid fa-envelope input-icon"></i>
-            <input type="email" id="prEmail" placeholder="you@example.com" autocomplete="email" autofocus>
-          </div>
+          <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="prEmail" placeholder="you@example.com" autofocus></div>
           <div class="form-hint" id="prEmailHint"></div>
         </div>
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button>
-        <button class="btn btn-primary btn-block" id="prSendBtn" onclick="PasswordReset.sendOTP()">
-          <i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}
-        </button>
+        <button class="btn btn-primary btn-block" id="prSendBtn" onclick="PasswordReset.sendOTP()"><i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}</button>
       </div>
     `);
-
-    const inp = document.getElementById('prEmail');
-    if(inp){
-      inp.focus();
-      inp.addEventListener('keydown', e=>{ if(e.key==='Enter') PasswordReset.sendOTP(); });
-    }
+    setTimeout(() => {
+      const inp = document.getElementById('prEmail');
+      if(inp){ inp.focus(); inp.addEventListener('keydown', e => { if(e.key === 'Enter') PasswordReset.sendOTP(); }); }
+    }, 100);
   },
 
   async sendOTP(){
     const inp = document.getElementById('prEmail');
     const hint = document.getElementById('prEmailHint');
     const email = Auth.normalizeEmail(inp ? inp.value : '');
-
     if(!email){ Toast.show(t('invalidEmail'),'error'); return; }
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ Toast.show(t('invalidEmail'),'error'); return; }
-
-    if(!DB.ready.users){
-      if(hint){ hint.textContent = t('dataLoadingWait'); hint.style.color = 'var(--text-dim)'; }
-      Toast.show(t('dataLoadingWait'),'warning',3000);
-      return;
-    }
-
-    const user = (DB.users || []).find(u => Auth.normalizeEmail(u.email) === email);
+    if(!DB.ready.users){ if(hint){ hint.textContent = t('dataLoadingWait'); } return; }
+    const user = DB.users.find(u => Auth.normalizeEmail(u.email) === email);
     if(!user){
       if(hint){ hint.textContent = t('noAccountWithEmail'); hint.style.color = 'var(--danger)'; }
-      Toast.show(t('noAccountWithEmail'),'error',4000);
-      return;
+      Toast.show(t('noAccountWithEmail'),'error'); return;
     }
-
-    if(user.blocked){
-      if(hint){ hint.textContent = t('accountBlocked'); hint.style.color = 'var(--danger)'; }
-      Toast.show(t('accountBlocked'),'error');
-      return;
-    }
-
-    const code = String(Math.floor(100000 + Math.random() * 900000));
-    this.email = email;
-    this.otpCode = code;
+    const code = OTP.generate();
+    this.email = email; this.otpCode = code;
     this.otpExpiresAt = Date.now() + 10 * 60 * 1000;
-    this.otpAttempts = 0;
-    this.verified = false;
-
-    if(!OTP.init()){
-      Toast.show(LANG==='bn'?'EmailJS লোড হয়নি':'EmailJS not loaded','error',5000);
-      return;
-    }
-
+    this.otpAttempts = 0; this.verified = false;
+    if(!OTP.init()){ Toast.show('EmailJS not loaded','error'); return; }
     const btn = document.getElementById('prSendBtn');
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
-
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
     try {
-      await emailjs.send(
-        EmailJSConfig.serviceId,
-        EmailJSConfig.templateId,
-        {
-          to_email: this.email,
-          email: this.email,
-          user_email: this.email,
-          reply_to: this.email,
-          otp_code: code,
-          code: code,
-          otp: code,
-          user_name: user.name || 'User',
-          name: user.name || 'User',
-          site_name: 'EcoShop Pro MAX',
-          expiry: '10 minutes'
-        }
-      );
-      console.log('✅ Reset OTP sent to', this.email);
-      Toast.show(t('otpSent'),'success',4000);
-
-      this.step = 2;
-      this.renderModal();
-      setTimeout(()=>{
-        const first = document.querySelector('.otp-inputs input[data-idx="0"]');
-        if(first) first.focus();
-        this.startCooldown(60);
-      }, 250);
+      await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, {
+        to_email: this.email, email: this.email, reply_to: this.email,
+        otp_code: code, code: code, user_name: user.name, site_name: 'EcoShop Pro MAX'
+      });
+      Toast.show(t('otpSent'),'success');
+      this.step = 2; this.renderModal();
+      setTimeout(() => { document.querySelector('.otp-inputs input[data-idx="0"]')?.focus(); this.startCooldown(60); }, 250);
     } catch(err){
-      console.error('❌ Send failed:', err);
-      const msg = err?.text || err?.message || 'Failed';
-      Toast.show(t('otpFailed') + ': ' + msg,'error',6000);
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}`;
+      Toast.show(t('otpFailed') + ': ' + (err?.text || err?.message || 'Failed'), 'error', 6000);
+      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}`;
     }
   },
 
-  /* ───────── Step 2: OTP ───────── */
   renderStep2(){
-    const masked = OTP.maskEmail(this.email);
     Modal.open(`
       <button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head">
-        <h3><i class="fa-solid fa-shield-halved"></i> ${t('verifyOTP')}</h3>
-      </div>
+      <div class="modal-head"><h3><i class="fa-solid fa-shield-halved"></i> ${t('verifyOTP')}</h3></div>
       <div class="modal-body">
-        <div class="pr-steps">
-          <div class="pr-step done"><span><i class="fa-solid fa-check"></i></span><label>${t('stepEmail')}</label></div>
-          <div class="pr-step-line done"></div>
-          <div class="pr-step active"><span>2</span><label>${t('stepOtp')}</label></div>
-          <div class="pr-step-line"></div>
-          <div class="pr-step"><span>3</span><label>${t('stepNew')}</label></div>
+        <div class="reg-steps">
+          <div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepEmail')}</span></div>
+          <div class="reg-step-line done"></div>
+          <div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">${t('stepOtp')}</span></div>
+          <div class="reg-step-line"></div>
+          <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div>
         </div>
-
         <div class="otp-header">
           <div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
           <h3>${t('verifyEmail')}</h3>
-          <p>${t('weSentCode')}<br><b>${masked}</b></p>
+          <p>${t('weSentCode')}<br><b>${OTP.maskEmail(this.email)}</b></p>
         </div>
-
         <div class="otp-inputs" id="otpInputs">
-          <input type="text" inputmode="numeric" maxlength="1" data-idx="0" autocomplete="one-time-code" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-          <input type="text" inputmode="numeric" maxlength="1" data-idx="1" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-          <input type="text" inputmode="numeric" maxlength="1" data-idx="2" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-          <input type="text" inputmode="numeric" maxlength="1" data-idx="3" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-          <input type="text" inputmode="numeric" maxlength="1" data-idx="4" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-          <input type="text" inputmode="numeric" maxlength="1" data-idx="5" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+          ${[0,1,2,3,4,5].map(i => `<input type="text" inputmode="numeric" maxlength="1" data-idx="${i}" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">`).join('')}
         </div>
-
         <div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div>
       </div>
       <div class="modal-foot">
-        <div style="display:flex;gap:10px;flex-wrap:wrap;width:100%">
-          <button class="btn btn-outline" style="flex:1;min-width:100px" onclick="PasswordReset.backToStep1()">
-            <i class="fa-solid fa-arrow-left"></i> ${t('back')}
-          </button>
-          <button class="btn btn-outline" style="flex:1;min-width:100px" id="prResendBtn" onclick="PasswordReset.resendOTP()" disabled>
-            <i class="fa-solid fa-rotate-right"></i> <span id="prResendText">${t('resendOTP')}</span>
-          </button>
-          <button class="btn btn-primary" style="flex:1;min-width:140px" id="prVerifyBtn" onclick="PasswordReset.verifyOTP()">
-            <i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}
-          </button>
-        </div>
+        <button class="btn btn-outline" style="flex:1" onclick="PasswordReset.backToStep1()"><i class="fa-solid fa-arrow-left"></i> ${t('back')}</button>
+        <button class="btn btn-outline" style="flex:1" id="prResendBtn" onclick="PasswordReset.resendOTP()" disabled>${t('resendOTP')}</button>
+        <button class="btn btn-primary" style="flex:1" onclick="PasswordReset.verifyOTP()"><i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}</button>
       </div>
     `);
-    setTimeout(()=>{
-      const first = document.querySelector('.otp-inputs input[data-idx="0"]');
-      if(first) first.focus();
-    }, 200);
+    setTimeout(() => document.querySelector('.otp-inputs input[data-idx="0"]')?.focus(), 200);
   },
 
-  async verifyOTP(){
+  verifyOTP(){
     const code = AuthUI.getOTPValue();
     if(code.length !== 6){ Toast.show(t('enterFullCode'),'warning'); return; }
-
-    if(!this.otpCode){ Toast.show(LANG==='bn'?'আগে কোড পাঠান':'Send code first','error'); return; }
-    if(Date.now() > this.otpExpiresAt){ Toast.show(LANG==='bn'?'কোডের মেয়াদ শেষ':'Code expired','error'); return; }
-    if(this.otpAttempts >= 5){ Toast.show(LANG==='bn'?'অনেকবার ভুল, আবার পাঠান':'Too many attempts','error'); return; }
+    if(!this.otpCode){ Toast.show('Send code first','error'); return; }
+    if(Date.now() > this.otpExpiresAt){ Toast.show('Code expired','error'); return; }
+    if(this.otpAttempts >= 5){ Toast.show('Too many attempts','error'); return; }
     if(code !== this.otpCode){
       this.otpAttempts++;
-      Toast.show(LANG==='bn'?`ভুল কোড (${5-this.otpAttempts} বার বাকি)`:`Wrong code (${5-this.otpAttempts} left)`,'error');
-      document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.add('error'));
-      setTimeout(()=>document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.remove('error')),500);
+      Toast.show(`Wrong code (${5 - this.otpAttempts} left)`,'error');
       return;
     }
-
     this.verified = true;
     Toast.show(t('codeVerified'),'success');
-    this.step = 3;
-    this.renderModal();
+    this.step = 3; this.renderModal();
   },
 
   startCooldown(seconds){
     const btn = document.getElementById('prResendBtn');
-    const txt = document.getElementById('prResendText');
-    if(!btn || !txt) return;
+    if(!btn) return;
     btn.disabled = true;
-    txt.textContent = `${t('resendOTP')} (${seconds}s)`;
     if(this.cooldownTimer) clearInterval(this.cooldownTimer);
-    this.cooldownTimer = setInterval(()=>{
+    this.cooldownTimer = setInterval(() => {
       seconds--;
       if(seconds <= 0){
         clearInterval(this.cooldownTimer);
         this.cooldownTimer = null;
         btn.disabled = false;
-        txt.textContent = t('resendOTP');
+        btn.textContent = t('resendOTP');
       } else {
-        txt.textContent = `${t('resendOTP')} (${seconds}s)`;
+        btn.textContent = `${t('resendOTP')} (${seconds}s)`;
       }
     }, 1000);
   },
 
   async resendOTP(){
     if(!this.email){ this.backToStep1(); return; }
-
-    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const code = OTP.generate();
     this.otpCode = code;
     this.otpExpiresAt = Date.now() + 10 * 60 * 1000;
     this.otpAttempts = 0;
-
     const btn = document.getElementById('prResendBtn');
-    const txt = document.getElementById('prResendText');
-    if(btn){ btn.disabled = true; }
-    if(txt){ txt.textContent = t('otpSending'); }
-
+    if(btn){ btn.disabled = true; btn.textContent = t('otpSending'); }
     try {
-      const user = (DB.users || []).find(u => Auth.normalizeEmail(u.email) === this.email);
-      await emailjs.send(
-        EmailJSConfig.serviceId,
-        EmailJSConfig.templateId,
-        {
-          to_email: this.email,
-          email: this.email,
-          reply_to: this.email,
-          otp_code: code,
-          code: code,
-          user_name: user ? user.name : 'User',
-          site_name: 'EcoShop Pro MAX',
-          expiry: '10 minutes'
-        }
-      );
+      const user = DB.users.find(u => Auth.normalizeEmail(u.email) === this.email);
+      await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, {
+        to_email: this.email, email: this.email, reply_to: this.email,
+        otp_code: code, code: code, user_name: user?.name || 'User', site_name: 'EcoShop Pro MAX'
+      });
       Toast.show(t('otpSent'),'success');
       AuthUI.clearOTPInputs();
       this.startCooldown(60);
     } catch(err){
-      console.error(err);
-      Toast.show(t('otpFailed') + ': ' + (err?.text || err?.message || 'Failed'),'error',6000);
-      if(btn){ btn.disabled = false; }
-      if(txt){ txt.textContent = t('resendOTP'); }
+      Toast.show('Failed: ' + (err?.text || err?.message || ''),'error');
+      if(btn){ btn.disabled = false; btn.textContent = t('resendOTP'); }
     }
   },
 
@@ -2672,52 +3433,33 @@ const PasswordReset = {
     this.step = 1;
     if(this.cooldownTimer){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
     this.renderModal();
-    setTimeout(()=>{
-      const inp = document.getElementById('prEmail');
-      if(inp && this.email) inp.value = this.email;
-      if(inp) inp.focus();
-    }, 100);
   },
 
-  /* ───────── Step 3: New Password ───────── */
   renderStep3(){
     Modal.open(`
       <button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head">
-        <h3><i class="fa-solid fa-lock"></i> ${t('newPassword2')}</h3>
-      </div>
+      <div class="modal-head"><h3><i class="fa-solid fa-lock"></i> ${t('newPassword2')}</h3></div>
       <div class="modal-body">
-        <div class="pr-steps">
-          <div class="pr-step done"><span><i class="fa-solid fa-check"></i></span><label>${t('stepEmail')}</label></div>
-          <div class="pr-step-line done"></div>
-          <div class="pr-step done"><span><i class="fa-solid fa-check"></i></span><label>${t('stepOtp')}</label></div>
-          <div class="pr-step-line done"></div>
-          <div class="pr-step active"><span>3</span><label>${t('stepNew')}</label></div>
+        <div class="reg-steps">
+          <div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepEmail')}</span></div>
+          <div class="reg-step-line done"></div>
+          <div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepOtp')}</span></div>
+          <div class="reg-step-line done"></div>
+          <div class="reg-step active"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div>
         </div>
-
         <div class="form-group">
           <label>${t('newPassword2')}</label>
           <div class="input-wrap">
             <i class="fa-solid fa-lock input-icon"></i>
-            <input type="password" id="prNewPass" required minlength="6" autocomplete="new-password" placeholder="••••••" oninput="AuthUI.checkPwd(this.value)">
+            <input type="password" id="prNewPass" placeholder="••••••" oninput="AuthUI.checkPwd(this.value)">
             <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass', this)"><i class="fa-solid fa-eye"></i></button>
           </div>
-          <div class="pwd-strength">
-            <div class="pwd-bars">
-              <div class="pwd-bar" id="pwdBar1"></div>
-              <div class="pwd-bar" id="pwdBar2"></div>
-              <div class="pwd-bar" id="pwdBar3"></div>
-              <div class="pwd-bar" id="pwdBar4"></div>
-            </div>
-            <div class="pwd-text" id="pwdText">${LANG==='bn'?'পাসওয়ার্ড শক্তি':'Password strength'}</div>
-          </div>
         </div>
-
         <div class="form-group">
           <label>${t('confirmPassword')}</label>
           <div class="input-wrap">
             <i class="fa-solid fa-lock input-icon"></i>
-            <input type="password" id="prNewPass2" required autocomplete="new-password" placeholder="••••••">
+            <input type="password" id="prNewPass2" placeholder="••••••">
             <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass2', this)"><i class="fa-solid fa-eye"></i></button>
           </div>
           <div class="form-error" id="prPassError">${t('passwordMismatch')}</div>
@@ -2725,105 +3467,69 @@ const PasswordReset = {
       </div>
       <div class="modal-foot">
         <button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button>
-        <button class="btn btn-primary btn-block" id="prUpdateBtn" onclick="PasswordReset.updatePassword()">
-          <i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}
-        </button>
+        <button class="btn btn-primary btn-block" id="prUpdateBtn" onclick="PasswordReset.updatePassword()"><i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}</button>
       </div>
     `);
-    setTimeout(()=>{
-      const p = document.getElementById('prNewPass');
-      if(p) p.focus();
-    }, 200);
+    setTimeout(() => document.getElementById('prNewPass')?.focus(), 200);
   },
 
   async updatePassword(){
     const p1 = document.getElementById('prNewPass').value;
     const p2 = document.getElementById('prNewPass2').value;
     const err = document.getElementById('prPassError');
-
     if(!p1 || !p2){ Toast.show(t('fillAllFields'),'error'); return; }
     if(p1.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
-    if(p1 !== p2){
-      err.classList.add('show');
-      Toast.show(t('passwordMismatch'),'error');
-      return;
-    }
+    if(p1 !== p2){ err.classList.add('show'); Toast.show(t('passwordMismatch'),'error'); return; }
     err.classList.remove('show');
-
-    if(!this.verified){
-      Toast.show(t('verifyCodeFirst'),'error');
-      return;
-    }
-
+    if(!this.verified){ Toast.show(t('verifyCodeFirst'),'error'); return; }
     const btn = document.getElementById('prUpdateBtn');
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
-
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
     try {
-      const user = (DB.users || []).find(u => Auth.normalizeEmail(u.email) === this.email);
+      const user = DB.users.find(u => Auth.normalizeEmail(u.email) === this.email);
       if(!user) throw new Error('User not found');
-
-      await DB.updateUser(user.id, { password: p1, passwordUpdatedAt: Date.now() });
-      console.log('✅ Password updated for', this.email);
-
+      await DB.updateUser(user.id, { password: p1 });
       const emailForLogin = this.email;
       Modal.open(`
         <div style="padding:32px 24px;text-align:center">
-          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--success),var(--success-dark));color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 18px;box-shadow:0 12px 32px rgba(16,185,129,.35);">
+          <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);color:#fff;display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 18px">
             <i class="fa-solid fa-check"></i>
           </div>
-          <h3 style="font-size:19px;font-weight:800;margin-bottom:8px;color:var(--text)">${t('passwordUpdated')}</h3>
+          <h3 style="font-size:19px;font-weight:800;margin-bottom:8px">${t('passwordUpdated')}</h3>
           <p style="font-size:13.5px;color:var(--text-dim);line-height:1.6;margin-bottom:22px">${t('passwordUpdatedDesc')}</p>
-          <button class="btn btn-primary btn-block" onclick="PasswordReset.finishAndLogin('${emailForLogin}')">
-            <i class="fa-solid fa-right-to-bracket"></i> ${t('loginNow')}
-          </button>
+          <button class="btn btn-primary btn-block" onclick="PasswordReset.finishAndLogin('${emailForLogin}')"><i class="fa-solid fa-right-to-bracket"></i> ${t('loginNow')}</button>
         </div>
       `);
       this.reset();
     } catch(e){
-      console.error('Update failed:', e);
-      Toast.show(t('updateFailed') + ': ' + e.message,'error',5000);
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}`;
+      Toast.show(t('updateFailed') + ': ' + e.message, 'error');
+      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}`;
     }
   },
 
-  finishAndLogin(emailToFill){
+  finishAndLogin(email){
     Modal.close();
-    App._authTab = 'login';
-    App._otpStep = null;
-    App._pendingReg = null;
-    OTP.reset();
-    this.reset();
+    App._authTab = 'login'; App._otpStep = null; App._pendingReg = null;
+    OTP.reset(); this.reset();
     App.go('auth');
-    setTimeout(()=>{
-      const eInp = document.getElementById('authEmail');
-      const pInp = document.getElementById('authPass');
-      if(eInp){ eInp.value = emailToFill || ''; }
-      if(pInp){ pInp.value = ''; pInp.focus(); }
+    setTimeout(() => {
+      const e = document.getElementById('authEmail'); if(e) e.value = email || '';
+      document.getElementById('authPass')?.focus();
     }, 150);
   }
 };
 
 /* ═══════════════════════════════════════════════════════════
-   AuthUI — OTP Registration + Password Reset link
+   AuthUI
    ═══════════════════════════════════════════════════════════ */
 const AuthUI = {
   tab(which){
-    App._authTab = which;
-    App._otpStep = null;
-    App._pendingReg = null;
+    App._authTab = which; App._otpStep = null; App._pendingReg = null;
     OTP.reset();
-
-    document.getElementById('tabLogin').classList.toggle('active', which==='login');
-    document.getElementById('tabReg').classList.toggle('active', which==='reg');
-    document.getElementById('authForm').innerHTML = which==='login'
+    document.getElementById('tabLogin').classList.toggle('active', which === 'login');
+    document.getElementById('tabReg').classList.toggle('active', which === 'reg');
+    document.getElementById('authForm').innerHTML = which === 'login'
       ? this.loginForm(App._authRedirect || 'home')
       : this.regForm(App._authRedirect || 'home');
-
-    if(which==='reg'){
-      setTimeout(()=>{ const e = document.getElementById('regEmail'); if(e && e.value) this.checkEmailAvailability(e.value); }, 100);
-    }
   },
 
   loginForm(redirect='home'){
@@ -2840,7 +3546,7 @@ const AuthUI = {
           <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('authPass', this)"><i class="fa-solid fa-eye"></i></button>
         </div>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
         <button type="button" class="forgot-password-link" onclick="PasswordReset.open()">
           <i class="fa-solid fa-key"></i> ${t('forgotPassword')}
         </button>
@@ -2850,116 +3556,79 @@ const AuthUI = {
   },
 
   regForm(redirect='home'){
-    if(App._otpStep === 'verify' && OTP.currentEmail){
-      return this.otpVerifyForm(redirect);
-    }
+    if(App._otpStep === 'verify' && OTP.currentEmail) return this.otpVerifyForm(redirect);
     return this.regInfoForm(redirect);
   },
 
   regInfoForm(redirect='home'){
     return `<form onsubmit="AuthUI.sendOTP(event, '${redirect}')" novalidate>
       <div class="reg-steps">
-        <div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">${LANG==='bn'?'তথ্য':'Info'}</span></div>
+        <div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">Info</span></div>
         <div class="reg-step-line"></div>
-        <div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">${LANG==='bn'?'OTP':'Verify'}</span></div>
+        <div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">OTP</span></div>
         <div class="reg-step-line"></div>
-        <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${LANG==='bn'?'সম্পন্ন':'Done'}</span></div>
-      </div>
-
-      <div class="form-group">
-        <label>${t('fullName')} <span class="req">*</span></label>
-        <div class="input-wrap"><i class="fa-solid fa-user input-icon"></i><input id="regName" required autocomplete="name" placeholder="Rahim Uddin"></div>
+        <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">Done</span></div>
       </div>
       <div class="form-group">
-        <label>${t('email')} <span class="req">*</span></label>
-        <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i>
-          <input type="email" id="regEmail" required autocomplete="email" placeholder="you@example.com" oninput="AuthUI.onEmailInput(this.value)" onblur="AuthUI.checkEmailAvailability(this.value)">
-        </div>
+        <label>${t('fullName')} *</label>
+        <div class="input-wrap"><i class="fa-solid fa-user input-icon"></i><input id="regName" required placeholder="Rahim Uddin"></div>
+      </div>
+      <div class="form-group">
+        <label>${t('email')} *</label>
+        <div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="regEmail" required placeholder="you@example.com" oninput="AuthUI.onEmailInput(this.value)"></div>
         <div class="form-hint" id="emailCheckHint"></div>
       </div>
       <div class="form-group">
         <label>${t('phone')}</label>
-        <div class="input-wrap"><i class="fa-solid fa-phone input-icon"></i><input id="regPhone" autocomplete="tel" placeholder="017XXXXXXXX" inputmode="tel"></div>
+        <div class="input-wrap"><i class="fa-solid fa-phone input-icon"></i><input id="regPhone" placeholder="017XXXXXXXX"></div>
       </div>
       <div class="form-group">
-        <label>${t('password')} <span class="req">*</span></label>
+        <label>${t('password')} *</label>
         <div class="input-wrap">
           <i class="fa-solid fa-lock input-icon"></i>
-          <input type="password" id="regPass" required minlength="6" autocomplete="new-password" placeholder="••••••" oninput="AuthUI.checkPwd(this.value)">
+          <input type="password" id="regPass" required minlength="6" oninput="AuthUI.checkPwd(this.value)">
           <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('regPass', this)"><i class="fa-solid fa-eye"></i></button>
         </div>
-        <div class="pwd-strength">
-          <div class="pwd-bars">
-            <div class="pwd-bar" id="pwdBar1"></div><div class="pwd-bar" id="pwdBar2"></div>
-            <div class="pwd-bar" id="pwdBar3"></div><div class="pwd-bar" id="pwdBar4"></div>
-          </div>
-          <div class="pwd-text" id="pwdText">${LANG==='bn'?'পাসওয়ার্ড শক্তি':'Strength'}</div>
-        </div>
       </div>
       <div class="form-group">
-        <label>${t('confirmPassword')} <span class="req">*</span></label>
+        <label>${t('confirmPassword')} *</label>
         <div class="input-wrap">
           <i class="fa-solid fa-lock input-icon"></i>
-          <input type="password" id="regPass2" required autocomplete="new-password" placeholder="••••••">
-          <button type="button" class="toggle-pass" onclick="AuthUI.togglePass('regPass2', this)"><i class="fa-solid fa-eye"></i></button>
+          <input type="password" id="regPass2" required>
         </div>
         <div class="form-error" id="passError">${t('passwordMismatch')}</div>
       </div>
       <div class="form-group">
-        <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-size:12.5px;line-height:1.5;font-weight:500;color:var(--text)">
-          <input type="checkbox" id="regTerms" required style="width:auto;margin-top:3px">
-          <span>${t('agreeTerms')}</span>
+        <label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:12.5px">
+          <input type="checkbox" id="regTerms" required style="width:auto;margin-top:3px"><span>${t('agreeTerms')}</span>
         </label>
       </div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg" id="regSendBtn">
-        <i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}
-      </button>
-      <div class="otp-info-note">
-        <i class="fa-solid fa-shield-halved"></i>
-        <span>${LANG==='bn'?'নিরাপত্তার জন্য ইমেইলে ৬-ডিজিটের কোড পাঠানো হবে':'A 6-digit code will be sent to your email'}</span>
-      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="regSendBtn"><i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}</button>
     </form>`;
   },
 
   otpVerifyForm(redirect='home'){
-    const masked = OTP.maskEmail(OTP.currentEmail);
     return `<form onsubmit="AuthUI.verifyOTP(event, '${redirect}')" novalidate>
       <div class="reg-steps">
-        <div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${LANG==='bn'?'তথ্য':'Info'}</span></div>
+        <div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">Info</span></div>
         <div class="reg-step-line done"></div>
-        <div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">${LANG==='bn'?'OTP':'Verify'}</span></div>
+        <div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">OTP</span></div>
         <div class="reg-step-line"></div>
-        <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${LANG==='bn'?'সম্পন্ন':'Done'}</span></div>
+        <div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">Done</span></div>
       </div>
-
       <div class="otp-header">
         <div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
         <h3>${t('verifyEmail')}</h3>
-        <p>${t('weSentCode')}<br><b>${masked}</b></p>
+        <p>${t('weSentCode')}<br><b>${OTP.maskEmail(OTP.currentEmail)}</b></p>
       </div>
-
       <div class="otp-inputs" id="otpInputs">
-        <input type="text" inputmode="numeric" maxlength="1" data-idx="0" autocomplete="one-time-code" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-        <input type="text" inputmode="numeric" maxlength="1" data-idx="1" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-        <input type="text" inputmode="numeric" maxlength="1" data-idx="2" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-        <input type="text" inputmode="numeric" maxlength="1" data-idx="3" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-        <input type="text" inputmode="numeric" maxlength="1" data-idx="4" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
-        <input type="text" inputmode="numeric" maxlength="1" data-idx="5" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">
+        ${[0,1,2,3,4,5].map(i => `<input type="text" inputmode="numeric" maxlength="1" data-idx="${i}" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">`).join('')}
       </div>
-
       <div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div>
-
-      <button type="submit" class="btn btn-primary btn-block btn-lg" id="otpVerifyBtn">
-        <i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}
-      </button>
-
+      <button type="submit" class="btn btn-primary btn-block btn-lg" id="otpVerifyBtn"><i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}</button>
       <div class="otp-actions">
-        <button type="button" class="btn-link" id="otpResendBtn" onclick="AuthUI.resendOTP()" disabled>
-          <i class="fa-solid fa-rotate-right"></i> <span id="otpResendText">${t('resendOTP')}</span>
-        </button>
-        <button type="button" class="btn-link" onclick="AuthUI.backToInfo()">
-          <i class="fa-solid fa-arrow-left"></i> ${t('changeInfo')}
-        </button>
+        <button type="button" class="btn-link" id="otpResendBtn" onclick="AuthUI.resendOTP()" disabled><i class="fa-solid fa-rotate-right"></i> <span id="otpResendText">${t('resendOTP')}</span></button>
+        <button type="button" class="btn-link" onclick="AuthUI.backToInfo()"><i class="fa-solid fa-arrow-left"></i> ${t('changeInfo')}</button>
       </div>
     </form>`;
   },
@@ -2967,181 +3636,76 @@ const AuthUI = {
   onEmailInput(email){
     const hint = document.getElementById('emailCheckHint');
     if(!hint) return;
-    hint.textContent = '';
-    hint.style.color = '';
-
+    hint.textContent = ''; hint.style.color = '';
     const target = Auth.normalizeEmail(email);
     if(!target || target.length < 5 || !target.includes('@')) return;
-
-    if(!DB.ready.users){
-      hint.textContent = t('dataLoadingWait');
-      hint.style.color = 'var(--text-dim)';
-      return;
-    }
-
-    const status = Auth.checkEmailStatus(target);
-    if(status.status === 'taken'){
-      hint.textContent = t('emailTaken');
-      hint.style.color = 'var(--danger)';
-    } else if(status.status === 'free'){
-      hint.textContent = t('emailAvailable');
-      hint.style.color = 'var(--success)';
-    } else {
-      hint.textContent = t('dataLoadingWait');
-      hint.style.color = 'var(--text-dim)';
-    }
-  },
-
-  checkEmailAvailability(email){
-    const hint = document.getElementById('emailCheckHint');
-    if(!hint) return;
-    if(!email || !email.includes('@')){ hint.textContent=''; return; }
-
-    if(!DB.ready.users){
-      hint.textContent = t('dataLoadingWait');
-      hint.style.color = 'var(--text-dim)';
-      return;
-    }
-
-    clearTimeout(window._emailCheckTimer);
-    window._emailCheckTimer = setTimeout(()=>{
-      const target = Auth.normalizeEmail(email);
-      const status = Auth.checkEmailStatus(target);
-      if(status.status === 'taken'){
-        hint.textContent = t('emailTaken');
-        hint.style.color = 'var(--danger)';
-      } else if(status.status === 'free'){
-        hint.textContent = t('emailAvailable');
-        hint.style.color = 'var(--success)';
-      } else {
-        hint.textContent = t('dataLoadingWait');
-        hint.style.color = 'var(--text-dim)';
-      }
-    }, 250);
+    if(!DB.ready.users){ hint.textContent = t('dataLoadingWait'); hint.style.color = 'var(--text-dim)'; return; }
+    const s = Auth.checkEmailStatus(target);
+    if(s.status === 'taken'){ hint.textContent = t('emailTaken'); hint.style.color = 'var(--danger)'; }
+    else if(s.status === 'free'){ hint.textContent = t('emailAvailable'); hint.style.color = 'var(--success)'; }
   },
 
   otpInput(el){
-    let v = el.value.replace(/\D/g, '');
+    const v = el.value.replace(/\D/g, '');
     el.value = v.slice(0, 1);
     el.classList.toggle('filled', !!el.value);
     if(v){
       const idx = +el.dataset.idx;
       const next = document.querySelector(`.otp-inputs input[data-idx="${idx+1}"]`);
-      if(next) next.focus();
-      else el.blur();
+      if(next) next.focus(); else el.blur();
     }
   },
-
   otpKey(e, el){
     const idx = +el.dataset.idx;
     if(e.key === 'Backspace' && !el.value){
       const prev = document.querySelector(`.otp-inputs input[data-idx="${idx-1}"]`);
-      if(prev){ prev.focus(); prev.value=''; prev.classList.remove('filled'); }
+      if(prev){ prev.focus(); prev.value = ''; prev.classList.remove('filled'); }
     }
-    if(e.key === 'ArrowLeft'){ document.querySelector(`.otp-inputs input[data-idx="${idx-1}"]`)?.focus(); }
-    if(e.key === 'ArrowRight'){ document.querySelector(`.otp-inputs input[data-idx="${idx+1}"]`)?.focus(); }
   },
-
   otpPaste(e){
     e.preventDefault();
     const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
-    if(!text) return;
     const inputs = document.querySelectorAll('.otp-inputs input');
-    text.split('').forEach((ch, i)=>{ if(inputs[i]){ inputs[i].value = ch; inputs[i].classList.add('filled'); } });
-    const nextEmpty = Array.from(inputs).find(inp => !inp.value);
-    (nextEmpty || inputs[inputs.length-1]).focus();
+    text.split('').forEach((ch, i) => { if(inputs[i]){ inputs[i].value = ch; inputs[i].classList.add('filled'); } });
+    (Array.from(inputs).find(i => !i.value) || inputs[inputs.length-1]).focus();
   },
-
-  getOTPValue(){
-    const inputs = document.querySelectorAll('.otp-inputs input');
-    return Array.from(inputs).map(i=>i.value).join('');
-  },
-
-  clearOTPInputs(){
-    document.querySelectorAll('.otp-inputs input').forEach(i=>{ i.value=''; i.classList.remove('filled','error'); });
-    document.querySelector('.otp-inputs input[data-idx="0"]')?.focus();
-  },
+  getOTPValue(){ return Array.from(document.querySelectorAll('.otp-inputs input')).map(i => i.value).join(''); },
+  clearOTPInputs(){ document.querySelectorAll('.otp-inputs input').forEach(i => { i.value = ''; i.classList.remove('filled','error'); }); },
 
   async sendOTP(e, redirect){
     if(e) e.preventDefault();
-
     const name = document.getElementById('regName').value.trim();
-    const emailInput = document.getElementById('regEmail');
-    const email = Auth.normalizeEmail(emailInput.value);
+    const email = Auth.normalizeEmail(document.getElementById('regEmail').value);
     const phone = document.getElementById('regPhone').value.trim();
     const pass = document.getElementById('regPass').value;
     const pass2 = document.getElementById('regPass2').value;
     const terms = document.getElementById('regTerms').checked;
     const err = document.getElementById('passError');
-
-    if(!name){ Toast.show(t('fillAllFields'),'error'); return; }
-    if(!email){ Toast.show(t('invalidEmail'),'error'); return; }
+    if(!name || !email || !pass){ Toast.show(t('fillAllFields'),'error'); return; }
     if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ Toast.show(t('invalidEmail'),'error'); return; }
-    if(!pass){ Toast.show(t('fillAllFields'),'error'); return; }
-
-    if(pass !== pass2){
-      err.classList.add('show');
-      Toast.show(t('passwordMismatch'),'error');
-      return;
-    }
+    if(pass !== pass2){ err.classList.add('show'); Toast.show(t('passwordMismatch'),'error'); return; }
     err.classList.remove('show');
-
     if(pass.length < 6){ Toast.show(t('weakPassword'),'error'); return; }
     if(!terms){ Toast.show(t('agreeToTerms'),'warning'); return; }
-
-    if(!DB.ready.users){
-      Toast.show(t('dataLoadingWait'),'warning',3000);
-      return;
-    }
-
-    const status = Auth.checkEmailStatus(email);
-    if(status.status === 'unknown'){
-      Toast.show(t('dataLoadingWait'),'warning',3000);
-      return;
-    }
-    if(status.status === 'taken'){
-      const hint = document.getElementById('emailCheckHint');
-      if(hint){ hint.textContent = t('emailTaken'); hint.style.color = 'var(--danger)'; }
+    if(!DB.ready.users){ Toast.show(t('dataLoadingWait'),'warning'); return; }
+    if(Auth.isEmailTaken(email)){
       Toast.show(t('emailExists'),'error',4000);
-      setTimeout(()=>{
-        App._authTab = 'login';
-        App._otpStep = null;
-        App._pendingReg = null;
-        OTP.reset();
-        App._authRedirect = redirect;
-        App.render();
-        setTimeout(()=>{
-          const eInp = document.getElementById('authEmail');
-          if(eInp){ eInp.value = email; eInp.focus(); }
-        }, 80);
-      }, 500);
+      setTimeout(() => { App._authTab = 'login'; App.render(); }, 600);
       return;
     }
-
     App._pendingReg = { name, email, phone, password: pass };
-
     const btn = document.getElementById('regSendBtn');
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
-
-    const result = await OTP.send(email, name);
-
-    if(!result.ok){
-      Toast.show(t('otpFailed') + ': ' + result.msg, 'error', 6000);
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}`;
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpSending')}`;
+    const r = await OTP.send(email, name);
+    if(!r.ok){
+      Toast.show(t('otpFailed') + ': ' + r.msg, 'error', 6000);
+      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}`;
       return;
     }
-
-    Toast.show(t('otpSent'),'success', 4000);
-    App._otpStep = 'verify';
-    App._authRedirect = redirect;
+    Toast.show(t('otpSent'),'success');
+    App._otpStep = 'verify'; App._authRedirect = redirect;
     App.render();
-
-    setTimeout(()=>{
-      document.querySelector('.otp-inputs input[data-idx="0"]')?.focus();
-      this.startResendCooldown(60);
-    }, 300);
+    setTimeout(() => { document.querySelector('.otp-inputs input[data-idx="0"]')?.focus(); this.startResendCooldown(60); }, 300);
   },
 
   startResendCooldown(seconds){
@@ -3149,14 +3713,9 @@ const AuthUI = {
     const txt = document.getElementById('otpResendText');
     if(!btn || !txt) return;
     btn.disabled = true;
-    txt.textContent = `${t('resendOTP')} (${seconds}s)`;
-    OTP.startCooldown(seconds, (remaining)=>{
-      if(remaining <= 0){
-        btn.disabled = false;
-        txt.textContent = t('resendOTP');
-      } else {
-        txt.textContent = `${t('resendOTP')} (${remaining}s)`;
-      }
+    OTP.startCooldown(seconds, (r) => {
+      txt.textContent = r > 0 ? `${t('resendOTP')} (${r}s)` : t('resendOTP');
+      if(r <= 0) btn.disabled = false;
     });
   },
 
@@ -3164,107 +3723,38 @@ const AuthUI = {
     if(e) e.preventDefault();
     const code = this.getOTPValue();
     if(code.length !== 6){ Toast.show(t('enterFullCode'),'warning'); return; }
-
     const btn = document.getElementById('otpVerifyBtn');
-    btn.disabled = true;
-    btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpVerifying')}`;
-
-    const result = await OTP.verify(code);
-    if(!result.ok){
-      Toast.show(result.msg, 'error');
-      document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.add('error'));
-      setTimeout(()=>document.querySelectorAll('.otp-inputs input').forEach(i=>i.classList.remove('error')), 500);
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpVerifying')}`;
+    const r = await OTP.verify(code);
+    if(!r.ok){
+      Toast.show(r.msg, 'error');
+      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
       return;
     }
-
     const pending = App._pendingReg;
-    if(!pending){
-      Toast.show('Session lost, try again','error');
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
-      return;
-    }
-
-    if(Auth.isEmailTaken(pending.email)){
-      Toast.show(t('emailExists'),'error');
-      OTP.reset();
-      App._otpStep = null;
-      App._pendingReg = null;
-      App._authTab = 'login';
-      App.render();
-      setTimeout(()=>{
-        const eInp = document.getElementById('authEmail');
-        if(eInp){ eInp.value = pending.email; eInp.focus(); }
-      }, 80);
-      return;
-    }
-
+    if(!pending){ Toast.show('Session lost','error'); return; }
     const reg = await Auth.register(pending);
-    if(!reg.ok){
-      Toast.show(reg.msg, 'error');
-      btn.disabled = false;
-      btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`;
-      return;
-    }
-
-    OTP.reset();
-    App._pendingReg = null;
-    App._otpStep = null;
-    App._authRedirect = null;
-
+    if(!reg.ok){ Toast.show(reg.msg, 'error'); btn.disabled = false; return; }
+    OTP.reset(); App._pendingReg = null; App._otpStep = null; App._authRedirect = null;
     Toast.show(t('registrationSuccess') + ' ' + reg.user.name, 'success', 4000);
-    PushNotif.localNotif(LANG==='bn'?'রেজিস্ট্রেশন সফল':'Registration successful',
-                         LANG==='bn'?'স্বাগতম '+reg.user.name:'Welcome '+reg.user.name);
-
-    setTimeout(()=>{ App.go(redirect && redirect !== 'home' ? redirect : 'home'); }, 600);
+    setTimeout(() => App.go(redirect && redirect !== 'home' ? redirect : 'home'), 600);
   },
 
   async resendOTP(){
-    const pending = App._pendingReg;
-    if(!pending) return;
+    const pending = App._pendingReg; if(!pending) return;
     const btn = document.getElementById('otpResendBtn');
     btn.disabled = true;
     const txt = document.getElementById('otpResendText');
-    txt.textContent = LANG==='bn'?'পাঠানো হচ্ছে...':'Sending...';
-
-    if(Auth.isEmailTaken(pending.email)){
-      Toast.show(t('emailExists'),'error');
-      OTP.reset();
-      App._otpStep = null;
-      App._pendingReg = null;
-      App._authTab = 'login';
-      App.render();
-      return;
-    }
-
+    txt.textContent = t('otpSending');
     OTP.attempts = 0;
-    const result = await OTP.send(pending.email, pending.name);
-    if(!result.ok){
-      Toast.show(t('otpFailed') + ': ' + result.msg,'error');
-      btn.disabled = false;
-      txt.textContent = t('resendOTP');
-      return;
-    }
+    const r = await OTP.send(pending.email, pending.name);
+    if(!r.ok){ Toast.show('Failed: ' + r.msg, 'error'); btn.disabled = false; txt.textContent = t('resendOTP'); return; }
     Toast.show(t('otpSent'),'success');
     this.clearOTPInputs();
     this.startResendCooldown(60);
   },
 
-  backToInfo(){
-    App._otpStep = null;
-    OTP.reset();
-    App.render();
-    setTimeout(()=>{
-      const pending = App._pendingReg;
-      if(pending){
-        const nEl = document.getElementById('regName'); if(nEl) nEl.value = pending.name || '';
-        const eEl = document.getElementById('regEmail'); if(eEl) eEl.value = pending.email || '';
-        const pEl = document.getElementById('regPhone'); if(pEl) pEl.value = pending.phone || '';
-      }
-    }, 100);
-  },
+  backToInfo(){ App._otpStep = null; OTP.reset(); App.render(); },
 
   togglePass(id, btn){
     const input = document.getElementById(id); if(!input) return;
@@ -3279,24 +3769,21 @@ const AuthUI = {
     if(val.length >= 10) score++;
     if(/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
     if(/\d/.test(val) && /[^A-Za-z0-9]/.test(val)) score++;
-    const bars = [1,2,3,4].map(i=>document.getElementById('pwdBar'+i));
-    const cls = score<=1 ? 'weak' : score<=3 ? 'medium' : 'strong';
-    bars.forEach((b,i)=>{ if(b) b.className = 'pwd-bar' + (i < score ? ' ' + cls : ''); });
+    const bars = [1,2,3,4].map(i => document.getElementById('pwdBar'+i));
+    const cls = score <= 1 ? 'weak' : score <= 3 ? 'medium' : 'strong';
+    bars.forEach((b,i) => { if(b) b.className = 'pwd-bar' + (i < score ? ' ' + cls : ''); });
     const txt = document.getElementById('pwdText');
-    if(txt){
-      const labels = { weak: LANG==='bn'?'দুর্বল':'Weak', medium: LANG==='bn'?'মাঝারি':'Medium', strong: LANG==='bn'?'শক্তিশালী':'Strong' };
-      txt.textContent = score ? labels[cls] : (LANG==='bn'?'পাসওয়ার্ড শক্তি':'Strength');
-    }
+    if(txt) txt.textContent = score ? cls : 'Password strength';
   },
 
   async doLogin(e, redirect){
     e.preventDefault();
     const btn = document.getElementById('loginSubmit');
-    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
+    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i>`;
     const r = await Auth.login(document.getElementById('authEmail').value, document.getElementById('authPass').value);
     if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `${t('login')} <i class="fa-solid fa-arrow-right"></i>`; return; }
     Toast.show(t('loginSuccess') + ', ' + r.user.name,'success');
-    const target = r.user.role==='admin' ? 'admin' : (redirect && redirect!=='home' ? redirect : 'home');
+    const target = r.user.role === 'admin' ? 'admin' : (redirect && redirect !== 'home' ? redirect : 'home');
     App._authRedirect = null;
     App.go(target);
   }
@@ -3329,25 +3816,22 @@ const Profile = {
 function applyTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
   localStorage.setItem('eco_theme', mode);
-  document.querySelectorAll('[data-set-theme]').forEach(b=>b.classList.toggle('active', b.dataset.setTheme===mode));
+  document.querySelectorAll('[data-set-theme]').forEach(b => b.classList.toggle('active', b.dataset.setTheme === mode));
   const tb = document.getElementById('themeBtn');
-  if(tb) tb.innerHTML = `<i class="fa-solid fa-${mode==='dark'?'sun':'moon'}"></i>`;
-  const meta = document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.content = mode==='dark' ? '#12141f' : '#6366f1';
+  if(tb) tb.innerHTML = `<i class="fa-solid fa-${mode === 'dark' ? 'sun' : 'moon'}"></i>`;
 }
 function applyLang(lang){
   LANG = lang;
   localStorage.setItem('eco_lang', lang);
   document.documentElement.lang = lang;
   const lc = document.getElementById('langChip'); if(lc) lc.textContent = lang.toUpperCase();
-  document.querySelectorAll('[data-set-lang]').forEach(b=>b.classList.toggle('active', b.dataset.setLang===lang));
+  document.querySelectorAll('[data-set-lang]').forEach(b => b.classList.toggle('active', b.dataset.setLang === lang));
   App.render();
+  Chatbot.renderQuickReplies();
 }
 function setFbStatus(ok, text){
-  const el = document.getElementById('fbStatus');
-  const txt = document.getElementById('fbStatusText');
-  if(el) el.style.color = ok ? 'var(--success)' : 'var(--warning)';
-  if(txt) txt.textContent = text;
+  const el = document.getElementById('fbStatus'); if(el) el.style.color = ok ? 'var(--success)' : 'var(--warning)';
+  const txt = document.getElementById('fbStatusText'); if(txt) txt.textContent = text;
 }
 function initOfflineDetect(){
   const bar = document.getElementById('offlineBar');
@@ -3356,13 +3840,13 @@ function initOfflineDetect(){
     if(navigator.onLine) bar?.classList.remove('show');
     else { if(txt) txt.textContent = t('offlineMode'); bar?.classList.add('show'); }
   }
-  window.addEventListener('online', ()=>{ update(); Toast.show(LANG==='bn'?'✅ অনলাইনে':'✅ Online','success'); });
-  window.addEventListener('offline', ()=>{ update(); Toast.show(LANG==='bn'?'⚠️ অফলাইন':'⚠️ Offline','warning'); });
+  window.addEventListener('online', () => { update(); });
+  window.addEventListener('offline', () => { update(); });
   update();
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  console.log('🚀 App v8.0 starting...');
+document.addEventListener('DOMContentLoaded', () => {
+  console.log('🚀 App v11.0 starting...');
 
   const savedTheme = localStorage.getItem('eco_theme');
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
@@ -3372,26 +3856,26 @@ document.addEventListener('DOMContentLoaded', ()=>{
   const lc = document.getElementById('langChip'); if(lc) lc.textContent = LANG.toUpperCase();
 
   OTP.init();
+  Chatbot.init();
 
   let p = 0;
   const statuses = ['Firebase-এ সংযুক্ত হচ্ছে...','ডেটা সিঙ্ক হচ্ছে...','প্রায় শেষ...','স্বাগতম!'];
-  const splashTimer = setInterval(()=>{
+  const splashTimer = setInterval(() => {
     p += 25;
     const bar = document.getElementById('splashBar');
     const st = document.getElementById('splashStatus');
-    if(bar) bar.style.width = p+'%';
-    if(st) st.textContent = statuses[Math.min(3, Math.floor(p/25)-1)] || statuses[0];
-    if(p>=100) clearInterval(splashTimer);
+    if(bar) bar.style.width = p + '%';
+    if(st) st.textContent = statuses[Math.min(3, Math.floor(p/25) - 1)] || statuses[0];
+    if(p >= 100) clearInterval(splashTimer);
   }, 350);
-  setTimeout(()=>App.hideSplash(), 5000);
+  setTimeout(() => App.hideSplash(), 5000);
 
   if(fbReady){
     setFbStatus(false, 'Firebase: connecting...');
-    try { db.ref('.info/connected').on('value', snap=>{ setFbStatus(snap.val()===true, snap.val()===true ? 'Firebase: ✅ connected' : 'Firebase: ⚠️ offline'); }); } catch(e){}
+    try { db.ref('.info/connected').on('value', snap => { setFbStatus(snap.val() === true, snap.val() === true ? 'Firebase: ✅ connected' : 'Firebase: ⚠️ offline'); }); } catch(e){}
     DB.init();
   } else {
     setFbStatus(false, 'Firebase: ❌ failed');
-    Toast.show('Firebase init failed: '+fbError, 'error', 8000);
     App.hideSplash();
   }
 
@@ -3400,88 +3884,79 @@ document.addEventListener('DOMContentLoaded', ()=>{
   PushNotif.init();
   initOfflineDetect();
 
-  window.addEventListener('scroll', ()=>{
-    const nb = document.getElementById('navbar'); if(nb) nb.classList.toggle('scrolled', window.scrollY>10);
-    const btt = document.getElementById('backToTop'); if(btt) btt.classList.toggle('show', window.scrollY>400);
+  window.addEventListener('scroll', () => {
+    const nb = document.getElementById('navbar'); if(nb) nb.classList.toggle('scrolled', window.scrollY > 10);
+    const btt = document.getElementById('backToTop'); if(btt) btt.classList.toggle('show', window.scrollY > 400);
   }, { passive: true });
-  const btt = document.getElementById('backToTop'); if(btt) btt.onclick = ()=> window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('backToTop').onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if(window.matchMedia('(hover:hover) and (pointer:fine)').matches){
     const glow = document.getElementById('cursorGlow');
     if(glow){
       let mx = 0, my = 0, cx = 0, cy = 0;
-      document.addEventListener('mousemove', (e)=>{ mx = e.clientX; my = e.clientY; }, { passive:true });
-      (function animate(){
-        cx += (mx - cx) * 0.12; cy += (my - cy) * 0.12;
-        glow.style.left = cx+'px'; glow.style.top = cy+'px';
-        requestAnimationFrame(animate);
-      })();
+      document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; }, { passive:true });
+      (function animate(){ cx += (mx - cx) * 0.12; cy += (my - cy) * 0.12; glow.style.left = cx + 'px'; glow.style.top = cy + 'px'; requestAnimationFrame(animate); })();
     }
   }
 
-  document.querySelectorAll('[data-nav]').forEach(a=>{
-    a.onclick = ()=>{
+  document.querySelectorAll('[data-nav]').forEach(a => {
+    a.onclick = () => {
       const r = a.dataset.nav;
-      if(r==='cart'){ App.openCart(); return; }
+      if(r === 'cart'){ App.openCart(); return; }
       App.go(r);
     };
   });
-  document.querySelectorAll('.nav-menu a').forEach(a=>{ a.onclick = ()=> App.go(a.dataset.nav); });
+  document.querySelectorAll('.nav-menu a').forEach(a => a.onclick = () => App.go(a.dataset.nav));
 
-  const openPM = ()=>{ document.getElementById('powerMenu').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
-  const closePM = ()=>{ document.getElementById('powerMenu').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
+  const openPM = () => { document.getElementById('powerMenu').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow = 'hidden'; };
+  const closePM = () => { document.getElementById('powerMenu').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow = ''; };
   document.getElementById('menuToggle').onclick = openPM;
   document.getElementById('pmClose').onclick = closePM;
 
-  const openCart = ()=>{ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
-  const closeCart = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
+  const openCart = () => { document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow = 'hidden'; };
+  const closeCart = () => { document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow = ''; };
   document.getElementById('cartBtn').onclick = openCart;
   document.getElementById('cartClose').onclick = closeCart;
-  document.getElementById('checkoutBtn').onclick = ()=>{ closeCart(); App.go('checkout'); };
+  document.getElementById('checkoutBtn').onclick = () => { closeCart(); App.go('checkout'); };
 
-  const openNotif = ()=>{ document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); document.body.style.overflow='hidden'; };
-  const closeNotif = ()=>{ document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
+  const openNotif = () => { document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); document.body.style.overflow = 'hidden'; };
+  const closeNotif = () => { document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow = ''; };
   document.getElementById('notifBtn').onclick = openNotif;
   document.getElementById('notifClose').onclick = closeNotif;
 
-  document.getElementById('backdrop').onclick = ()=>{ closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
+  document.getElementById('backdrop').onclick = () => { closePM(); closeCart(); closeNotif(); document.querySelector('.admin-sidebar')?.classList.remove('active'); };
 
-  document.getElementById('loginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
-  document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
-  document.getElementById('pmLogoutBtn').onclick = ()=>{ closePM(); Auth.logout(); };
+  document.getElementById('loginBtn').onclick = () => { closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
+  document.getElementById('pmLoginBtn').onclick = () => { closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
+  document.getElementById('pmLogoutBtn').onclick = () => { closePM(); Auth.logout(); };
 
   const av = document.getElementById('userAvatarBtn');
   const dd = document.getElementById('userDropdown');
-  if(av && dd){
-    av.onclick = (e)=>{ e.stopPropagation(); dd.classList.toggle('active'); };
-    document.addEventListener('click', ()=> dd.classList.remove('active'));
-  }
+  av.onclick = e => { e.stopPropagation(); dd.classList.toggle('active'); };
+  document.addEventListener('click', () => dd.classList.remove('active'));
 
-  document.getElementById('themeBtn').onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
-  document.getElementById('langBtn').onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
-  document.querySelectorAll('[data-set-theme]').forEach(b=> b.onclick = ()=> applyTheme(b.dataset.setTheme));
-  document.querySelectorAll('[data-set-lang]').forEach(b=> b.onclick = ()=> applyLang(b.dataset.setLang));
+  document.getElementById('themeBtn').onclick = () => applyTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  document.getElementById('langBtn').onclick = () => applyLang(LANG === 'bn' ? 'en' : 'bn');
+  document.querySelectorAll('[data-set-theme]').forEach(b => b.onclick = () => applyTheme(b.dataset.setTheme));
+  document.querySelectorAll('[data-set-lang]').forEach(b => b.onclick = () => applyLang(b.dataset.setLang));
 
   const gs = document.getElementById('globalSearch');
   const searchClear = document.getElementById('searchClear');
   if(gs){
-    gs.oninput = (e)=>{
-      App._shopQ = e.target.value; App._shopCat='all';
+    gs.oninput = e => {
+      App._shopQ = e.target.value; App._shopCat = 'all';
       if(searchClear) searchClear.style.display = e.target.value ? 'flex' : 'none';
-      if(App.route!=='shop') App.go('shop');
-      else App.render();
+      if(App.route !== 'shop') App.go('shop'); else App.render();
     };
   }
-  if(searchClear) searchClear.onclick = ()=>{ if(gs){ gs.value=''; App._shopQ=''; searchClear.style.display='none'; App.render(); gs.focus(); } };
-  SearchSuggest.init();
+  if(searchClear) searchClear.onclick = () => { gs.value = ''; App._shopQ = ''; searchClear.style.display = 'none'; App.render(); gs.focus(); };
 
-  document.addEventListener('keydown', (e)=>{
+  document.addEventListener('keydown', e => {
     if((e.ctrlKey || e.metaKey) && e.key === 'k'){ e.preventDefault(); document.getElementById('globalSearch')?.focus(); }
-    if(e.key === 'Escape'){ Modal.close(); QuickView.close(); document.getElementById('searchSuggest')?.classList.remove('active'); }
+    if(e.key === 'Escape'){ Modal.close(); }
   });
 
-  document.addEventListener('touchmove', (e)=>{ if(e.touches.length > 1) e.preventDefault(); }, { passive: false });
-
   App.render();
-  console.log('✅ App ready v8.0');
+  console.log('✅ App ready v11.0');
 });
+   
