@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   EcoShop Pro MAX v12.0 — Professional Edition
+   EcoShop Pro MAX v13.0 — Professional Edition
    Full app.js
    ═══════════════════════════════════════════════════════════════════════ */
 
@@ -15,20 +15,11 @@ const firebaseConfig = {
 };
 const IMGBB_API_KEY = "811434d9b77765dbedbb9662b98a0f74";
 const IMGBB_UPLOAD_URL = "https://api.imgbb.com/1/upload";
-const EmailJSConfig = {
-  publicKey: 'zuPQJsWL-br59MV3t',
-  serviceId: 'service_Abdullah_200',
-  templateId: 'template_edu2aen',
-  initialized: false
-};
+const EmailJSConfig = { publicKey: 'zuPQJsWL-br59MV3t', serviceId: 'service_Abdullah_200', templateId: 'template_edu2aen', initialized: false };
 
 let fbApp, db, fbReady = false, fbError = null;
-try {
-  fbApp = firebase.initializeApp(firebaseConfig);
-  db = firebase.database();
-  try { firebase.analytics(); } catch(e){}
-  fbReady = true;
-} catch(e){ fbError = e.message; console.error('❌ Firebase init:', e); }
+try { fbApp = firebase.initializeApp(firebaseConfig); db = firebase.database(); try { firebase.analytics(); } catch(e){} fbReady = true; }
+catch(e){ fbError = e.message; console.error('❌ Firebase init:', e); }
 
 const DEFAULT_SETTINGS = {
   siteName:'EcoShop Pro MAX',
@@ -39,9 +30,7 @@ const DEFAULT_SETTINGS = {
   enableCOD: true, enableBkash: true, enableNagad: true, enableRocket: true
 };
 
-/* ═══════════════════════════════════════════════════════════
-   i18n
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ i18n ═══ */
 const I18N = {
   bn: {
     home:'হোম', shop:'শপ', orders:'অর্ডার', profile:'প্রোফাইল', admin:'অ্যাডমিন',
@@ -163,17 +152,13 @@ const I18N = {
     rejectedByAdmin:'অ্যাডমিন অর্ডার প্রত্যাখ্যান করেছেন',
     noReasonGiven:'কারণ উল্লেখ করা হয়নি',
     updatedByAdmin:'অ্যাডমিন আপডেট করেছেন',
-    /* v12 */
     changePassword:'পাসওয়ার্ড পরিবর্তন',
     currentPassword:'বর্তমান পাসওয়ার্ড',
     changePasswordDesc:'নিরাপত্তার জন্য আগে বর্তমান পাসওয়ার্ড দিন',
     profilePicture:'প্রোফাইল ছবি',
-    uploadPicture:'ছবি আপলোড করুন',
-    removePicture:'ছবি মুছুন',
     personalInfo:'ব্যক্তিগত তথ্য',
     personalInfoDesc:'আপনার নাম, ফোন ও ঠিকানা আপডেট করুন',
     security:'নিরাপত্তা',
-    securityDesc:'পাসওয়ার্ড পরিবর্তন করুন',
     wrongCurrentPassword:'বর্তমান পাসওয়ার্ড ভুল',
     passwordChanged:'✅ পাসওয়ার্ড পরিবর্তন হয়েছে',
     passwordChangedDesc:'আপনার পাসওয়ার্ড সফলভাবে পরিবর্তিত হয়েছে।',
@@ -182,15 +167,32 @@ const I18N = {
     joinedOn:'যোগদান', verifiedCustomer:'ভেরিফায়েড কাস্টমার',
     menu:'মেনু', management:'ম্যানেজমেন্ট',
     uploadHint:'JPG, PNG (সর্বোচ্চ 5MB)',
-    imgUploadSuccess:'✅ ছবি আপলোড হয়েছে',
-    imgUploadFailed:'আপলোড ব্যর্থ',
-    lightMode:'লাইট মোড', darkMode:'ডার্ক মোড',
+    imgUploadSuccess:'✅ ছবি আপলোড হয়েছে', imgUploadFailed:'আপলোড ব্যর্থ',
     ordersPending:'পেন্ডিং অর্ডার', totalSpent:'মোট খরচ',
     reviewCart:'কার্ট রিভিউ', deliveryDetails:'ডেলিভারি তথ্য',
     paymentMethodStep:'পেমেন্ট পদ্ধতি', orderSummary:'অর্ডার সারাংশ',
     placeOrder:'অর্ডার নিশ্চিত করুন',
-    calculating:'হিসাব করা হচ্ছে...',
-    removeConfirm:'ছবি মুছে ফেলতে চান?'
+    searchResults:'সার্চ ফলাফল', suggestions:'পরামর্শ', noSuggestions:'কোনো পরামর্শ নেই',
+    broadcastNotif:'ব্রডকাস্ট নোটিফিকেশন', broadcastDesc:'সব ইউজারকে একসাথে নোটিফিকেশন পাঠান',
+    broadcastTitle:'নোটিফিকেশন টাইটেল', broadcastBody:'মেসেজ', sendBroadcast:'সবাইকে পাঠান',
+    broadcastSent:'✅ সব ইউজারকে পাঠানো হয়েছে', broadcastFailed:'পাঠানো যায়নি',
+    typeMessage:'মেসেজ লিখুন', recipients:'প্রাপক',
+    productReviews:'পণ্যের রিভিউ', writeReview:'রিভিউ লিখুন',
+    yourRating:'আপনার রেটিং', reviewText:'আপনার মতামত',
+    submitReview:'রিভিউ জমা দিন', reviewSubmitted:'✅ রিভিউ জমা হয়েছে',
+    noReviews:'এখনো কোনো রিভিউ নেই', beFirstReview:'প্রথম রিভিউ দিন',
+    alreadyReviewed:'আপনি ইতিমধ্যে রিভিউ দিয়েছেন',
+    adminAllAccess:'অ্যাডমিন সব কিছু দেখতে ও পরিবর্তন করতে পারে',
+    readOnly:'শুধু পড়া যাবে', yourOrders:'আপনার অর্ডার', anotherUser:'অন্য ইউজারের তথ্য',
+    accessDenied:'অ্যাক্সেস নেই', cannotViewOthers:'অন্য কারো তথ্য দেখতে পারবেন না',
+    voiceSearch:'ভয়েস সার্চ', listening:'শুনছি...',
+    imageSearch:'ছবি দিয়ে খুঁজুন', searchByImage:'ছবি আপলোড করে খুঁজুন',
+    searchNoResults:'কিছু পাওয়া যায়নি', searching:'খোঁজা হচ্ছে...',
+    filterByPrice:'দাম অনুসারে', priceRange:'দামের সীমা',
+    minPrice:'সর্বনিম্ন', maxPrice:'সর্বোচ্চ', applyFilters:'প্রয়োগ করুন',
+    clearAllFilters:'সব মুছুন', newProducts:'নতুন পণ্য', popularProducts:'জনপ্রিয়',
+    bestSelling:'বেস্ট সেলিং', topRated:'উচ্চ রেটিং',
+    freeDelivery:'ফ্রি ডেলিভারি', cashOnDelivery:'ক্যাশ অন ডেলিভারি'
   },
   en: {
     home:'Home', shop:'Shop', orders:'Orders', profile:'Profile', admin:'Admin',
@@ -316,12 +318,9 @@ const I18N = {
     currentPassword:'Current Password',
     changePasswordDesc:'Enter current password for security',
     profilePicture:'Profile Picture',
-    uploadPicture:'Upload Picture',
-    removePicture:'Remove Picture',
     personalInfo:'Personal Info',
     personalInfoDesc:'Update your name, phone and address',
     security:'Security',
-    securityDesc:'Change your password',
     wrongCurrentPassword:'Current password is wrong',
     passwordChanged:'✅ Password changed',
     passwordChangedDesc:'Your password has been changed successfully.',
@@ -330,20 +329,38 @@ const I18N = {
     joinedOn:'Joined', verifiedCustomer:'Verified Customer',
     menu:'Menu', management:'Management',
     uploadHint:'JPG, PNG (max 5MB)',
-    imgUploadSuccess:'✅ Image uploaded',
-    imgUploadFailed:'Upload failed',
-    lightMode:'Light Mode', darkMode:'Dark Mode',
+    imgUploadSuccess:'✅ Image uploaded', imgUploadFailed:'Upload failed',
     ordersPending:'Pending Orders', totalSpent:'Total Spent',
     reviewCart:'Review Cart', deliveryDetails:'Delivery Details',
     paymentMethodStep:'Payment Method', orderSummary:'Order Summary',
-    placeOrder:'Place Order', calculating:'Calculating...',
-    removeConfirm:'Remove this picture?'
+    placeOrder:'Place Order',
+    searchResults:'Search Results', suggestions:'Suggestions', noSuggestions:'No suggestions',
+    broadcastNotif:'Broadcast Notification', broadcastDesc:'Send notification to all users at once',
+    broadcastTitle:'Notification Title', broadcastBody:'Message', sendBroadcast:'Send to All',
+    broadcastSent:'✅ Sent to all users', broadcastFailed:'Failed to send',
+    typeMessage:'Type message', recipients:'Recipients',
+    productReviews:'Product Reviews', writeReview:'Write Review',
+    yourRating:'Your Rating', reviewText:'Your Review',
+    submitReview:'Submit Review', reviewSubmitted:'✅ Review submitted',
+    noReviews:'No reviews yet', beFirstReview:'Be the first to review',
+    alreadyReviewed:'You already reviewed this product',
+    adminAllAccess:'Admin can view and modify everything',
+    readOnly:'Read only', yourOrders:'Your orders', anotherUser:'Another user',
+    accessDenied:'Access denied', cannotViewOthers:'Cannot view others\' info',
+    voiceSearch:'Voice Search', listening:'Listening...',
+    imageSearch:'Search by Image', searchByImage:'Upload image to search',
+    searchNoResults:'No results found', searching:'Searching...',
+    filterByPrice:'Filter by Price', priceRange:'Price Range',
+    minPrice:'Min', maxPrice:'Max', applyFilters:'Apply',
+    clearAllFilters:'Clear All', newProducts:'New Products', popularProducts:'Popular',
+    bestSelling:'Best Selling', topRated:'Top Rated',
+    freeDelivery:'Free Delivery', cashOnDelivery:'Cash on Delivery'
   }
 };
 let LANG = localStorage.getItem('eco_lang') || 'bn';
 const t = k => (I18N[LANG] && I18N[LANG][k]) || k;
 
-/* Storage */
+/* ═══ Storage ═══ */
 const Session = {
   get(){ try{ return JSON.parse(localStorage.getItem('eco_session')) || null; }catch(e){ return null; } },
   set(u){ localStorage.setItem('eco_session', JSON.stringify(u)); },
@@ -357,14 +374,8 @@ const WishStore = {
   get(){ try{ return JSON.parse(localStorage.getItem('eco_wish')) || []; }catch(e){ return []; } },
   set(v){ localStorage.setItem('eco_wish', JSON.stringify(v)); }
 };
-const RecentStore = {
-  get(){ try{ return JSON.parse(localStorage.getItem('eco_recent')) || []; }catch(e){ return []; } },
-  add(id){ let list = this.get().filter(x=>x!==id); list.unshift(id); list = list.slice(0,12); localStorage.setItem('eco_recent', JSON.stringify(list)); }
-};
 
-/* ═══════════════════════════════════════════════════════════
-   DB
-   ═══════════════════════════════════════════════════════════ */
+/* ═══ DB ═══ */
 const DB = {
   products: [], users: [], orders: [], categories: [], coupons: [], notifs: [], reviews: [],
   settings: { ...DEFAULT_SETTINGS }, catRaw: {},
@@ -379,7 +390,7 @@ const DB = {
     this.watch('categories', d => { this.catRaw = d || {}; this.categories = Object.values(this.catRaw).filter(v=>typeof v==='string'); this._markReady('categories'); });
     this.watch('coupons', d => { this.coupons = this._toArray(d); this._markReady('coupons'); });
     this.watch('notifications', d => { this.notifs = this._toArray(d).sort((a,b)=>(b.time||0)-(a.time||0)); this._markReady('notifs'); });
-    this.watch('reviews', d => { this.reviews = this._toArray(d); this._markReady('reviews'); });
+    this.watch('reviews', d => { this.reviews = this._toArray(d).sort((a,b)=>(b.date||0)-(a.date||0)); this._markReady('reviews'); });
     this.watch('settings', d => { this.settings = { ...DEFAULT_SETTINGS, ...(d || {}) }; });
     setTimeout(()=>{
       if(!(this.ready.products && this.ready.users && this.ready.orders)){
@@ -405,21 +416,16 @@ const DB = {
     }
   },
   async trySeed(){
-    if(this.seeded) return;
-    this.seeded = true;
+    if(this.seeded) return; this.seeded = true;
     if(!this.ready.products || this.products.length > 0) return;
     const products = {
       p1:{id:'p1',name:'প্রিমিয়াম ইকো-বোতল',nameEn:'Premium Eco Bottle',cat:'ইলেকট্রনিকস',price:850,oldPrice:1200,discount:29,stock:45,img:'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80',desc:'পরিবেশ বান্ধব স্টেইনলেস স্টিল বোতল।',featured:true,createdAt:Date.now(),rating:4.5,reviewCount:12},
       p2:{id:'p2',name:'ওয়্যারলেস হেডফোন',nameEn:'Wireless Headphone',cat:'ইলেকট্রনিকস',price:2500,oldPrice:3500,discount:29,stock:20,img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&q=80',desc:'নয়েজ ক্যানসেলিং হেডফোন।',featured:true,createdAt:Date.now()+1,rating:4.7,reviewCount:34},
-      p3:{id:'p3',name:'স্মার্ট ওয়াচ',nameEn:'Smart Watch',cat:'গ্যাজেট',price:3200,oldPrice:4500,discount:29,stock:15,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',desc:'ফিটনেস ট্র্যাকিং স্মার্ট ওয়াচ।',featured:true,createdAt:Date.now()+2,rating:4.3,reviewCount:18},
-      p4:{id:'p4',name:'মিনিমালিস্ট ব্যাগ',nameEn:'Minimalist Bag',cat:'ফ্যাশন',price:1200,oldPrice:1800,discount:33,stock:30,img:'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600&q=80',desc:'ওয়াটারপ্রুফ ব্যাগ।',featured:false,createdAt:Date.now()+3,rating:4.6,reviewCount:22},
-      p5:{id:'p5',name:'ক্যামেরা লেন্স',nameEn:'Camera Lens',cat:'ফটোগ্রাফি',price:8500,oldPrice:10000,discount:15,stock:8,img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&q=80',desc:'প্রফেশনাল ক্যামেরা লেন্স।',featured:false,createdAt:Date.now()+4,rating:4.8,reviewCount:9}
+      p3:{id:'p3',name:'স্মার্ট ওয়াচ',nameEn:'Smart Watch',cat:'গ্যাজেট',price:3200,oldPrice:4500,discount:29,stock:15,img:'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80',desc:'ফিটনেস ট্র্যাকিং স্মার্ট ওয়াচ।',featured:true,createdAt:Date.now()+2,rating:4.3,reviewCount:18}
     };
-    const users = {
-      u_admin:{id:'u_admin',name:'Admin',email:'admin@eco.pro',password:'admin123',role:'admin',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff',phone:'01700000000'}
-    };
-    const cats = { c1:'ইলেকট্রনিকস', c2:'গ্যাজেট', c3:'ফ্যাশন', c4:'ফটোগ্রাফি', c5:'হোম ও লিভিং' };
-    const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10}, cp2:{id:'cp2',code:'FLAT100',type:'flat',value:100} };
+    const users = { u_admin:{id:'u_admin',name:'Admin',email:'admin@eco.pro',password:'admin123',role:'admin',blocked:false,joined:Date.now(),avatar:'https://ui-avatars.com/api/?name=Admin&background=6366f1&color=fff',phone:'01700000000'} };
+    const cats = { c1:'ইলেকট্রনিকস', c2:'গ্যাজেট', c3:'ফ্যাশন', c4:'ফটোগ্রাফি' };
+    const coupons = { cp1:{id:'cp1',code:'ECO10',type:'percent',value:10} };
     const notifs = { n1:{id:'n1',title:'স্বাগতম!',body:'EcoShop Pro MAX-এ স্বাগতম',time:Date.now(),read:false,type:'info'} };
     try {
       await Promise.all([
@@ -445,12 +451,27 @@ const DB = {
   saveCoupon(c){ const id = c.id || 'cp_'+Date.now(); c.id=id; return db.ref('coupons/'+id).set(c); },
   deleteCoupon(id){ return db.ref('coupons/'+id).remove(); },
   pushNotif(n){ const id='n_'+Date.now(); n.id=id; n.time=Date.now(); n.read=false; return db.ref('notifications/'+id).set(n); },
+  /* v13 — Broadcast to all users */
+  async broadcastNotif(title, body){
+    const id = 'n_broadcast_' + Date.now();
+    const notif = { id, title, body, time: Date.now(), read: false, type: 'broadcast', broadcast: true };
+    return db.ref('notifications/'+id).set(notif);
+  },
   saveReview(r){ const id='r_'+Date.now(); r.id=id; r.date=Date.now(); return db.ref('reviews/'+id).set(r); },
   isReady(){ return this.ready.products && this.ready.users && this.ready.orders; },
   updateStock(productId, newStock){ return db.ref('products/'+productId+'/stock').set(newStock); },
+  getProductReviews(productId){ return this.reviews.filter(r=>r.productId===productId); },
+  async addReviewToProduct(productId, rating){
+    const p = this.products.find(x=>x.id===productId); if(!p) return;
+    const count = (p.reviewCount||0) + 1;
+    const oldTotal = (p.rating||0) * (p.reviewCount||0);
+    const newRating = (oldTotal + rating) / count;
+    return db.ref('products/'+productId).update({ rating: parseFloat(newRating.toFixed(2)), reviewCount: count });
+  },
   async saveSettings(s){ return db.ref('settings').set(s); }
 };
 
+/* ═══ Image Upload ═══ */
 const ImageUpload = {
   async upload(file){
     if(!file) throw new Error('No file');
@@ -466,30 +487,18 @@ const ImageUpload = {
   }
 };
 
-/* OTP */
+/* ═══ OTP ═══ */
 const OTP = {
   currentEmail: null, currentCode: null, expiresAt: 0, attempts: 0, cooldownTimer: null, verified: false,
-  init(){
-    if(typeof emailjs === 'undefined') return false;
-    if(!EmailJSConfig.initialized){
-      try { emailjs.init({ publicKey: EmailJSConfig.publicKey }); EmailJSConfig.initialized = true; return true; }
-      catch(e){ return false; }
-    }
-    return true;
-  },
+  init(){ if(typeof emailjs === 'undefined') return false; if(!EmailJSConfig.initialized){ try { emailjs.init({ publicKey: EmailJSConfig.publicKey }); EmailJSConfig.initialized = true; return true; } catch(e){ return false; } } return true; },
   generate(){ return String(Math.floor(100000 + Math.random() * 900000)); },
   async send(email, name){
     if(!this.init()) return { ok:false, msg:'EmailJS not loaded' };
     const code = this.generate();
-    this.currentEmail = Auth.normalizeEmail(email);
-    this.currentCode = code;
-    this.expiresAt = Date.now() + 10*60*1000;
-    this.attempts = 0; this.verified = false;
+    this.currentEmail = Auth.normalizeEmail(email); this.currentCode = code;
+    this.expiresAt = Date.now() + 10*60*1000; this.attempts = 0; this.verified = false;
     try {
-      await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, {
-        to_email: this.currentEmail, email: this.currentEmail, reply_to: this.currentEmail,
-        otp_code: code, code: code, user_name: name || 'User', site_name: 'EcoShop Pro MAX'
-      });
+      await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, { to_email:this.currentEmail, email:this.currentEmail, reply_to:this.currentEmail, otp_code:code, code:code, user_name:name||'User', site_name:'EcoShop Pro MAX' });
       return { ok:true };
     } catch(err){ return { ok:false, msg: err?.text || err?.message || 'Failed' }; }
   },
@@ -497,117 +506,74 @@ const OTP = {
     if(!this.currentCode) return { ok:false, msg:'Send code first' };
     if(Date.now() > this.expiresAt) return { ok:false, msg:'Code expired' };
     if(this.attempts >= 5) return { ok:false, msg:'Too many attempts' };
-    if(String(input).trim() !== this.currentCode){
-      this.attempts++;
-      return { ok:false, msg:`Wrong code (${5-this.attempts} left)` };
-    }
-    this.verified = true;
-    return { ok:true };
+    if(String(input).trim() !== this.currentCode){ this.attempts++; return { ok:false, msg:`Wrong code (${5-this.attempts} left)` }; }
+    this.verified = true; return { ok:true };
   },
-  reset(){
-    this.currentEmail = null; this.currentCode = null; this.expiresAt = 0;
-    this.attempts = 0; this.verified = false;
-    if(this.cooldownTimer) clearInterval(this.cooldownTimer);
-  },
-  startCooldown(sec, cb){
-    if(this.cooldownTimer) clearInterval(this.cooldownTimer);
-    this.cooldownTimer = setInterval(() => {
-      sec--;
-      if(cb) cb(sec);
-      if(sec <= 0){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; }
-    }, 1000);
-  },
-  maskEmail(email){
-    if(!email) return '';
-    const [u, d] = email.split('@');
-    if(!d) return email;
-    return `${u.slice(0, Math.min(3, u.length))}${'*'.repeat(Math.max(2, u.length - 3))}@${d}`;
-  }
+  reset(){ this.currentEmail=null; this.currentCode=null; this.expiresAt=0; this.attempts=0; this.verified=false; if(this.cooldownTimer) clearInterval(this.cooldownTimer); },
+  startCooldown(sec, cb){ if(this.cooldownTimer) clearInterval(this.cooldownTimer); this.cooldownTimer = setInterval(()=>{ sec--; if(cb) cb(sec); if(sec <= 0){ clearInterval(this.cooldownTimer); this.cooldownTimer = null; } }, 1000); },
+  maskEmail(email){ if(!email) return ''; const [u, d] = email.split('@'); if(!d) return email; return `${u.slice(0, Math.min(3, u.length))}${'*'.repeat(Math.max(2, u.length - 3))}@${d}`; }
 };
 
-/* WhatsApp */
+/* ═══ WhatsApp ═══ */
 const WhatsApp = {
   formatBD(n){ let s = String(n||'').replace(/\D/g,''); if(s.startsWith('0')) s='88'+s; else if(!s.startsWith('88')) s='880'+s.replace(/^0+/,''); return s; },
   buildMessage(o){
     const items = (o.items||[]).map((it,i)=>`${i+1}. ${it.name}\n   ${it.qty} × ৳${it.price} = ৳${it.qty*it.price}`).join('\n\n');
-    const isBn = LANG === 'bn';
-    return isBn
-      ? `🛒 *EcoShop Pro MAX*\n\n👤 ${o.customer.name}\n📞 ${o.customer.phone}\n📍 ${o.customer.address}\n\n📦 *পণ্য:*\n${items}\n\n💰 সাবটোটাল: ৳${o.subtotal||0}\n🚚 ডেলিভারি: ৳${o.deliveryCharge||0}\n✅ *সর্বমোট: ৳${o.total}*\n\n💳 ${(o.paymentMethod||'cod').toUpperCase()}\n🆔 ${o.id}\n📊 ${Orders.statusLabel(o.status)}`
-      : `🛒 *EcoShop Pro MAX*\n\n👤 ${o.customer.name}\n📞 ${o.customer.phone}\n📍 ${o.customer.address}\n\n📦 *Items:*\n${items}\n\n💰 Subtotal: ৳${o.subtotal||0}\n🚚 Delivery: ৳${o.deliveryCharge||0}\n✅ *Total: ৳${o.total}*\n\n💳 ${(o.paymentMethod||'cod').toUpperCase()}\n🆔 ${o.id}\n📊 ${Orders.statusLabel(o.status)}`;
+    return LANG==='bn' ? `🛒 *EcoShop Pro MAX*\n\n👤 ${o.customer.name}\n📞 ${o.customer.phone}\n📍 ${o.customer.address}\n\n📦 *পণ্য:*\n${items}\n\n💰 সাবটোটাল: ৳${o.subtotal||0}\n🚚 ডেলিভারি: ৳${o.deliveryCharge||0}\n✅ *সর্বমোট: ৳${o.total}*\n\n🆔 ${o.id}\n📊 ${Orders.statusLabel(o.status)}`
+      : `🛒 *EcoShop Pro MAX*\n\n👤 ${o.customer.name}\n📞 ${o.customer.phone}\n📍 ${o.customer.address}\n\n📦 *Items:*\n${items}\n\n💰 Subtotal: ৳${o.subtotal||0}\n🚚 Delivery: ৳${o.deliveryCharge||0}\n✅ *Total: ৳${o.total}*\n\n🆔 ${o.id}\n📊 ${Orders.statusLabel(o.status)}`;
   },
   send(o, phone){
     if(!o) return;
     const p = this.formatBD(phone || o.customer.phone);
-    if(!p){ Toast.show('Invalid phone', 'error'); return; }
+    if(!p){ Toast.show('Invalid phone','error'); return; }
     window.open(`https://wa.me/${p}?text=${encodeURIComponent(this.buildMessage(o))}`, '_blank');
   }
 };
 
-/* PDF */
+/* ═══ PDF ═══ */
 const PDFInvoice = {
-  generate(orderId, lang){
-    const o = DB.orders.find(x => x.id === orderId);
-    if(!o) return;
-    const isBn = (lang || LANG) === 'bn';
-    const T = isBn ? {invoice:'ইনভয়েস', date:'তারিখ', to:'প্রাপক', item:'পণ্য', qty:'পরিমাণ', price:'দর', total:'মোট', sub:'সাবটোটাল', del:'ডেলিভারি', disc:'ডিসকাউন্ট', grand:'সর্বমোট', pay:'পেমেন্ট', thanks:'ধন্যবাদ!'}
-                  : {invoice:'INVOICE', date:'Date', to:'Bill To', item:'Item', qty:'Qty', price:'Price', total:'Total', sub:'Subtotal', del:'Delivery', disc:'Discount', grand:'Grand Total', pay:'Payment', thanks:'Thank you!'};
+  generate(orderId){
+    const o = DB.orders.find(x => x.id === orderId); if(!o) return;
+    const isBn = LANG === 'bn';
     const w = window.open('', '_blank', 'width=900,height=1000');
     w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Invoice ${o.id}</title>
       <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;700;800&display=swap" rel="stylesheet">
-      <style>
-        *{margin:0;padding:0;box-sizing:border-box}
-        body{font-family:'${isBn?'Hind Siliguri':'Plus Jakarta Sans'}',sans-serif;background:#f5f6fa;padding:24px;color:#0f1021}
-        .inv{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(15,16,33,.08)}
-        .h{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:28px 32px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
-        .h h1{font-size:22px;font-weight:800}
-        .h h1 span{color:#ffe49a}
-        .h .meta{text-align:right;font-size:13px}
-        .h .meta h2{font-size:24px;font-weight:800;margin-bottom:6px}
-        .parties{padding:24px 32px;border-bottom:1px dashed #e5e8f0;display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px}
-        .pl{font-size:10.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
-        .pn{font-size:15px;font-weight:800;margin-bottom:6px}
-        .pd{color:#64748b;line-height:1.6}
-        table{width:100%;border-collapse:collapse;margin:20px 0}
-        th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e8f0;font-size:13px}
-        th{background:#f8f9fd;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#64748b}
-        td:nth-child(2),td:nth-child(3),td:nth-child(4){text-align:right}
-        .totals{padding:0 32px 24px;display:flex;justify-content:flex-end}
-        .tb{width:100%;max-width:320px}
-        .tr{display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;color:#64748b}
-        .tr.g{border-top:2px solid #e5e8f0;margin-top:8px;padding-top:14px;font-size:18px;font-weight:800;color:#6366f1}
-        .f{padding:20px 32px;background:#f8f9fd;text-align:center;font-size:12px;color:#64748b}
-        .bar{position:fixed;top:20px;right:20px;display:flex;gap:8px;z-index:100}
-        .bar button{padding:12px 20px;background:#6366f1;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:inherit}
-        @media print{.bar{display:none}}
-      </style></head><body>
+      <style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'${isBn?'Hind Siliguri':'Plus Jakarta Sans'}',sans-serif;background:#f5f6fa;padding:24px;color:#0f1021}
+      .inv{max-width:760px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(15,16,33,.08)}
+      .h{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:28px 32px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:16px}
+      .h h1{font-size:22px;font-weight:800}.h h1 span{color:#ffe49a}
+      .h .meta{text-align:right;font-size:13px}.h .meta h2{font-size:24px;font-weight:800;margin-bottom:6px}
+      .parties{padding:24px 32px;border-bottom:1px dashed #e5e8f0;display:grid;grid-template-columns:1fr 1fr;gap:20px;font-size:13px}
+      .pl{font-size:10.5px;font-weight:800;color:#94a3b8;text-transform:uppercase;margin-bottom:6px}
+      .pn{font-size:15px;font-weight:800;margin-bottom:6px}.pd{color:#64748b;line-height:1.6}
+      table{width:100%;border-collapse:collapse;margin:20px 0}th,td{padding:12px;text-align:left;border-bottom:1px solid #e5e8f0;font-size:13px}
+      th{background:#f8f9fd;font-size:11px;text-transform:uppercase;color:#64748b}
+      td:nth-child(2),td:nth-child(3),td:nth-child(4){text-align:right}
+      .totals{padding:0 32px 24px;display:flex;justify-content:flex-end}.tb{width:100%;max-width:320px}
+      .tr{display:flex;justify-content:space-between;padding:8px 0;font-size:13.5px;color:#64748b}
+      .tr.g{border-top:2px solid #e5e8f0;margin-top:8px;padding-top:14px;font-size:18px;font-weight:800;color:#6366f1}
+      .f{padding:20px 32px;background:#f8f9fd;text-align:center;font-size:12px;color:#64748b}
+      .bar{position:fixed;top:20px;right:20px;display:flex;gap:8px;z-index:100}
+      .bar button{padding:12px 20px;background:#6366f1;color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:inherit}
+      @media print{.bar{display:none}}</style></head><body>
       <div class="bar"><button onclick="window.print()">🖨️ ${isBn?'প্রিন্ট / সেভ PDF':'Print / Save PDF'}</button><button style="background:#fff;color:#64748b" onclick="window.close()">✕</button></div>
-      <div class="inv">
-        <div class="h"><div><h1>EcoShop<span>Pro</span></h1><p style="font-size:12px;opacity:.9;margin-top:4px">${DB.settings.supportPhone||''}</p></div>
-        <div class="meta"><h2>${T.invoice}</h2><div>${o.id}</div><div>${T.date}: ${new Date(o.date).toLocaleDateString(isBn?'bn-BD':'en-US')}</div></div></div>
-        <div class="parties">
-          <div><div class="pl">${isBn?'প্রেরক':'From'}</div><div class="pn">${DB.settings.siteName}</div><div class="pd">${DB.settings.supportEmail}<br>${DB.settings.supportPhone}</div></div>
-          <div><div class="pl">${T.to}</div><div class="pn">${o.customer.name}</div><div class="pd">${o.customer.phone}<br>${o.customer.address}${o.customer.city?', '+o.customer.city:''}</div></div>
-        </div>
-        <table><thead><tr><th>${T.item}</th><th>${T.qty}</th><th>${T.price}</th><th>${T.total}</th></tr></thead>
-        <tbody>${(o.items||[]).map(it=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>৳${it.price}</td><td>৳${it.qty*it.price}</td></tr>`).join('')}</tbody></table>
-        <div class="totals"><div class="tb">
-          <div class="tr"><span>${T.sub}</span><span>৳${o.subtotal||0}</span></div>
-          <div class="tr"><span>${T.del}</span><span>৳${o.deliveryCharge||0}</span></div>
-          ${o.discount?`<div class="tr"><span>${T.disc}</span><span>-৳${o.discount}</span></div>`:''}
-          <div class="tr g"><span>${T.grand}</span><span>৳${o.total}</span></div>
-        </div></div>
-        <div class="f">${T.thanks} — ${DB.settings.siteName} © ${new Date().getFullYear()}</div>
-      </div>
-      </body></html>`);
+      <div class="inv"><div class="h"><div><h1>EcoShop<span>Pro</span></h1><p style="font-size:12px;opacity:.9;margin-top:4px">${DB.settings.supportPhone||''}</p></div>
+      <div class="meta"><h2>${isBn?'ইনভয়েস':'INVOICE'}</h2><div>${o.id}</div><div>${new Date(o.date).toLocaleDateString(isBn?'bn-BD':'en-US')}</div></div></div>
+      <div class="parties"><div><div class="pl">${isBn?'প্রেরক':'From'}</div><div class="pn">${DB.settings.siteName}</div><div class="pd">${DB.settings.supportEmail}<br>${DB.settings.supportPhone}</div></div>
+      <div><div class="pl">${isBn?'প্রাপক':'Bill To'}</div><div class="pn">${o.customer.name}</div><div class="pd">${o.customer.phone}<br>${o.customer.address}</div></div></div>
+      <table><thead><tr><th>${isBn?'পণ্য':'Item'}</th><th>${isBn?'পরিমাণ':'Qty'}</th><th>${isBn?'দর':'Price'}</th><th>${isBn?'মোট':'Total'}</th></tr></thead>
+      <tbody>${(o.items||[]).map(it=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>৳${it.price}</td><td>৳${it.qty*it.price}</td></tr>`).join('')}</tbody></table>
+      <div class="totals"><div class="tb"><div class="tr"><span>${isBn?'সাবটোটাল':'Subtotal'}</span><span>৳${o.subtotal||0}</span></div><div class="tr"><span>${isBn?'ডেলিভারি':'Delivery'}</span><span>৳${o.deliveryCharge||0}</span></div>${o.discount?`<div class="tr"><span>${isBn?'ডিসকাউন্ট':'Discount'}</span><span>-৳${o.discount}</span></div>`:''}<div class="tr g"><span>${isBn?'সর্বমোট':'Grand Total'}</span><span>৳${o.total}</span></div></div></div>
+      <div class="f">${isBn?'ধন্যবাদ!':'Thank you!'} — ${DB.settings.siteName} © ${new Date().getFullYear()}</div></div></body></html>`);
     w.document.close();
   }
 };
 
+/* ═══ UI ═══ */
 const Toast = {
   show(msg, type='info', ms=2800){
     const box = document.getElementById('toastContainer'); if(!box) return;
-    const el = document.createElement('div');
-    el.className = `toast ${type}`;
+    const el = document.createElement('div'); el.className = `toast ${type}`;
     const icons = { info:'fa-circle-info', success:'fa-circle-check', error:'fa-circle-exclamation', warning:'fa-triangle-exclamation' };
     el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i><span>${msg}</span>`;
     box.appendChild(el);
@@ -615,19 +581,14 @@ const Toast = {
   },
   progress(){ const p=document.getElementById('topProgress'); if(!p) return; p.style.width='70%'; setTimeout(()=>{p.style.width='100%';setTimeout(()=>p.style.width='0',300);},300); }
 };
-
 const Modal = {
-  open(html, cls=''){
-    document.getElementById('modalRoot').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)Modal.close()"><div class="modal-box ${cls}">${html}</div></div>`;
-    document.body.style.overflow = 'hidden';
-  },
+  open(html, cls=''){ document.getElementById('modalRoot').innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)Modal.close()"><div class="modal-box ${cls}">${html}</div></div>`; document.body.style.overflow = 'hidden'; },
   close(){ document.getElementById('modalRoot').innerHTML=''; document.body.style.overflow=''; },
   confirm(msg, onYes){
     this.open(`<div class="confirm-box"><i class="fa-solid fa-triangle-exclamation"></i><p>${msg}</p><div class="confirm-actions"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-danger btn-block" id="modalConfirmYes">${t('yes')}</button></div></div>`, 'sm');
     document.getElementById('modalConfirmYes').onclick = () => { Modal.close(); onYes && onYes(); };
   }
 };
-
 function loadingHTML(msg){ return `<div class="loading-state"><div class="spinner"></div><p>${msg||t('loadingData')}</p></div>`; }
 function money(n){ return '৳' + (Number(n)||0).toLocaleString(LANG==='bn'?'bn-BD':'en-US'); }
 function timeAgo(ts){
@@ -648,9 +609,9 @@ function starHTML(rating, size){
   }
   return `<span class="stars" style="${size?`font-size:${size}`:''}">${s}</span>`;
 }
-function escapeHtml(str){ return String(str||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-/* Auth */
+/* ═══ Auth ═══ */
 const Auth = {
   user(){ return Session.get(); },
   isAdmin(){ const u=this.user(); return u && u.role==='admin'; },
@@ -659,7 +620,7 @@ const Auth = {
     const target = this.normalizeEmail(email);
     if(!target) return { status:'free' };
     if(!DB.ready.users) return { status:'unknown' };
-    return { status: (DB.users || []).some(u => this.normalizeEmail(u.email) === target) ? 'taken' : 'free' };
+    return { status: (DB.users||[]).some(u => this.normalizeEmail(u.email) === target) ? 'taken' : 'free' };
   },
   isEmailTaken(email){ return this.checkEmailStatus(email).status === 'taken'; },
   async login(email, password){
@@ -668,27 +629,20 @@ const Auth = {
     const u = DB.users.find(x => this.normalizeEmail(x.email) === target && x.password === password);
     if(!u) return { ok:false, msg:t('invalidCredentials') };
     if(u.blocked) return { ok:false, msg:t('accountBlocked') };
-    Session.set(u);
-    return { ok:true, user:u };
+    Session.set(u); return { ok:true, user:u };
   },
   async register(data){
     if(!DB.ready.users) return { ok:false, msg:t('loadingData') };
     const target = this.normalizeEmail(data.email);
     if(this.isEmailTaken(target)) return { ok:false, msg:t('emailExists') };
-    const u = {
-      id: 'u_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-      name: data.name, email: target, password: data.password,
-      phone: data.phone || '', role: 'customer', blocked: false,
-      joined: Date.now(), emailVerified: true,
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff`
-    };
+    const u = { id:'u_'+Date.now()+'_'+Math.floor(Math.random()*1000), name:data.name, email:target, password:data.password, phone:data.phone||'', address:data.address||'', role:'customer', blocked:false, joined:Date.now(), emailVerified:true, avatar:`https://ui-avatars.com/api/?name=${encodeURIComponent(data.name)}&background=6366f1&color=fff` };
     try { await DB.saveUser(u); Session.set(u); return { ok:true, user:u }; }
     catch(e){ return { ok:false, msg:'Save failed: ' + e.message }; }
   },
   logout(){ Session.clear(); Toast.show(t('logoutSuccess'),'success'); App.go('home'); }
 };
 
-/* Cart */
+/* ═══ Cart ═══ */
 const Cart = {
   items(){ return CartStore.get(); },
   save(items){ CartStore.set(items); this.refresh(); },
@@ -720,7 +674,6 @@ const Cart = {
     setT('cartCount', `${c} ${t('items')}`);
     setT('cartSubtotal', money(this.subtotal()));
     setT('cartShipping', money(this.shippingCharge('inside')));
-    setT('cartDiscount', '-'+money(0));
     setT('cartTotal', money(this.subtotal()+this.shippingCharge('inside')));
     this.renderDrawer();
   },
@@ -738,7 +691,7 @@ const Cart = {
   }
 };
 
-/* Wish */
+/* ═══ Wish ═══ */
 const Wish = {
   all(){ return WishStore.get(); },
   has(id){ return this.all().includes(id); },
@@ -747,12 +700,11 @@ const Wish = {
     if(idx>-1){ list.splice(idx,1); Toast.show(LANG==='bn'?'সরানো হয়েছে':'Removed','info'); }
     else { list.push(id); Toast.show(LANG==='bn'?'যোগ হয়েছে':'Added','success'); }
     WishStore.set(list);
-    if(['wishlist','shop','home','product'].includes(App.route)) App.render();
-    else App.syncUI();
+    if(['wishlist','shop','home','product'].includes(App.route)) App.render(); else App.syncUI();
   }
 };
 
-/* Orders v12 */
+/* ═══ Orders ═══ */
 const Orders = {
   STATUS_FLOW: ['pending','confirmed','processing','shipped','out_for_delivery','delivered'],
   STATUS_ALL: ['pending','confirmed','processing','shipped','out_for_delivery','delivered','cancelled','rejected'],
@@ -760,23 +712,11 @@ const Orders = {
   mine(){ const u=Auth.user(); if(!u) return []; return DB.orders.filter(o=>o.userId===u.id); },
   async create(data){
     const u = Auth.user();
-    const order = {
-      id: 'ORD-'+Date.now().toString().slice(-8),
-      userId: u?u.id:0, customer: data.customer, items: data.items,
-      subtotal: data.subtotal, deliveryCharge: data.deliveryCharge, deliveryZone: data.deliveryZone,
-      discount: data.discount||0, total: data.total, coupon: data.coupon||null,
-      paymentMethod: data.paymentMethod, paymentNumber: data.paymentNumber||null,
-      txnId: data.txnId||null, screenshot: data.screenshot||null,
-      status: 'pending', paymentStatus: data.paymentMethod==='cod'?'cod_pending':'awaiting_verification',
-      courier: null, trackingNumber: null, eta: null, internalNotes: [],
-      date: Date.now(),
-      history: [{ status:'pending', time:Date.now(), comment:t('orderReceived'), by:'Customer' }]
-    };
+    const order = { id:'ORD-'+Date.now().toString().slice(-8), userId:u?u.id:0, customer:data.customer, items:data.items, subtotal:data.subtotal, deliveryCharge:data.deliveryCharge, deliveryZone:data.deliveryZone, discount:data.discount||0, total:data.total, coupon:data.coupon||null, paymentMethod:data.paymentMethod, paymentNumber:data.paymentNumber||null, txnId:data.txnId||null, screenshot:data.screenshot||null, status:'pending', paymentStatus:data.paymentMethod==='cod'?'cod_pending':'awaiting_verification', courier:null, trackingNumber:null, eta:null, internalNotes:[], date:Date.now(), history:[{ status:'pending', time:Date.now(), comment:t('orderReceived'), by:'Customer' }] };
     const saved = await DB.saveOrder(order);
     data.items.forEach(async i => { const p = DB.products.find(x=>x.id===i.id); if(p) try { await DB.updateStock(p.id, Math.max(0, p.stock-i.qty)); } catch(e){} });
-    try { await DB.pushNotif({ title: LANG==='bn'?'🛒 নতুন অর্ডার!':'🛒 New Order!', body:`${data.customer.name} — ${money(data.total)}`, type:'order' }); } catch(e){}
-    Cart.save([]);
-    return saved;
+    try { await DB.pushNotif({ title:LANG==='bn'?'🛒 নতুন অর্ডার!':'🛒 New Order!', body:`${data.customer.name} — ${money(data.total)}`, type:'order' }); } catch(e){}
+    Cart.save([]); return saved;
   },
   async updateStatus(id, status, comment, extra){
     const o = DB.orders.find(x=>x.id===id); if(!o) return;
@@ -798,11 +738,7 @@ const Orders = {
     return this.updateStatus(id, 'rejected', reason||t('rejectedByAdmin'), { paymentStatus:'rejected' });
   },
   remove(id){ return DB.deleteOrder(id); },
-  counts(){
-    const c = { pending:0, confirmed:0, processing:0, shipped:0, out_for_delivery:0, delivered:0, cancelled:0, rejected:0 };
-    DB.orders.forEach(o => { c[o.status] = (c[o.status]||0)+1; });
-    return c;
-  },
+  counts(){ const c = { pending:0, confirmed:0, processing:0, shipped:0, out_for_delivery:0, delivered:0, cancelled:0, rejected:0 }; DB.orders.forEach(o => { c[o.status] = (c[o.status]||0)+1; }); return c; },
   statusLabel(s){ return t(s) || s; },
   statusIcon(s){
     const m = { pending:'fa-clock', confirmed:'fa-check-circle', processing:'fa-gears', shipped:'fa-truck', out_for_delivery:'fa-motorcycle', delivered:'fa-circle-check', cancelled:'fa-xmark-circle', rejected:'fa-ban' };
@@ -810,9 +746,13 @@ const Orders = {
   },
   detail(orderId){
     const o = DB.orders.find(x=>x.id===orderId); if(!o) return;
+    const u = Auth.user();
+    /* ✅ Privacy check: User can only view their own orders */
+    if(!Auth.isAdmin() && (!u || o.userId !== u.id)){
+      return Toast.show(t('cannotViewOthers'),'error');
+    }
     const isBn = LANG==='bn';
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
       <div class="modal-head"><h3><i class="fa-solid fa-receipt"></i> ${o.id}</h3></div>
       <div class="modal-body">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
@@ -820,19 +760,16 @@ const Orders = {
           <span class="order-amount">${money(o.total)}</span>
         </div>
         <div class="order-detail-grid">
-          <div class="order-detail-section">
-            <h5><i class="fa-solid fa-user"></i> ${t('customerInfo')}</h5>
+          <div class="order-detail-section"><h5><i class="fa-solid fa-user"></i> ${t('customerInfo')}</h5>
             <div class="detail-row"><span>${isBn?'নাম':'Name'}</span><span>${o.customer.name}</span></div>
             <div class="detail-row"><span>${isBn?'ফোন':'Phone'}</span><span>${o.customer.phone}</span></div>
             <div class="detail-row"><span>${isBn?'ঠিকানা':'Address'}</span><span>${o.customer.address}${o.customer.city?', '+o.customer.city:''}</span></div>
           </div>
-          <div class="order-detail-section">
-            <h5><i class="fa-solid fa-credit-card"></i> ${t('paymentDetails')}</h5>
+          <div class="order-detail-section"><h5><i class="fa-solid fa-credit-card"></i> ${t('paymentDetails')}</h5>
             <div class="detail-row"><span>${isBn?'পদ্ধতি':'Method'}</span><span>${(o.paymentMethod||'cod').toUpperCase()}</span></div>
             ${o.txnId?`<div class="detail-row"><span>Txn ID</span><span>${o.txnId}</span></div>`:''}
           </div>
-          <div class="order-detail-section" style="grid-column:1/-1">
-            <h5><i class="fa-solid fa-box"></i> ${t('orderItems')}</h5>
+          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-box"></i> ${t('orderItems')}</h5>
             <div class="order-items-list">${(o.items||[]).map(it=>{const p=DB.products.find(x=>x.id===it.id);return `<div class="order-item-row"><img src="${p?p.img:''}" onerror="this.src='https://via.placeholder.com/48'"><div class="order-item-info"><h6>${it.name}</h6><p>${it.qty} × ${money(it.price)}</p></div><span class="order-item-price">${money(it.qty*it.price)}</span></div>`;}).join('')}</div>
             <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px">
               <div class="detail-row"><span>${t('subtotal')}</span><span>${money(o.subtotal||0)}</span></div>
@@ -841,8 +778,7 @@ const Orders = {
               <div class="detail-row" style="border-top:2px solid var(--border);margin-top:6px;padding-top:10px"><span><b>${t('total')}</b></span><span style="color:var(--brand);font-size:16px;font-weight:800">${money(o.total)}</span></div>
             </div>
           </div>
-          <div class="order-detail-section" style="grid-column:1/-1">
-            <h5><i class="fa-solid fa-clock-rotate-left"></i> ${t('orderHistory')}</h5>
+          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-clock-rotate-left"></i> ${t('orderHistory')}</h5>
             <ul class="order-history">${(o.history||[]).slice().reverse().map((h,i)=>`<li class="${i===0?'current':''}"><span class="h-dot"></span><h6>${Orders.statusLabel(h.status)}</h6><small>${new Date(h.time).toLocaleString(isBn?'bn-BD':'en-US')}${h.by?' • '+h.by:''}</small>${h.comment?`<div class="h-comment">${h.comment}</div>`:''}</li>`).join('')}</ul>
           </div>
         </div>
@@ -851,8 +787,7 @@ const Orders = {
         <button class="btn btn-pdf btn-block" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i> PDF</button>
         <button class="btn btn-whatsapp btn-block" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button>
         <button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button>
-      </div>
-    `, 'lg');
+      </div>`, 'lg');
   },
   reorder(orderId){
     const o = DB.orders.find(x=>x.id===orderId); if(!o) return;
@@ -863,7 +798,7 @@ const Orders = {
   }
 };
 
-/* Notifs */
+/* ═══ Notifs ═══ */
 const Notifs = {
   all(){ return DB.notifs; },
   unread(){ return this.all().filter(n=>!n.read).length; },
@@ -873,11 +808,112 @@ const Notifs = {
     const c = document.getElementById('notifCount'); if(c) c.textContent = `${this.unread()} unread`;
     const list = document.getElementById('notifList'); if(!list) return;
     const arr = this.all();
-    list.innerHTML = arr.length ? arr.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div class="notif-icon"><i class="fa-solid fa-bell"></i></div><div><h5>${n.title}</h5><p>${n.body}</p><small>${timeAgo(n.time)}</small></div></div>`).join('') : `<div class="empty-state"><i class="fa-solid fa-bell-slash"></i><h3>No notifications</h3></div>`;
+    list.innerHTML = arr.length ? arr.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div class="notif-icon"><i class="fa-solid ${n.type==='broadcast'?'fa-bullhorn':'fa-bell'}"></i></div><div><h5>${n.title}</h5><p>${n.body}</p><small>${timeAgo(n.time)}</small></div></div>`).join('') : `<div class="empty-state"><i class="fa-solid fa-bell-slash"></i><h3>No notifications</h3></div>`;
   }
 };
 
-/* Compare */
+/* ═══ Advanced Search Engine ═══ */
+const SearchEngine = {
+  /* Levenshtein distance for fuzzy matching */
+  levenshtein(a, b){
+    if(a.length === 0) return b.length;
+    if(b.length === 0) return a.length;
+    const matrix = [];
+    for(let i=0;i<=b.length;i++) matrix[i] = [i];
+    for(let j=0;j<=a.length;j++) matrix[0][j] = j;
+    for(let i=1;i<=b.length;i++){
+      for(let j=1;j<=a.length;j++){
+        if(b.charAt(i-1) === a.charAt(j-1)) matrix[i][j] = matrix[i-1][j-1];
+        else matrix[i][j] = Math.min(matrix[i-1][j-1]+1, matrix[i][j-1]+1, matrix[i-1][j]+1);
+      }
+    }
+    return matrix[b.length][a.length];
+  },
+  /* Calculate match score */
+  score(product, query){
+    const q = query.toLowerCase().trim();
+    if(!q) return 0;
+    const name = (product.name||'').toLowerCase();
+    const nameEn = (product.nameEn||'').toLowerCase();
+    const cat = (product.cat||'').toLowerCase();
+    const desc = (product.desc||'').toLowerCase();
+    const combined = `${name} ${nameEn} ${cat} ${desc}`;
+
+    let score = 0;
+    // Exact name match
+    if(name === q || nameEn === q) score += 100;
+    // Name starts with
+    else if(name.startsWith(q) || nameEn.startsWith(q)) score += 80;
+    // Name contains
+    else if(name.includes(q) || nameEn.includes(q)) score += 60;
+    // Category match
+    if(cat.includes(q)) score += 40;
+    // Description match
+    if(desc.includes(q)) score += 20;
+
+    // Word-by-word match
+    const words = q.split(/\s+/).filter(w => w.length > 1);
+    if(words.length > 1){
+      words.forEach(w => {
+        if(combined.includes(w)) score += 15;
+        else {
+          // Fuzzy match
+          const combinedWords = combined.split(/\s+/);
+          for(const cw of combinedWords){
+            if(cw.length > 2 && this.levenshtein(w, cw) <= 1){ score += 8; break; }
+          }
+        }
+      });
+    }
+    return score;
+  },
+  /* Search products */
+  search(query, opts = {}){
+    if(!query || !query.trim()) return [];
+    const limit = opts.limit || 20;
+    const results = DB.products
+      .map(p => ({ product: p, score: this.score(p, query) }))
+      .filter(x => x.score > 0)
+      .sort((a,b) => b.score - a.score)
+      .slice(0, limit);
+    return results;
+  },
+  /* Image search — match by looking for similar products (simplified) */
+  async imageSearch(file){
+    if(!file) return [];
+    const fileName = file.name.toLowerCase();
+    const keywords = fileName.replace(/\.[^.]+$/, '').split(/[-_\s]+/).filter(w => w.length > 2);
+    if(!keywords.length) return DB.products.slice(0, 6);
+    let results = [];
+    keywords.forEach(kw => {
+      const found = this.search(kw, { limit: 6 });
+      found.forEach(r => {
+        if(!results.find(x => x.product.id === r.product.id)) results.push(r);
+      });
+    });
+    return results.slice(0, 12);
+  }
+};
+
+/* ═══ Voice Search ═══ */
+const VoiceSearch = {
+  init(onResult){
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(!SR) return false;
+    const rec = new SR();
+    rec.lang = LANG === 'bn' ? 'bn-BD' : 'en-US';
+    rec.continuous = false;
+    rec.interimResults = false;
+    rec.onresult = (e) => {
+      const text = e.results[0][0].transcript;
+      if(onResult) onResult(text);
+    };
+    rec.onerror = () => Toast.show(LANG==='bn'?'ভয়েস শোনা যায়নি':'Voice not recognized','error');
+    try { rec.start(); return true; } catch(e){ return false; }
+  }
+};
+
+/* ═══ Compare ═══ */
 const Compare = {
   MAX: 4, key:'eco_compare',
   all(){ try{ return JSON.parse(localStorage.getItem(this.key)) || []; }catch(e){ return []; } },
@@ -886,45 +922,20 @@ const Compare = {
   toggle(id){
     const list = this.all(); const idx = list.indexOf(id);
     if(idx>-1) list.splice(idx,1);
-    else { if(list.length >= this.MAX) return Toast.show(`Max ${this.MAX}`, 'warning'); list.push(id); }
+    else { if(list.length >= this.MAX) return Toast.show(`Max ${this.MAX}`,'warning'); list.push(id); }
     this.save(list);
     if(['home','shop','wishlist','product'].includes(App.route)) App.render();
   },
   clear(){ this.save([]); },
   updateBar(){
-    const bar = document.getElementById('compareBar'); const thumbs = document.getElementById('compareThumbs'); const count = document.getElementById('compareCount');
-    if(!bar || !thumbs) return;
+    const bar = document.getElementById('compareBar'); if(!bar) return;
     const list = this.all();
     if(!list.length){ bar.style.display = 'none'; return; }
     bar.style.display = 'block';
-    if(count) count.textContent = list.length;
-    thumbs.innerHTML = list.map(id => { const p = DB.products.find(x=>x.id===id); if(!p) return ''; return `<div class="compare-thumb"><img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'"><button onclick="event.stopPropagation();Compare.toggle('${id}')"><i class="fa-solid fa-xmark"></i></button></div>`; }).join('');
-  },
-  open(){
-    const list = this.all();
-    if(list.length < 2) return Toast.show(LANG==='bn'?'অন্তত ২টি নির্বাচন করুন':'Select 2+','warning');
-    const products = list.map(id => DB.products.find(p=>p.id===id)).filter(Boolean);
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-scale-balanced"></i> ${t('compare')}</h3></div>
-      <div class="modal-body" style="padding-left:0;padding-right:0">
-        <div class="compare-table-wrap" style="overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;min-width:600px">
-            <thead><tr><th style="text-align:left;padding:12px;border-bottom:2px solid var(--border);font-size:12px;text-transform:uppercase">${t('features')}</th>${products.map(p=>`<th style="text-align:center;padding:12px;border-bottom:2px solid var(--border)"><img src="${p.img}" style="width:80px;height:80px;border-radius:12px;object-fit:cover;margin:0 auto 8px"><div style="font-size:13px;font-weight:700">${p.name}</div></th>`).join('')}</tr></thead>
-            <tbody>
-              <tr><td style="padding:12px"><b>${t('price')}</b></td>${products.map(p=>`<td style="text-align:center;padding:12px"><span class="price">${money(p.price)}</span></td>`).join('')}</tr>
-              <tr><td style="padding:12px"><b>${t('stock')}</b></td>${products.map(p=>`<td style="text-align:center;padding:12px">${p.stock}</td>`).join('')}</tr>
-              <tr><td style="padding:12px"><b>${t('reviews')}</b></td>${products.map(p=>`<td style="text-align:center;padding:12px">${starHTML(p.rating||0)}</td>`).join('')}</tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button><button class="btn btn-danger btn-block" onclick="Compare.clear();Modal.close()">${t('clearCompare')}</button></div>
-    `, 'lg');
   }
 };
 
-/* Wallet */
+/* ═══ Wallet / Referral / Loyalty ═══ */
 const Wallet = {
   getBalance(uid){ if(!uid) return 0; try { const d=JSON.parse(localStorage.getItem('eco_wallet_balance')||'{}'); return d[uid]||0; } catch(e){ return 0; } },
   setBalance(uid, amt){ try { const d=JSON.parse(localStorage.getItem('eco_wallet_balance')||'{}'); d[uid]=amt; localStorage.setItem('eco_wallet_balance', JSON.stringify(d)); } catch(e){} },
@@ -938,38 +949,19 @@ const Wallet = {
   open(){
     const u = Auth.user(); if(!u) return Toast.show(t('loginRequired'),'warning');
     const balance = this.getBalance(u.id); const txs = this.getTransactions(u.id);
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-wallet"></i> ${t('wallet')}</h3></div>
-      <div class="modal-body">
-        <div class="wallet-card"><div class="wallet-card-inner"><label>${t('balance')}</label><span class="wallet-amount">${money(balance)}</span><div class="wallet-actions"><button class="btn btn-sm btn-solid" onclick="Wallet.topUp()"><i class="fa-solid fa-plus"></i> ${t('addMoney')}</button></div></div></div>
-        <h4 style="font-size:14px;font-weight:800;margin:20px 0 10px"><i class="fa-solid fa-list"></i> ${t('transactions')}</h4>
-        ${txs.length ? txs.map(tx=>`<div class="tx-item"><div class="tx-icon ${tx.type}"><i class="fa-solid fa-${tx.type==='credit'?'arrow-down':'arrow-up'}"></i></div><div class="tx-info"><h5>${tx.reason}</h5><p>${new Date(tx.time).toLocaleString()}</p></div><span class="tx-amount ${tx.type}">${tx.type==='credit'?'+':''}${money(tx.amount)}</span></div>`).join('') : `<p class="muted">${t('noTransactions')}</p>`}
-      </div>
-      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button></div>
-    `);
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-wallet"></i> ${t('wallet')}</h3></div><div class="modal-body"><div class="wallet-card"><div class="wallet-card-inner"><label>${t('balance')}</label><span class="wallet-amount">${money(balance)}</span><div class="wallet-actions"><button class="btn btn-sm btn-solid" onclick="Wallet.topUp()"><i class="fa-solid fa-plus"></i> ${t('addMoney')}</button></div></div></div><h4 style="font-size:14px;font-weight:800;margin:20px 0 10px"><i class="fa-solid fa-list"></i> ${t('transactions')}</h4>${txs.length ? txs.map(tx=>`<div class="tx-item"><div class="tx-icon ${tx.type}"><i class="fa-solid fa-${tx.type==='credit'?'arrow-down':'arrow-up'}"></i></div><div class="tx-info"><h5>${tx.reason}</h5><p>${new Date(tx.time).toLocaleString()}</p></div><span class="tx-amount ${tx.type}">${tx.type==='credit'?'+':''}${money(tx.amount)}</span></div>`).join('') : `<p class="muted">${t('noTransactions')}</p>`}</div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button></div>`);
   },
   topUp(){
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-plus"></i> ${t('addMoney')}</h3></div>
-      <div class="modal-body">
-        <div class="form-group"><label>${t('amount')} (৳)</label><input type="number" id="walletTopUp" min="50" step="50" value="500" autofocus></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${[100,500,1000,2000].map(a=>`<button class="btn btn-outline btn-sm" onclick="document.getElementById('walletTopUp').value=${a}">৳${a}</button>`).join('')}</div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" onclick="Wallet.processTopUp()"><i class="fa-solid fa-check"></i> ${t('save')}</button></div>
-    `);
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-plus"></i> ${t('addMoney')}</h3></div><div class="modal-body"><div class="form-group"><label>${t('amount')} (৳)</label><input type="number" id="walletTopUp" min="50" step="50" value="500" autofocus></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" onclick="Wallet.processTopUp()"><i class="fa-solid fa-check"></i> ${t('save')}</button></div>`);
   },
   processTopUp(){
     const amt = +document.getElementById('walletTopUp').value;
     if(!amt || amt < 50) return Toast.show('Min ৳50','error');
     const u = Auth.user(); if(!u) return;
     Wallet.addBalance(u.id, amt, 'Top up');
-    Modal.close(); Toast.show(`${money(amt)} added`, 'success'); App.render();
+    Modal.close(); Toast.show(`${money(amt)} added`,'success'); App.render();
   }
 };
-
-/* Referral */
 const Referral = {
   BONUS: 50,
   generateCode(uid){ return uid ? ('ECO'+uid.slice(-5).toUpperCase()).replace(/[^A-Z0-9]/g,'').slice(0,10) : 'ECO000'; },
@@ -985,24 +977,15 @@ const Referral = {
     Wallet.addBalance(referrer.id, this.BONUS, 'Referral bonus');
     Session.set({...u, referralApplied:true, referralCode:cleanCode});
     await DB.updateUser(u.id, { referralApplied:true, referralCode:cleanCode });
-    Toast.show(`🎉 ৳${this.BONUS} for both!`, 'success', 5000);
+    Toast.show(`🎉 ৳${this.BONUS} for both!`,'success',5000);
     App.render();
   },
   open(){
     const u = Auth.user(); if(!u) return Toast.show(t('loginRequired'),'warning');
     const code = this.generateCode(u.id);
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-users"></i> ${t('referral')}</h3></div>
-      <div class="modal-body">
-        <div class="referral-card"><div style="font-size:14px;font-weight:700;margin-bottom:8px">${t('inviteFriends')}</div><p style="font-size:12.5px;opacity:.9">${LANG==='bn'?`আপনার কোড শেয়ার করুন। দুজনেই ৳${this.BONUS} পাবেন!`:`Share your code. Both get ৳${this.BONUS}!`}</p><div class="referral-code"><span>${code}</span><button onclick="navigator.clipboard.writeText('${code}').then(()=>Toast.show('Copied','success'))"><i class="fa-solid fa-copy"></i></button></div></div>
-        <div class="form-group" style="margin-top:20px"><label>Apply Code</label><div style="display:flex;gap:8px"><input id="applyCodeInput" placeholder="ECO..." style="flex:1"><button class="btn btn-primary" onclick="Referral.applyCode(document.getElementById('applyCodeInput').value)"><i class="fa-solid fa-check"></i></button></div></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button><button class="btn btn-primary btn-block" onclick="window.open('https://wa.me/?text='+encodeURIComponent('Join EcoShop Pro MAX with code: ${code}'))"><i class="fa-brands fa-whatsapp"></i> Share</button></div>
-    `);
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-users"></i> ${t('referral')}</h3></div><div class="modal-body"><div class="referral-card"><div style="font-size:14px;font-weight:700;margin-bottom:8px">${t('inviteFriends')}</div><div class="referral-code"><span>${code}</span><button onclick="navigator.clipboard.writeText('${code}').then(()=>Toast.show('Copied','success'))"><i class="fa-solid fa-copy"></i></button></div></div><div class="form-group" style="margin-top:20px"><label>Apply Code</label><div style="display:flex;gap:8px"><input id="applyCodeInput" placeholder="ECO..." style="flex:1"><button class="btn btn-primary" onclick="Referral.applyCode(document.getElementById('applyCodeInput').value)"><i class="fa-solid fa-check"></i></button></div></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button></div>`);
   }
 };
-
 const Loyalty = {
   RATE: 0.01,
   getPoints(uid){ if(!uid) return 0; try { const d=JSON.parse(localStorage.getItem('eco_loyalty')||'{}'); return d[uid]||0; } catch(e){ return 0; } },
@@ -1010,7 +993,7 @@ const Loyalty = {
   addFromOrder(uid, total){ if(!uid) return 0; const pts = Math.floor(total*this.RATE); this.setPoints(uid, this.getPoints(uid)+pts); return pts; }
 };
 
-/* Analytics */
+/* ═══ Analytics ═══ */
 const Analytics = {
   period: '7d',
   setPeriod(p){ this.period = p; Admin.refreshContent(); },
@@ -1046,18 +1029,10 @@ const Analytics = {
   }
 };
 
-/* Tracking */
+/* ═══ Tracking ═══ */
 const Tracking = {
   open(){
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-truck-fast"></i> ${t('trackOrder')}</h3></div>
-      <div class="modal-body">
-        <div class="form-group"><label>Order ID</label><input id="trackOrderInput" placeholder="ORD-XXXXXXXX"></div>
-        <div id="trackingResult"></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button><button class="btn btn-primary btn-block" onclick="Tracking.lookup()"><i class="fa-solid fa-magnifying-glass"></i> ${t('track')}</button></div>
-    `);
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-truck-fast"></i> ${t('trackOrder')}</h3></div><div class="modal-body"><div class="form-group"><label>Order ID</label><input id="trackOrderInput" placeholder="ORD-XXXXXXXX"></div><div id="trackingResult"></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('close')}</button><button class="btn btn-primary btn-block" onclick="Tracking.lookup()"><i class="fa-solid fa-magnifying-glass"></i> ${t('track')}</button></div>`);
     setTimeout(()=>document.getElementById('trackOrderInput')?.focus(), 100);
   },
   lookup(){
@@ -1069,19 +1044,18 @@ const Tracking = {
     if(!order){ res.innerHTML = `<div style="background:rgba(239,68,68,.1);border-left:3px solid var(--danger);padding:12px;border-radius:8px;margin-top:14px;color:var(--danger);font-size:13px">${t('botInvalidOrder')}</div>`; return; }
     const statuses = Orders.STATUS_FLOW;
     const idx = statuses.indexOf(order.status);
-    const isCancelled = ['cancelled','rejected'].includes(order.status);
-    res.innerHTML = `<div style="margin-top:16px;background:var(--surface-2);padding:16px;border-radius:12px"><b>${order.id}</b><br><span class="status-badge status-${order.status}" style="margin-top:8px;display:inline-block">${Orders.statusLabel(order.status)}</span>${!isCancelled ? `<div class="order-timeline" style="margin-top:12px">${statuses.map((s,i)=>`<div class="timeline-step ${i<idx?'done':''} ${i===idx?'current':''}">${i<statuses.length-1?'<div class="timeline-line"></div>':''}<div class="dot"><i class="fa-solid ${i<=idx?'fa-check':Orders.statusIcon(s)}"></i></div><div class="label">${Orders.statusLabel(s)}</div></div>`).join('')}</div>` : ''}</div>`;
+    res.innerHTML = `<div style="margin-top:16px;background:var(--surface-2);padding:16px;border-radius:12px"><b>${order.id}</b><br><span class="status-badge status-${order.status}" style="margin-top:8px;display:inline-block">${Orders.statusLabel(order.status)}</span></div>`;
   }
 };
 
-/* Chatbot */
+/* ═══ Chatbot ═══ */
 const Chatbot = {
-  open: false, messages: [], isTyping: false,
+  open: false, messages: [],
   init(){
     document.getElementById('chatbotToggle').onclick = ()=> this.toggle();
     document.getElementById('chatbotClose').onclick = ()=> this.close();
-    document.getElementById('chatbotSend').onclick = ()=> this.sendFromInput();
-    document.getElementById('chatbotInput')?.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); this.sendFromInput(); } });
+    document.getElementById('chatbotSend').onclick = ()=> this.send();
+    document.getElementById('chatbotInput')?.addEventListener('keydown', e => { if(e.key==='Enter'){ e.preventDefault(); this.send(); } });
     setTimeout(()=>{ const b=document.getElementById('chatbotBadge'); if(b) b.style.display='none'; }, 8000);
   },
   toggle(){ this.open ? this.close() : this.openChat(); },
@@ -1108,11 +1082,9 @@ const Chatbot = {
     box.innerHTML = r.map(x => `<button onclick="Chatbot.quick('${x.replace(/'/g,"\\'")}')">${x}</button>`).join('');
   },
   quick(t){ this.addUser(t); this.process(t); },
-  sendFromInput(){ const inp=document.getElementById('chatbotInput'); if(!inp) return; const v=inp.value.trim(); if(!v) return; inp.value=''; this.addUser(v); this.process(v); },
+  send(){ const inp=document.getElementById('chatbotInput'); if(!inp) return; const v=inp.value.trim(); if(!v) return; inp.value=''; this.addUser(v); this.process(v); },
   async process(text){
-    this.showTyping();
-    await new Promise(r => setTimeout(r, 600));
-    this.hideTyping();
+    this.showTyping(); await new Promise(r => setTimeout(r, 600)); this.hideTyping();
     const low = text.toLowerCase();
     const m = text.match(/ord-?\d+/i);
     if(m){
@@ -1121,15 +1093,15 @@ const Chatbot = {
       else this.addBot(t('botInvalidOrder'));
       return;
     }
-    if(/^(hi|hello|hey|হাই|হ্যালো|সালাম)/i.test(low)){ this.addBot(t('botGreeting')); return; }
+    if(/^(hi|hello|হাই|হ্যালো|সালাম)/i.test(low)){ this.addBot(t('botGreeting')); return; }
     if(/(thanks|ধন্যবাদ)/i.test(low)){ this.addBot(t('botThanks')); return; }
     if(/(help|সাহায্য)/i.test(low)){ this.addBot(t('botHelpMessage')); return; }
     if(/(contact|যোগাযোগ|ফোন)/i.test(low)){ this.addBot(t('botContact')); return; }
     if(/(track|ট্র্যাক)/i.test(low)){ this.addBot(t('botOrderTracking')); return; }
-    if(/(product|পণ্য|show)/i.test(low)){
-      const feat = DB.products.filter(p=>p.featured && p.stock>0).slice(0,3);
-      if(!feat.length){ this.addBot(t('botHelpMessage')); return; }
-      const cards = feat.map(p => `<div style="display:flex;gap:10px;margin-top:8px;background:var(--surface-2);padding:8px;border-radius:10px;cursor:pointer" onclick="Chatbot.goTo('${p.id}')"><img src="${p.img}" style="width:44px;height:44px;border-radius:8px;object-fit:cover"><div style="flex:1"><div style="font-size:12.5px;font-weight:700">${p.name}</div><div style="font-size:12px;font-weight:800;color:var(--brand-dark)">৳${p.price}</div></div></div>`).join('');
+    /* Search using advanced engine */
+    const results = SearchEngine.search(text, { limit: 3 });
+    if(results.length){
+      const cards = results.map(r => { const p = r.product; return `<div style="display:flex;gap:10px;margin-top:8px;background:var(--surface-2);padding:8px;border-radius:10px;cursor:pointer" onclick="Chatbot.goTo('${p.id}')"><img src="${p.img}" style="width:44px;height:44px;border-radius:8px;object-fit:cover"><div style="flex:1"><div style="font-size:12.5px;font-weight:700">${p.name}</div><div style="font-size:12px;font-weight:800;color:var(--brand-dark)">৳${p.price}</div></div></div>`; }).join('');
       this.addBot(t('botFoundProducts'), cards);
       return;
     }
@@ -1138,22 +1110,36 @@ const Chatbot = {
   goTo(id){ this.close(); App.go('product', id); }
 };
 
-/* PWA/Push */
+/* ═══ PWA ═══ */
 const PWA = {
   deferredPrompt: null,
   registerSW(){ if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{}); },
   initInstallPrompt(){
-    const banner = document.getElementById('installBanner');
     window.addEventListener('beforeinstallprompt', e => {
-      e.preventDefault(); this.deferredPrompt = e;
-      if(banner && !localStorage.getItem('eco_install_dismissed')) setTimeout(()=>banner.classList.add('show'), 2500);
+      e.preventDefault();
+      this.deferredPrompt = e;
+      /* Show in side menu instead of top banner */
+      const pmInstall = document.getElementById('pmInstallStatus');
+      if(pmInstall) pmInstall.style.display = 'flex';
     });
-    document.getElementById('installBtn').onclick = async () => {
-      if(!this.deferredPrompt) return;
-      this.deferredPrompt.prompt(); await this.deferredPrompt.userChoice;
-      this.deferredPrompt = null; banner?.classList.remove('show');
-    };
-    document.getElementById('installClose').onclick = () => { banner?.classList.remove('show'); localStorage.setItem('eco_install_dismissed','1'); };
+    window.addEventListener('appinstalled', () => {
+      const pmInstall = document.getElementById('pmInstallStatus');
+      if(pmInstall) pmInstall.style.display = 'none';
+      Toast.show(LANG==='bn'?'✅ অ্যাপ ইনস্টল হয়েছে':'✅ App installed','success');
+    });
+  },
+  async triggerInstall(){
+    if(!this.deferredPrompt){
+      Toast.show(LANG==='bn'?'অ্যাপটি ইতিমধ্যে ইনস্টল করা আছে বা ব্রাউজার সাপোর্ট করে না':'Already installed or not supported','info');
+      return;
+    }
+    this.deferredPrompt.prompt();
+    const { outcome } = await this.deferredPrompt.userChoice;
+    this.deferredPrompt = null;
+    if(outcome === 'accepted'){
+      const pmInstall = document.getElementById('pmInstallStatus');
+      if(pmInstall) pmInstall.style.display = 'none';
+    }
   }
 };
 const PushNotif = {
@@ -1167,7 +1153,7 @@ const PushNotif = {
   async local(title, body){ if(!('Notification' in window) || Notification.permission !== 'granted') return; try { new Notification(title, { body }); } catch(e){} }
 };
 
-/* App Router */
+/* ═══ App Router ═══ */
 const App = {
   route: 'home',
   _shopCat:'all', _shopSort:'default', _shopQ:'',
@@ -1177,7 +1163,6 @@ const App = {
   _orderFilterUser: 'all',
   _authTab:'login', _authRedirect:null, _param:null,
   _otpStep:null, _pendingReg:null, _checkoutState:null,
-  lastScrollY: 0,
 
   hideSplash(){
     const s = document.getElementById('splash');
@@ -1231,7 +1216,6 @@ const App = {
     this.syncUI();
     Cart.refresh();
     Notifs.refresh();
-    Compare.updateBar();
     this.initPageScripts();
   },
   initPageScripts(){
@@ -1291,30 +1275,27 @@ const App = {
     document.getElementById('notifPanel').classList.remove('active');
     document.querySelector('.admin-sidebar')?.classList.remove('active');
     document.getElementById('backdrop').classList.remove('active');
+    document.getElementById('mobileSearchModal').classList.remove('active');
     document.body.style.overflow='';
   }
 };
 
-/* Pages */
+/* ═══ Pages ═══ */
 const Pages = {
   home(){
     if(!DB.isReady()) return loadingHTML();
     const featured = DB.products.filter(p=>p.featured).slice(0,6);
     const newArr = [...DB.products].sort((a,b)=>(b.createdAt||0)-(a.createdAt||0)).slice(0,8);
     return `
-      <section class="hero">
-        <div class="hero-inner">
-          <div class="hero-content">
-            <div class="hero-badge"><i class="fa-solid fa-bolt"></i> Premium 2026</div>
-            <h1 class="hero-title">${LANG==='bn'?'সেরা <span class="grad">প্রিমিয়াম</span> পণ্য<br>এখন হাতের মুঠোয়':'Best <span class="grad">Premium</span> products<br>at your fingertips'}</h1>
-            <p class="hero-sub">${LANG==='bn'?'দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট, ১০০% অরিজিনাল।':'Fast delivery, secure payment, 100% original.'}</p>
-            <div class="hero-btns">
-              <button class="btn btn-primary btn-lg" onclick="App.go('shop')"><i class="fa-solid fa-store"></i> ${t('shop')}</button>
-              <button class="btn btn-outline btn-lg" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff" onclick="App.go('orders')"><i class="fa-solid fa-box"></i> ${t('myOrders')}</button>
-            </div>
-          </div>
+      <section class="hero"><div class="hero-inner"><div class="hero-content">
+        <div class="hero-badge"><i class="fa-solid fa-bolt"></i> Premium 2026</div>
+        <h1 class="hero-title">${LANG==='bn'?'সেরা <span class="grad">প্রিমিয়াম</span> পণ্য<br>এখন হাতের মুঠোয়':'Best <span class="grad">Premium</span> products<br>at your fingertips'}</h1>
+        <p class="hero-sub">${LANG==='bn'?'দ্রুত ডেলিভারি, নিরাপদ পেমেন্ট, ১০০% অরিজিনাল।':'Fast delivery, secure payment, 100% original.'}</p>
+        <div class="hero-btns">
+          <button class="btn btn-primary btn-lg" onclick="App.go('shop')"><i class="fa-solid fa-store"></i> ${t('shop')}</button>
+          <button class="btn btn-outline btn-lg" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.4);color:#fff" onclick="App.go('orders')"><i class="fa-solid fa-box"></i> ${t('myOrders')}</button>
         </div>
-      </section>
+      </div></div></section>
       <div class="page">
         <div class="section-head"><h2><i class="fa-solid fa-fire" style="color:var(--accent)"></i> ${t('featured')}</h2><span class="count-chip">${featured.length} ${t('items')}</span></div>
         <div class="product-grid">${featured.length ? featured.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>${t('empty')}</h3></div>`}</div>
@@ -1326,7 +1307,7 @@ const Pages = {
     if(!DB.isReady()) return loadingHTML();
     let list = DB.products.slice();
     if(App._shopCat && App._shopCat!=='all') list = list.filter(p=>p.cat===App._shopCat);
-    if(App._shopQ){ const s=App._shopQ.toLowerCase(); list = list.filter(p=>(p.name+(p.nameEn||'')+(p.desc||'')).toLowerCase().includes(s)); }
+    if(App._shopQ){ const results = SearchEngine.search(App._shopQ, { limit: 100 }); list = results.map(r => r.product); }
     if(App._shopSort==='low') list.sort((a,b)=>a.price-b.price);
     else if(App._shopSort==='high') list.sort((a,b)=>b.price-a.price);
     else if(App._shopSort==='new') list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
@@ -1347,16 +1328,17 @@ const Pages = {
             <option value="high" ${App._shopSort==='high'?'selected':''}>${t('priceHighLow')}</option>
           </select>
         </div>
-        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3></div>`}</div>
+        ${App._shopQ?`<div class="section-head" style="margin-bottom:14px"><span class="count-chip">${t('searchResults')}: "${escapeHtml(App._shopQ)}" (${list.length})</span><button class="btn btn-outline btn-sm" onclick="App._shopQ='';App.render()"><i class="fa-solid fa-xmark"></i> ${t('clearAllFilters')}</button></div>`:''}
+        <div class="product-grid">${list.length ? list.map(Components.productCard).join('') : `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('empty')}</h3><p>${t('searchNoResults')}</p></div>`}</div>
       </div>`;
   },
   productDetail(id){
     if(!DB.isReady()) return loadingHTML();
     const p = DB.products.find(x=>x.id===id);
-    if(!p) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>Not found</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
-    RecentStore.add(p.id);
+    if(!p) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-box-open"></i><h3>Not found</h3></div></div>`;
     const imgs = p.images && p.images.length ? p.images : [p.img];
     const related = DB.products.filter(x=>x.cat===p.cat && x.id!==p.id).slice(0,4);
+    const reviews = DB.getProductReviews(p.id);
     const stockCls = p.stock<=0?'out':(p.stock<10?'low':'');
     return `
       <div class="page">
@@ -1373,17 +1355,36 @@ const Pages = {
             <div class="detail-price">
               <span class="price">${money(p.price)}</span>
               ${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}
-              ${p.discount?`<span class="discount-tag" style="background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:800">-${p.discount}%</span>`:''}
+              ${p.discount?`<span style="background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:800">-${p.discount}%</span>`:''}
             </div>
             <p class="detail-desc">${LANG==='bn'?p.desc:(p.descEn||p.desc||'')}</p>
             <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px"><span class="chip ${stockCls==='out'?'blocked':'active-status'}"><i class="fa-solid fa-box"></i> ${p.stock<=0?t('outOfStock'):`${t('stock')}: ${p.stock}`}</span></div>
             <div class="detail-actions">
               <button class="btn btn-primary btn-lg" ${p.stock<=0?'disabled':''} onclick="Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${t('addToCart')}</button>
               <button class="btn btn-outline btn-lg" onclick="Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart" style="${Wish.has(p.id)?'color:var(--danger)':''}"></i></button>
-              <button class="btn btn-outline btn-lg" onclick="Compare.toggle('${p.id}')"><i class="fa-solid fa-scale-balanced"></i></button>
             </div>
           </div>
         </div>
+
+        <!-- ✅ Reviews visible to everyone -->
+        <div class="admin-card" style="margin-top:24px">
+          <div class="admin-card-head">
+            <h3><i class="fa-solid fa-star"></i> ${t('productReviews')} (${reviews.length})</h3>
+            ${Auth.user()?`<button class="btn btn-primary btn-sm" onclick="Reviews.openModal('${p.id}')"><i class="fa-solid fa-pen"></i> ${t('writeReview')}</button>`:''}
+          </div>
+          ${reviews.length ? reviews.map(r => {
+            const user = DB.users.find(x=>x.id===r.userId);
+            return `<div class="review-item">
+              <img class="review-avatar" src="${user?.avatar||'https://ui-avatars.com/api/?name=U'}" onerror="this.src='https://ui-avatars.com/api/?name=U'">
+              <div class="review-body">
+                <div class="review-head"><h5>${escapeHtml(r.userName||'User')}</h5><span class="rating">${starHTML(r.rating,'14px')}</span></div>
+                <p>${escapeHtml(r.text)}</p>
+                <small style="font-size:11px;color:var(--text-soft);display:block;margin-top:6px">${timeAgo(r.date)}</small>
+              </div>
+            </div>`;
+          }).join('') : `<p class="muted">${t('beFirstReview')}</p>`}
+        </div>
+
         ${related.length?`<div class="section-head" style="margin-top:26px"><h2><i class="fa-solid fa-layer-group"></i> ${t('relatedProducts')}</h2></div><div class="product-grid">${related.map(Components.productCard).join('')}</div>`:''}
       </div>`;
   },
@@ -1413,6 +1414,7 @@ const Pages = {
   profile(){
     const u = Auth.user();
     if(!u) return this.authPage('profile');
+    /* ✅ Users only see their own data */
     const mine = Orders.mine();
     const spent = mine.filter(o=>o.status!=='cancelled').reduce((s,o)=>s+o.total,0);
     const balance = Wallet.getBalance(u.id);
@@ -1426,142 +1428,60 @@ const Pages = {
           <div class="profile-cover"><div class="profile-cover-pattern"></div></div>
           <div class="profile-body">
             <div class="profile-avatar-wrap">
-              <img class="profile-avatar" id="profileAvatarImg" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=6366f1&color=fff'">
-              <label class="profile-avatar-edit" for="avatarInput" title="${t('uploadPicture')}"><i class="fa-solid fa-camera"></i></label>
+              <img class="profile-avatar" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U&background=6366f1&color=fff'">
+              <label class="profile-avatar-edit" for="avatarInput"><i class="fa-solid fa-camera"></i></label>
               <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="Profile.uploadAvatar(this)">
             </div>
             <div class="profile-name-row">
-              <h2>${u.name}</h2>
-              ${u.emailVerified ? `<span class="profile-verified"><i class="fa-solid fa-circle-check"></i> ${t('verifiedCustomer')}</span>` : ''}
+              <h2>${escapeHtml(u.name)}</h2>
+              ${u.emailVerified?`<span class="profile-verified"><i class="fa-solid fa-circle-check"></i> ${t('verifiedCustomer')}</span>`:''}
             </div>
             <div class="profile-meta">
-              <span><i class="fa-solid fa-envelope"></i> ${u.email}</span>
-              ${u.phone?`<span><i class="fa-solid fa-phone"></i> ${u.phone}</span>`:''}
+              <span><i class="fa-solid fa-envelope"></i> ${escapeHtml(u.email)}</span>
+              ${u.phone?`<span><i class="fa-solid fa-phone"></i> ${escapeHtml(u.phone)}</span>`:''}
               <span><i class="fa-solid fa-calendar"></i> ${t('joinedOn')}: ${joinDate}</span>
-            </div>
-            <div class="profile-actions">
-              <button class="btn btn-sm" onclick="Wallet.open()"><i class="fa-solid fa-wallet"></i> ${t('wallet')}</button>
-              <button class="btn btn-sm" onclick="Referral.open()"><i class="fa-solid fa-users"></i> ${t('referral')}</button>
-              <button class="btn btn-sm btn-solid" onclick="Tracking.open()"><i class="fa-solid fa-truck-fast"></i> ${t('track')}</button>
             </div>
           </div>
         </div>
 
         <div class="profile-stats">
-          <div class="pstat-card">
-            <div class="pstat-icon brand"><i class="fa-solid fa-box"></i></div>
-            <div class="pstat-value">${mine.length}</div>
-            <div class="pstat-label">${t('orderCount')}</div>
-          </div>
-          <div class="pstat-card">
-            <div class="pstat-icon warning"><i class="fa-solid fa-clock"></i></div>
-            <div class="pstat-value">${mine.filter(o=>o.status==='pending').length}</div>
-            <div class="pstat-label">${t('ordersPending')}</div>
-          </div>
-          <div class="pstat-card">
-            <div class="pstat-icon success"><i class="fa-solid fa-wallet"></i></div>
-            <div class="pstat-value">${money(spent)}</div>
-            <div class="pstat-label">${t('totalSpent')}</div>
-          </div>
-          <div class="pstat-card">
-            <div class="pstat-icon pink"><i class="fa-solid fa-gift"></i></div>
-            <div class="pstat-value">${points}</div>
-            <div class="pstat-label">${t('loyalty')}</div>
-          </div>
+          <div class="pstat-card"><div class="pstat-icon brand"><i class="fa-solid fa-box"></i></div><div class="pstat-value">${mine.length}</div><div class="pstat-label">${t('orderCount')}</div></div>
+          <div class="pstat-card"><div class="pstat-icon warning"><i class="fa-solid fa-clock"></i></div><div class="pstat-value">${mine.filter(o=>o.status==='pending').length}</div><div class="pstat-label">${t('ordersPending')}</div></div>
+          <div class="pstat-card"><div class="pstat-icon success"><i class="fa-solid fa-wallet"></i></div><div class="pstat-value">${money(spent)}</div><div class="pstat-label">${t('totalSpent')}</div></div>
+          <div class="pstat-card"><div class="pstat-icon pink"><i class="fa-solid fa-gift"></i></div><div class="pstat-value">${points}</div><div class="pstat-label">${t('loyalty')}</div></div>
         </div>
 
-        <div class="wallet-card">
-          <div class="wallet-card-inner">
-            <label>${t('walletBalance')}</label>
-            <span class="wallet-amount">${money(balance)}</span>
-            <div class="wallet-actions">
-              <button class="btn btn-sm btn-solid" onclick="Wallet.open()"><i class="fa-solid fa-list"></i> ${t('transactions')}</button>
-              <button class="btn btn-sm" onclick="Wallet.topUp()"><i class="fa-solid fa-plus"></i> ${t('addMoney')}</button>
-            </div>
-          </div>
-        </div>
+        <div class="wallet-card"><div class="wallet-card-inner"><label>${t('walletBalance')}</label><span class="wallet-amount">${money(balance)}</span><div class="wallet-actions"><button class="btn btn-sm btn-solid" onclick="Wallet.open()"><i class="fa-solid fa-list"></i> ${t('transactions')}</button><button class="btn btn-sm" onclick="Wallet.topUp()"><i class="fa-solid fa-plus"></i> ${t('addMoney')}</button></div></div></div>
 
-        <div class="referral-card">
-          <div style="font-size:14px;font-weight:700;margin-bottom:8px">${t('inviteFriends')}</div>
-          <p style="font-size:12.5px;opacity:.9">${isBn?`আপনার কোড শেয়ার করুন। দুজনেই ৳${Referral.BONUS} পাবেন!`:`Share your code. Both get ৳${Referral.BONUS}!`}</p>
-          <div class="referral-code">
-            <span>${refCode}</span>
-            <button onclick="navigator.clipboard.writeText('${refCode}').then(()=>Toast.show('Copied','success'))"><i class="fa-solid fa-copy"></i></button>
-          </div>
-        </div>
+        <div class="referral-card"><div style="font-size:14px;font-weight:700;margin-bottom:8px">${t('inviteFriends')}</div><div class="referral-code"><span>${refCode}</span><button onclick="navigator.clipboard.writeText('${refCode}').then(()=>Toast.show('Copied','success'))"><i class="fa-solid fa-copy"></i></button></div></div>
 
         <div class="form-card">
-          <div class="form-card-head">
-            <i class="fa-solid fa-user-pen"></i>
-            <div>
-              <h3>${t('personalInfo')}</h3>
-              <p>${t('personalInfoDesc')}</p>
-            </div>
-          </div>
-          <div class="form-group"><label>${t('fullName')}</label><input id="pfName" value="${u.name}"></div>
-          <div class="form-group"><label>${t('phone')}</label><input id="pfPhone" value="${u.phone||''}" placeholder="017XXXXXXXX"></div>
-          <div class="form-group"><label>${t('address')}</label><textarea id="pfAddress" rows="2">${u.address||''}</textarea></div>
+          <div class="form-card-head"><i class="fa-solid fa-user-pen"></i><div><h3>${t('personalInfo')}</h3><p>${t('personalInfoDesc')}</p></div></div>
+          <div class="form-group"><label>${t('fullName')}</label><input id="pfName" value="${escapeHtml(u.name)}"></div>
+          <div class="form-group"><label>${t('phone')}</label><input id="pfPhone" value="${escapeHtml(u.phone||'')}" placeholder="017XXXXXXXX"></div>
+          <div class="form-group"><label>${t('address')}</label><textarea id="pfAddress" rows="2">${escapeHtml(u.address||'')}</textarea></div>
           <button class="btn btn-primary" onclick="Profile.saveInfo()"><i class="fa-solid fa-floppy-disk"></i> ${t('saveInfo')}</button>
         </div>
 
         <div class="form-card">
-          <div class="form-card-head">
-            <i class="fa-solid fa-lock" style="background:linear-gradient(135deg,var(--danger),var(--danger-dark))"></i>
-            <div>
-              <h3>${t('changePassword')}</h3>
-              <p>${t('changePasswordDesc')}</p>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>${t('currentPassword')} <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-key input-icon"></i>
-              <input type="password" id="pwdCurrent" placeholder="••••••">
-              <button type="button" class="toggle-pass" onclick="Profile.togglePass('pwdCurrent', this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>${t('newPassword2')} <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-lock input-icon"></i>
-              <input type="password" id="pwdNew" placeholder="••••••" oninput="AuthUI.checkPwd(this.value)">
-              <button type="button" class="toggle-pass" onclick="Profile.togglePass('pwdNew', this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-            <div class="pwd-strength">
-              <div class="pwd-bars"><div class="pwd-bar" id="pwdBar1"></div><div class="pwd-bar" id="pwdBar2"></div><div class="pwd-bar" id="pwdBar3"></div><div class="pwd-bar" id="pwdBar4"></div></div>
-              <div class="pwd-text" id="pwdText">Password strength</div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>${t('confirmPassword')} <span class="req">*</span></label>
-            <div class="input-wrap">
-              <i class="fa-solid fa-lock input-icon"></i>
-              <input type="password" id="pwdNew2" placeholder="••••••">
-              <button type="button" class="toggle-pass" onclick="Profile.togglePass('pwdNew2', this)"><i class="fa-solid fa-eye"></i></button>
-            </div>
-            <div class="form-error" id="pwdError">${t('passwordMismatch')}</div>
-          </div>
+          <div class="form-card-head"><i class="fa-solid fa-lock" style="background:linear-gradient(135deg,var(--danger),var(--danger-dark))"></i><div><h3>${t('changePassword')}</h3><p>${t('changePasswordDesc')}</p></div></div>
+          <div class="form-group"><label>${t('currentPassword')} <span class="req">*</span></label><div class="input-wrap"><i class="fa-solid fa-key input-icon"></i><input type="password" id="pwdCurrent" placeholder="••••••"><button type="button" class="toggle-pass" onclick="Profile.togglePass('pwdCurrent', this)"><i class="fa-solid fa-eye"></i></button></div></div>
+          <div class="form-group"><label>${t('newPassword2')} <span class="req">*</span></label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="pwdNew" placeholder="••••••" oninput="AuthUI.checkPwd(this.value)"><button type="button" class="toggle-pass" onclick="Profile.togglePass('pwdNew', this)"><i class="fa-solid fa-eye"></i></button></div><div class="pwd-strength"><div class="pwd-bars"><div class="pwd-bar" id="pwdBar1"></div><div class="pwd-bar" id="pwdBar2"></div><div class="pwd-bar" id="pwdBar3"></div><div class="pwd-bar" id="pwdBar4"></div></div><div class="pwd-text" id="pwdText">Password strength</div></div></div>
+          <div class="form-group"><label>${t('confirmPassword')} <span class="req">*</span></label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="pwdNew2" placeholder="••••••"><button type="button" class="toggle-pass" onclick="Profile.togglePass('pwdNew2', this)"><i class="fa-solid fa-eye"></i></button></div><div class="form-error" id="pwdError">${t('passwordMismatch')}</div></div>
           <button class="btn btn-primary" onclick="Profile.changePassword()"><i class="fa-solid fa-shield-halved"></i> ${t('updatePassword')}</button>
-        </div>
-
-        <div class="quick-actions" style="margin-top:20px">
-          <div class="quick-action" onclick="App.go('orders')"><i class="fa-solid fa-box"></i><span>${t('myOrders')}</span></div>
-          <div class="quick-action" onclick="App.go('wishlist')"><i class="fa-solid fa-heart"></i><span>${t('wishlist')}</span></div>
-          <div class="quick-action" onclick="Tracking.open()"><i class="fa-solid fa-truck-fast"></i><span>${t('track')}</span></div>
-          <div class="quick-action" onclick="Auth.logout()"><i class="fa-solid fa-right-from-bracket"></i><span>${t('logout')}</span></div>
         </div>
       </div>`;
   },
   auth(){ return this.authPage(App._authRedirect||'home'); },
   authPage(redirect){
     const tab = App._authTab || 'login';
-    return `<div class="auth-page"><div class="auth-card"><div class="auth-logo"><div class="logo-icon"><i class="fa-solid fa-leaf"></i></div><h2>EcoShop<span>Pro</span></h2><p>${t('splashTagline')||'Premium e-commerce'}</p></div><div class="auth-tabs"><button class="${tab==='login'?'active':''}" id="tabLogin" onclick="AuthUI.tab('login')">${t('login')}</button><button class="${tab==='reg'?'active':''}" id="tabReg" onclick="AuthUI.tab('reg')">${t('register')}</button></div><div id="authForm">${tab==='login' ? AuthUI.loginForm(redirect) : AuthUI.regForm(redirect)}</div></div></div>`;
+    return `<div class="auth-page"><div class="auth-card"><div class="auth-logo"><div class="logo-icon"><i class="fa-solid fa-leaf"></i></div><h2>EcoShop<span>Pro</span></h2><p>Premium e-commerce</p></div><div class="auth-tabs"><button class="${tab==='login'?'active':''}" id="tabLogin" onclick="AuthUI.tab('login')">${t('login')}</button><button class="${tab==='reg'?'active':''}" id="tabReg" onclick="AuthUI.tab('reg')">${t('register')}</button></div><div id="authForm">${tab==='login' ? AuthUI.loginForm(redirect) : AuthUI.regForm(redirect)}</div></div></div>`;
   },
   admin(){
     if(!Auth.isAdmin()) return this.authPage('admin');
     if(!DB.isReady()) return loadingHTML();
     const tab = App._adminTab || 'dashboard';
-    return `<div class="admin-layout">${Components.adminSidebar(tab)}<div class="admin-main"><div class="admin-header"><button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button><div class="admin-header-title"><h1>${Admin.titles[tab]||t('dashboard')}</h1><p>EcoShop Pro MAX v12</p></div><div class="admin-header-actions"><button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i></button><button class="btn btn-primary btn-sm" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i></button></div></div><div class="admin-content" id="adminContent">${Admin.render(tab)}</div></div></div>`;
+    return `<div class="admin-layout">${Components.adminSidebar(tab)}<div class="admin-main"><div class="admin-header"><button class="admin-sidebar-toggle" onclick="document.querySelector('.admin-sidebar').classList.toggle('active');document.getElementById('backdrop').classList.toggle('active')"><i class="fa-solid fa-bars"></i></button><div class="admin-header-title"><h1>${Admin.titles[tab]||t('dashboard')}</h1><p>EcoShop Pro MAX v13</p></div><div class="admin-header-actions"><button class="btn btn-pink btn-sm" onclick="Admin.openBroadcastModal()"><i class="fa-solid fa-bullhorn"></i><span> Broadcast</span></button><button class="btn btn-outline btn-sm" onclick="App.go('home')"><i class="fa-solid fa-store"></i></button><button class="btn btn-primary btn-sm" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i></button></div></div><div class="admin-content" id="adminContent">${Admin.render(tab)}</div></div></div>`;
   },
   checkout(){
     const u = Auth.user();
@@ -1569,66 +1489,22 @@ const Pages = {
     if(!Cart.count()) return `<div class="page"><div class="empty-state"><i class="fa-solid fa-cart-shopping"></i><h3>${t('emptyCart')}</h3><button class="btn btn-primary" onclick="App.go('shop')">${t('shop')}</button></div></div>`;
     const s = DB.settings;
     const methods = [];
-    if(s.enableCOD) methods.push({ id:'cod', label:t('cod'), desc:t('codDesc'), icon:'fa-money-bill-wave', cls:'cod' });
-    if(s.enableBkash) methods.push({ id:'bkash', label:t('bkash'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'bkash' });
-    if(s.enableNagad) methods.push({ id:'nagad', label:t('nagad'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'nagad' });
-    if(s.enableRocket) methods.push({ id:'rocket', label:t('rocket'), desc:t('mobilePayment'), icon:'fa-mobile-screen', cls:'rocket' });
+    if(s.enableCOD) methods.push({ id:'cod', label:t('cod'), icon:'fa-money-bill-wave', cls:'cod' });
+    if(s.enableBkash) methods.push({ id:'bkash', label:t('bkash'), icon:'fa-mobile-screen', cls:'bkash' });
+    if(s.enableNagad) methods.push({ id:'nagad', label:t('nagad'), icon:'fa-mobile-screen', cls:'nagad' });
+    if(s.enableRocket) methods.push({ id:'rocket', label:t('rocket'), icon:'fa-mobile-screen', cls:'rocket' });
     const zone = App._checkoutState?.zone || 'inside';
     const pay = App._checkoutState?.payment || 'cod';
     const ship = zone==='inside' ? (s.shippingInsideDhaka||100) : (s.shippingOutsideDhaka||120);
-    return `
-      <div class="page" style="max-width:760px">
-        <div class="section-head"><h2><i class="fa-solid fa-credit-card"></i> ${t('checkout')}</h2></div>
-        <div class="checkout-flow">
-          <div class="checkout-step">
-            <div class="checkout-step-head"><div class="checkout-step-num">1</div><div><h3>${t('deliveryDetails')}</h3><p>${LANG==='bn'?'আপনার নাম, ফোন ও ঠিকানা':'Your name, phone and address'}</p></div></div>
-            <div class="form-group"><label>${t('fullName')} <span class="req">*</span></label><input id="coName" value="${u.name}"></div>
-            <div class="form-row">
-              <div class="form-group"><label>${t('phone')} <span class="req">*</span></label><input id="coPhone" value="${u.phone||''}" placeholder="017XXXXXXXX"></div>
-              <div class="form-group"><label>${t('city')}</label><input id="coCity" value="ঢাকা"></div>
-            </div>
-            <div class="form-group"><label>${t('address')} <span class="req">*</span></label><textarea id="coAddr" rows="2" placeholder="${LANG==='bn'?'সম্পূর্ণ ঠিকানা...':'Full address...'}">${u.address||''}</textarea></div>
-          </div>
-
-          <div class="checkout-step">
-            <div class="checkout-step-head"><div class="checkout-step-num">2</div><div><h3>${t('deliveryZone')}</h3><p>${LANG==='bn'?'আপনার এলাকা নির্বাচন করুন':'Select your area'}</p></div></div>
-            <div class="delivery-zones">
-              <div class="delivery-zone ${zone==='inside'?'active':''}" onclick="Checkout.setZone('inside')">
-                <div class="zone-icon"><i class="fa-solid fa-city"></i></div>
-                <b>${t('insideDhaka')}</b>
-                <div class="zone-price">${money(s.shippingInsideDhaka||100)}</div>
-                <small>${LANG==='bn'?'১-২ দিন':'1-2 days'}</small>
-              </div>
-              <div class="delivery-zone ${zone==='outside'?'active':''}" onclick="Checkout.setZone('outside')">
-                <div class="zone-icon"><i class="fa-solid fa-mountain-sun"></i></div>
-                <b>${t('outsideDhaka')}</b>
-                <div class="zone-price">${money(s.shippingOutsideDhaka||120)}</div>
-                <small>${LANG==='bn'?'২-৪ দিন':'2-4 days'}</small>
-              </div>
-            </div>
-          </div>
-
-          <div class="checkout-step">
-            <div class="checkout-step-head"><div class="checkout-step-num">3</div><div><h3>${t('paymentMethodStep')}</h3><p>${LANG==='bn'?'পেমেন্ট পদ্ধতি বেছে নিন':'Choose payment method'}</p></div></div>
-            <div class="payment-methods">
-              ${methods.map(m => `<div class="payment-method ${pay===m.id?'active':''}" onclick="Checkout.setPayment('${m.id}')"><div class="pm-logo ${m.cls}"><i class="fa-solid ${m.icon}"></i></div><b>${m.label}</b><small>${m.desc}</small></div>`).join('')}
-            </div>
-            <div id="paymentDetail">${Checkout.renderPaymentDetail(pay)}</div>
-          </div>
-
-          <div class="checkout-step">
-            <div class="checkout-step-head"><div class="checkout-step-num">4</div><div><h3>${t('orderSummary')}</h3><p>${LANG==='bn'?'সবকিছু ঠিক থাকলে অর্ডার নিশ্চিত করুন':'Confirm if everything looks good'}</p></div></div>
-            <div class="cart-summary-row"><span>${t('subtotal')}</span><span>${money(Cart.subtotal())}</span></div>
-            <div class="cart-summary-row"><span>${t('deliveryCharge')}</span><span>${money(ship)}</span></div>
-            <div class="cart-summary-row total"><span>${t('total')}</span><span>${money(Cart.subtotal()+ship)}</span></div>
-            <button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" id="coSubmit" onclick="Checkout.place()"><i class="fa-solid fa-check-circle"></i> ${t('placeOrder')}</button>
-          </div>
-        </div>
-      </div>`;
+    return `<div class="page" style="max-width:760px"><div class="section-head"><h2><i class="fa-solid fa-credit-card"></i> ${t('checkout')}</h2></div>
+      <div class="checkout-step"><div class="checkout-step-head"><div class="checkout-step-num">1</div><div><h3>${t('deliveryDetails')}</h3><p>${LANG==='bn'?'নাম, ফোন ও ঠিকানা':'Name, phone and address'}</p></div></div><div class="form-group"><label>${t('fullName')} *</label><input id="coName" value="${escapeHtml(u.name)}"></div><div class="form-row"><div class="form-group"><label>${t('phone')} *</label><input id="coPhone" value="${escapeHtml(u.phone||'')}" placeholder="017XXXXXXXX"></div><div class="form-group"><label>${t('city')}</label><input id="coCity" value="ঢাকা"></div></div><div class="form-group"><label>${t('address')} *</label><textarea id="coAddr" rows="2">${escapeHtml(u.address||'')}</textarea></div></div>
+      <div class="checkout-step"><div class="checkout-step-head"><div class="checkout-step-num">2</div><div><h3>${t('deliveryZone')}</h3></div></div><div class="delivery-zones"><div class="delivery-zone ${zone==='inside'?'active':''}" onclick="Checkout.setZone('inside')"><div class="zone-icon"><i class="fa-solid fa-city"></i></div><b>${t('insideDhaka')}</b><div class="zone-price">${money(s.shippingInsideDhaka||100)}</div></div><div class="delivery-zone ${zone==='outside'?'active':''}" onclick="Checkout.setZone('outside')"><div class="zone-icon"><i class="fa-solid fa-mountain-sun"></i></div><b>${t('outsideDhaka')}</b><div class="zone-price">${money(s.shippingOutsideDhaka||120)}</div></div></div></div>
+      <div class="checkout-step"><div class="checkout-step-head"><div class="checkout-step-num">3</div><div><h3>${t('paymentMethodStep')}</h3></div></div><div class="payment-methods">${methods.map(m=>`<div class="payment-method ${pay===m.id?'active':''}" onclick="Checkout.setPayment('${m.id}')"><div class="pm-logo ${m.cls}"><i class="fa-solid ${m.icon}"></i></div><b>${m.label}</b></div>`).join('')}</div><div id="paymentDetail">${Checkout.renderPaymentDetail(pay)}</div></div>
+      <div class="checkout-step"><div class="checkout-step-head"><div class="checkout-step-num">4</div><div><h3>${t('orderSummary')}</h3></div></div><div class="cart-summary-row"><span>${t('subtotal')}</span><span>${money(Cart.subtotal())}</span></div><div class="cart-summary-row"><span>${t('deliveryCharge')}</span><span>${money(ship)}</span></div><div class="cart-summary-row total"><span>${t('total')}</span><span>${money(Cart.subtotal()+ship)}</span></div><button class="btn btn-primary btn-block btn-lg" style="margin-top:14px" id="coSubmit" onclick="Checkout.place()"><i class="fa-solid fa-check-circle"></i> ${t('placeOrder')}</button></div></div>`;
   }
 };
 
-/* Checkout */
+/* ═══ Checkout ═══ */
 const Checkout = {
   ensureState(){ if(!App._checkoutState) App._checkoutState = { zone:'inside', payment:'cod' }; return App._checkoutState; },
   setZone(zone){ const s=this.ensureState(); s.zone=zone; App.render(); },
@@ -1643,17 +1519,10 @@ const Checkout = {
   },
   renderPaymentDetail(method){
     const s = DB.settings;
-    if(method === 'cod') return `<div class="payment-info" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)"><h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${t('cod')}</h4><p style="font-size:13.5px;color:var(--text-dim);line-height:1.65">${LANG==='bn'?'পণ্য হাতে পেয়ে টাকা পরিশোধ করুন। অর্ডার এখনই কনফার্ম হবে।':'Pay when you receive. Order confirmed.'}</p></div>`;
+    if(method === 'cod') return `<div class="payment-info" style="background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.3)"><h4><i class="fa-solid fa-circle-check" style="color:var(--success)"></i> ${t('cod')}</h4><p style="font-size:13.5px;color:var(--text-dim)">${t('codDesc')}</p></div>`;
     const num = method==='bkash'?s.bkashNumber:method==='nagad'?s.nagadNumber:s.rocketNumber;
     const brandName = method==='bkash'?'বিকাশ':method==='nagad'?'নগদ':'রকেট';
-    return `<div class="payment-info">
-      <h4><span class="pm-brand ${method}" style="background:linear-gradient(135deg,${method==='bkash'?'#e2136e,#c20f5a':method==='nagad'?'#ec1c24,#c4141b':'#8b1e6f,#6d185a'})">${brandName}</span></h4>
-      <div class="copy-number-box"><div><small style="font-size:11.5px;color:var(--text-dim);display:block;margin-bottom:4px">${t('paymentNumber')}</small><span class="number">${num}</span></div><button class="copy-btn" onclick="navigator.clipboard.writeText('${num}').then(()=>Toast.show('${t('numberCopied')}','success'));this.classList.add('copied')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button></div>
-      <div class="txn-input-group"><label>${t('txnId')} *</label><input id="txnIdInput" placeholder="${t('txnIdPlaceholder')}"></div>
-      <div class="txn-input-group"><label>${t('screenshot')} ${t('screenshotOptional')}</label>
-        <div class="img-upload" style="margin-top:10px"><div class="img-preview" id="ssPreview"><i class="fa-solid fa-image"></i></div><div class="upload-btn-wrap"><button type="button" class="upload-btn" id="ssUploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}</button><input type="file" id="ssFile" accept="image/*" style="display:none"></div></div>
-        <input type="hidden" id="ssUrl" value="">
-      </div></div>`;
+    return `<div class="payment-info"><h4><span class="pm-brand" style="background:linear-gradient(135deg,${method==='bkash'?'#e2136e,#c20f5a':method==='nagad'?'#ec1c24,#c4141b':'#8b1e6f,#6d185a'})">${brandName}</span></h4><div class="copy-number-box"><div><small style="font-size:11.5px;color:var(--text-dim);display:block;margin-bottom:4px">${t('paymentNumber')}</small><span class="number">${num}</span></div><button class="copy-btn" onclick="navigator.clipboard.writeText('${num}').then(()=>Toast.show('${t('numberCopied')}','success'));this.classList.add('copied')"><i class="fa-solid fa-copy"></i> ${t('copy')}</button></div><div class="txn-input-group"><label>${t('txnId')} *</label><input id="txnIdInput" placeholder="${t('txnIdPlaceholder')}"></div><div class="txn-input-group"><label>${t('screenshot')} ${t('screenshotOptional')}</label><div class="img-upload" style="margin-top:10px"><div class="img-preview" id="ssPreview"><i class="fa-solid fa-image"></i></div><div class="upload-btn-wrap"><button type="button" class="upload-btn" id="ssUploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> ${t('uploadScreenshot')}</button><input type="file" id="ssFile" accept="image/*" style="display:none"></div></div><input type="hidden" id="ssUrl" value=""></div></div>`;
   },
   bindScreenshot(){
     const btn = document.getElementById('ssUploadBtn'); const file = document.getElementById('ssFile');
@@ -1686,71 +1555,47 @@ const Checkout = {
     const subtotal = Cart.subtotal();
     const total = subtotal + ship;
     const items = Cart.items().map(i => { const p = DB.products.find(x=>x.id===i.id); return { id:i.id, name:p?.name||'—', price:p?.price||0, qty:i.qty }; });
-    const btn = document.getElementById('coSubmit');
-    btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('calculating')}`;
+    const btn = document.getElementById('coSubmit'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('processing')}`;
     try {
       const order = await Orders.create({ customer:{ name, phone, city, address }, items, subtotal, deliveryCharge:ship, deliveryZone:s.zone, discount:0, total, paymentMethod:method, paymentNumber:method==='cod'?null:DB.settings[method+'Number'], txnId, screenshot });
       if(Auth.user()) Loyalty.addFromOrder(Auth.user().id, total);
       App._checkoutState = null;
-      Toast.show(method==='cod' ? t('orderSuccessCOD') : t('orderSuccessPaid'), 'success', 4000);
-      Modal.open(`
-        <div class="order-success">
-          <div class="order-success-icon"><i class="fa-solid fa-check"></i></div>
-          <h3 style="font-size:20px;font-weight:800;margin-bottom:8px">🎉 ${LANG==='bn'?'অর্ডার সফল!':'Order Placed!'}</h3>
-          <p style="font-size:14px;color:var(--text-dim);margin-bottom:6px">${LANG==='bn'?'আপনার অর্ডার আইডি':'Your order ID'}</p>
-          <p style="font-size:22px;font-weight:800;color:var(--brand);font-family:var(--font-en);margin-bottom:20px">${order.id}</p>
-          <p style="font-size:13px;color:var(--text-dim);margin-bottom:22px;line-height:1.6">${LANG==='bn'?'অ্যাডমিন কনফার্ম করলে আপনার অর্ডার প্রসেস হবে।':'Admin will confirm and process your order.'}</p>
-          <button class="btn btn-whatsapp btn-block" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${order.id}'), '${phone}');Modal.close();App.go('orders')"><i class="fa-brands fa-whatsapp"></i> ${t('whatsappSend')}</button>
-          <button class="btn btn-outline btn-block" style="margin-top:8px" onclick="Modal.close();App.go('orders')">${LANG==='bn'?'অর্ডার দেখুন':'View Order'}</button>
-        </div>
-      `, 'sm');
-    } catch(e){
-      Toast.show('Failed: '+e.message,'error');
-      btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${t('placeOrder')}`;
-    }
+      Toast.show(method==='cod' ? t('orderSuccessCOD') : t('orderSuccessPaid'),'success',4000);
+      Modal.open(`<div class="order-success"><div class="order-success-icon"><i class="fa-solid fa-check"></i></div><h3 style="font-size:20px;font-weight:800;margin-bottom:8px">🎉 ${LANG==='bn'?'অর্ডার সফল!':'Order Placed!'}</h3><p style="font-size:14px;color:var(--text-dim);margin-bottom:6px">${LANG==='bn'?'আপনার অর্ডার আইডি':'Order ID'}</p><p style="font-size:22px;font-weight:800;color:var(--brand);font-family:var(--font-en);margin-bottom:20px">${order.id}</p><p style="font-size:13px;color:var(--text-dim);margin-bottom:22px">${LANG==='bn'?'অ্যাডমিন কনফার্ম করলে অর্ডার প্রসেস হবে।':'Admin will confirm your order.'}</p><button class="btn btn-whatsapp btn-block" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${order.id}'), '${phone}');Modal.close();App.go('orders')"><i class="fa-brands fa-whatsapp"></i> ${t('whatsappSend')}</button><button class="btn btn-outline btn-block" style="margin-top:8px" onclick="Modal.close();App.go('orders')">${t('viewOrder')||'View Order'}</button></div>`,'sm');
+    } catch(e){ Toast.show('Failed: '+e.message,'error'); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-check-circle"></i> ${t('placeOrder')}`; }
   }
 };
 
-/* Components */
-const Components = {
-  productCard(p){
-    const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
-    const stockCls = p.stock<=0?'out':(p.stock<10?'low':'');
-    const stockTxt = p.stock<=0 ? t('outOfStock') : t('inStock');
-    const isNew = Date.now() - (p.createdAt||0) < 7*24*60*60*1000;
-    let badge = '';
-    if(p.discount) badge = `<span class="product-badge">-${p.discount}%</span>`;
-    else if(isNew) badge = `<span class="product-badge new">NEW</span>`;
-    const inCompare = Compare.has(p.id);
-    return `<div class="product-card" onclick="App.go('product','${p.id}')"><div class="product-img-wrap"><img src="${p.img}" alt="${name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300'">${badge}<span class="stock-badge ${stockCls}">${stockTxt}</span><button class="wish-btn ${Wish.has(p.id)?'active':''}" onclick="event.stopPropagation();Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart"></i></button><button class="product-compare-btn ${inCompare?'active':''}" onclick="event.stopPropagation();Compare.toggle('${p.id}')"><i class="fa-solid fa-scale-balanced"></i></button></div><div class="product-body"><span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span><h3 class="product-name">${name}</h3><div class="rating">${starHTML(p.rating||0,'11px')} <span>${p.reviewCount?`(${p.reviewCount})`:''}</span></div><div class="product-price"><span class="price">${money(p.price)}</span>${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}</div><button class="btn btn-primary btn-block btn-sm" ${p.stock<=0?'disabled':''} onclick="event.stopPropagation();Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${p.stock<=0?t('outOfStock'):t('addToCart')}</button></div></div>`;
+/* ═══ Reviews ═══ */
+const Reviews = {
+  openModal(productId){
+    if(!Auth.user()) return Toast.show(t('loginRequired'),'warning');
+    const existing = DB.reviews.find(r => r.productId === productId && r.userId === Auth.user().id);
+    if(existing) return Toast.show(t('alreadyReviewed'),'warning');
+    let rating = 5;
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-star"></i> ${t('writeReview')}</h3></div><div class="modal-body"><div class="form-group"><label>${t('yourRating')}</label><div class="star-picker" id="starPicker">${[1,2,3,4,5].map(i=>`<i class="fa-solid fa-star active" data-star="${i}" onclick="Reviews.setRating(${i})"></i>`).join('')}</div></div><div class="form-group"><label>${t('reviewText')}</label><textarea id="reviewText" rows="4" placeholder="${LANG==='bn'?'আপনার মতামত...':'Your review...'}"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" onclick="Reviews.submit('${productId}', ${rating})"><i class="fa-solid fa-paper-plane"></i> ${t('submitReview')}</button></div>`);
+    window._currentRating = rating;
   },
-  orderCard(o){
-    const statusFlow = Orders.STATUS_FLOW;
-    const idx = statusFlow.indexOf(o.status);
-    const isCancelled = ['cancelled','rejected'].includes(o.status);
-    const isBn = LANG==='bn';
-    return `<div class="order-card"><div class="order-card-head"><div class="order-id-block"><h4><i class="fa-solid fa-receipt" style="color:var(--brand)"></i> ${o.id}</h4><p><i class="fa-regular fa-calendar"></i> ${new Date(o.date).toLocaleString(isBn?'bn-BD':'en-US')} • ${(o.items||[]).length} ${t('items')}</p></div><div class="order-meta"><span class="order-amount">${money(o.total)}</span><span class="status-badge status-${o.status}"><i class="fa-solid ${Orders.statusIcon(o.status)}"></i> ${Orders.statusLabel(o.status)}</span></div></div>${!isCancelled ? `<div class="order-timeline">${statusFlow.map((s,i)=>`<div class="timeline-step ${i<idx?'done':''} ${i===idx?'current':''}">${i<statusFlow.length-1?'<div class="timeline-line"></div>':''}<div class="dot"><i class="fa-solid ${i<=idx?'fa-check':Orders.statusIcon(s)}"></i></div><div class="label">${Orders.statusLabel(s)}</div></div>`).join('')}</div>` : `<div style="background:rgba(239,68,68,.08);border-left:3px solid var(--danger);padding:12px 14px;border-radius:8px;margin:10px 0"><b style="color:var(--danger);font-size:13px"><i class="fa-solid fa-ban"></i> ${Orders.statusLabel(o.status)}</b>${(o.history||[]).slice(-1)[0]?.comment?`<p style="font-size:12.5px;color:var(--text-dim);margin-top:4px">${(o.history||[]).slice(-1)[0].comment}</p>`:''}</div>`}<div class="invoice-actions"><button class="btn btn-outline btn-sm" onclick="Orders.detail('${o.id}')"><i class="fa-solid fa-eye"></i> ${isBn?'বিস্তারিত':'Details'}</button><button class="btn btn-pdf btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i> ${isBn?'ইনভয়েস':'Invoice'}</button><button class="btn btn-whatsapp btn-sm" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i></button>${['delivered','cancelled','rejected'].includes(o.status)?`<button class="btn btn-outline btn-sm" onclick="Orders.reorder('${o.id}')"><i class="fa-solid fa-rotate-right"></i> ${t('reorder')}</button>`:''}</div></div>`;
+  setRating(r){
+    window._currentRating = r;
+    document.querySelectorAll('#starPicker i').forEach(s => s.classList.toggle('active', +s.dataset.star <= r));
   },
-  adminSidebar(tab){
-    const pending = DB.orders.filter(o => o.status === 'pending').length;
-    const items = [
-      {sec:LANG==='bn'?'মেইন':'Main', list:[
-        {id:'dashboard', icon:'fa-chart-line', label:t('dashboard')},
-        {id:'products', icon:'fa-box', label:t('products')},
-        {id:'orders', icon:'fa-receipt', label:t('ordersTab'), badge:pending},
-        {id:'users', icon:'fa-users', label:t('users')}
-      ]},
-      {sec:LANG==='bn'?'অতিরিক্ত':'Extras', list:[
-        {id:'categories', icon:'fa-tags', label:t('categories')},
-        {id:'coupons', icon:'fa-ticket', label:t('coupons')},
-        {id:'settings', icon:'fa-gear', label:t('settings')}
-      ]}
-    ];
-    return `<aside class="admin-sidebar" id="adminSidebar"><div class="admin-brand"><div class="logo-icon"><i class="fa-solid fa-leaf"></i></div><span class="logo-text">EcoShop<span style="color:var(--brand)">Pro</span></span><span class="admin-pill">ADMIN</span></div><nav class="admin-nav">${items.map(g=>`<div class="nav-section"><div class="nav-section-title">${g.sec}</div>${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')"><i class="fa-solid ${i.icon}"></i> ${i.label}${i.badge?`<span class="nav-count">${i.badge}</span>`:''}</a>`).join('')}</div>`).join('')}</nav><div class="admin-footer"><button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> Back</button></div></aside>`;
+  async submit(productId, rating){
+    const text = document.getElementById('reviewText').value.trim();
+    if(!text) return Toast.show(t('fillAllFields'),'error');
+    const u = Auth.user(); if(!u) return;
+    rating = window._currentRating || rating;
+    try {
+      await DB.saveReview({ productId, userId: u.id, userName: u.name, rating, text });
+      await DB.addReviewToProduct(productId, rating);
+      Modal.close();
+      Toast.show(t('reviewSubmitted'),'success');
+      App.render();
+    } catch(e){ Toast.show('Failed','error'); }
   }
 };
 
-/* Profile */
+/* ═══ Profile ═══ */
 const Profile = {
   togglePass(id, btn){
     const input = document.getElementById(id); if(!input) return;
@@ -1791,6 +1636,7 @@ const Profile = {
     const p2 = document.getElementById('pwdNew2').value;
     const err = document.getElementById('pwdError');
     if(!current || !p1 || !p2) return Toast.show(t('fillAllFields'),'error');
+    /* ✅ Verify old password */
     if(current !== u.password) return Toast.show(t('wrongCurrentPassword'),'error');
     if(p1.length < 6) return Toast.show(t('weakPassword'),'error');
     if(p1 !== p2){ err.classList.add('show'); return Toast.show(t('passwordMismatch'),'error'); }
@@ -1798,15 +1644,54 @@ const Profile = {
     try {
       await DB.updateUser(u.id, { password: p1 });
       Session.set({ ...u, password: p1 });
-      Modal.open(`<div class="order-success"><div class="order-success-icon"><i class="fa-solid fa-check"></i></div><h3 style="font-size:19px;font-weight:800;margin-bottom:8px">${t('passwordChanged')}</h3><p style="font-size:13.5px;color:var(--text-dim);margin-bottom:22px">${t('passwordChangedDesc')}</p><button class="btn btn-primary btn-block" onclick="Modal.close()">${t('close')}</button></div>`, 'sm');
+      Modal.open(`<div class="order-success"><div class="order-success-icon"><i class="fa-solid fa-check"></i></div><h3 style="font-size:19px;font-weight:800;margin-bottom:8px">${t('passwordChanged')}</h3><p style="font-size:13.5px;color:var(--text-dim);margin-bottom:22px">${t('passwordChangedDesc')}</p><button class="btn btn-primary btn-block" onclick="Modal.close()">${t('close')}</button></div>`,'sm');
     } catch(e){ Toast.show(t('updateFailed'),'error'); }
-  },
-  async save(){ return this.saveInfo(); }
+  }
 };
 
-/* Admin */
+/* ═══ Components ═══ */
+const Components = {
+  productCard(p){
+    const name = LANG==='bn' ? p.name : (p.nameEn||p.name);
+    const stockCls = p.stock<=0?'out':(p.stock<10?'low':'');
+    const stockTxt = p.stock<=0 ? t('outOfStock') : t('inStock');
+    const isNew = Date.now() - (p.createdAt||0) < 7*24*60*60*1000;
+    let badge = '';
+    if(p.discount) badge = `<span class="product-badge">-${p.discount}%</span>`;
+    else if(isNew) badge = `<span class="product-badge new">NEW</span>`;
+    return `<div class="product-card" onclick="App.go('product','${p.id}')"><div class="product-img-wrap"><img src="${p.img}" alt="${escapeHtml(name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/300'">${badge}<span class="stock-badge ${stockCls}">${stockTxt}</span><button class="wish-btn ${Wish.has(p.id)?'active':''}" onclick="event.stopPropagation();Wish.toggle('${p.id}')"><i class="fa-${Wish.has(p.id)?'solid':'regular'} fa-heart"></i></button></div><div class="product-body"><span class="product-cat">${LANG==='bn'?p.cat:(p.catEn||p.cat)}</span><h3 class="product-name">${escapeHtml(name)}</h3><div class="rating">${starHTML(p.rating||0,'11px')} <span>${p.reviewCount?`(${p.reviewCount})`:''}</span></div><div class="product-price"><span class="price">${money(p.price)}</span>${p.oldPrice?`<span class="old-price">${money(p.oldPrice)}</span>`:''}</div><button class="btn btn-primary btn-block btn-sm" ${p.stock<=0?'disabled':''} onclick="event.stopPropagation();Cart.add('${p.id}')"><i class="fa-solid fa-cart-plus"></i> ${p.stock<=0?t('outOfStock'):t('addToCart')}</button></div></div>`;
+  },
+  orderCard(o){
+    const statusFlow = Orders.STATUS_FLOW;
+    const idx = statusFlow.indexOf(o.status);
+    const isCancelled = ['cancelled','rejected'].includes(o.status);
+    const isBn = LANG==='bn';
+    return `<div class="order-card"><div class="order-card-head"><div class="order-id-block"><h4><i class="fa-solid fa-receipt" style="color:var(--brand)"></i> ${o.id}</h4><p><i class="fa-regular fa-calendar"></i> ${new Date(o.date).toLocaleString(isBn?'bn-BD':'en-US')} • ${(o.items||[]).length} ${t('items')}</p></div><div class="order-meta"><span class="order-amount">${money(o.total)}</span><span class="status-badge status-${o.status}"><i class="fa-solid ${Orders.statusIcon(o.status)}"></i> ${Orders.statusLabel(o.status)}</span></div></div>${!isCancelled ? `<div class="order-timeline">${statusFlow.map((s,i)=>`<div class="timeline-step ${i<idx?'done':''} ${i===idx?'current':''}">${i<statusFlow.length-1?'<div class="timeline-line"></div>':''}<div class="dot"><i class="fa-solid ${i<=idx?'fa-check':Orders.statusIcon(s)}"></i></div><div class="label">${Orders.statusLabel(s)}</div></div>`).join('')}</div>` : ''}<div class="invoice-actions"><button class="btn btn-outline btn-sm" onclick="Orders.detail('${o.id}')"><i class="fa-solid fa-eye"></i> ${isBn?'বিস্তারিত':'Details'}</button><button class="btn btn-pdf btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button><button class="btn btn-whatsapp btn-sm" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i></button>${['delivered','cancelled','rejected'].includes(o.status)?`<button class="btn btn-outline btn-sm" onclick="Orders.reorder('${o.id}')"><i class="fa-solid fa-rotate-right"></i> ${t('reorder')}</button>`:''}</div></div>`;
+  },
+  adminSidebar(tab){
+    const pending = DB.orders.filter(o => o.status === 'pending').length;
+    const items = [
+      {sec:'Main', list:[
+        {id:'dashboard', icon:'fa-chart-line', label:t('dashboard')},
+        {id:'products', icon:'fa-box', label:t('products')},
+        {id:'orders', icon:'fa-receipt', label:t('ordersTab'), badge:pending},
+        {id:'users', icon:'fa-users', label:t('users')}
+      ]},
+      {sec:'Extras', list:[
+        {id:'reviews', icon:'fa-star', label:t('reviews')},
+        {id:'categories', icon:'fa-tags', label:t('categories')},
+        {id:'coupons', icon:'fa-ticket', label:t('coupons')},
+        {id:'broadcast', icon:'fa-bullhorn', label:t('broadcastNotif')},
+        {id:'settings', icon:'fa-gear', label:t('settings')}
+      ]}
+    ];
+    return `<aside class="admin-sidebar" id="adminSidebar"><div class="admin-brand"><div class="logo-icon"><i class="fa-solid fa-leaf"></i></div><span class="logo-text">EcoShop<span style="color:var(--brand)">Pro</span></span><span class="admin-pill">ADMIN</span></div><nav class="admin-nav">${items.map(g=>`<div class="nav-section"><div class="nav-section-title">${g.sec}</div>${g.list.map(i=>`<a class="${tab===i.id?'active':''}" onclick="Admin.switchTab('${i.id}')"><i class="fa-solid ${i.icon}"></i> ${i.label}${i.badge?`<span class="nav-count">${i.badge}</span>`:''}</a>`).join('')}</div>`).join('')}</nav><div class="admin-footer"><button class="admin-exit" onclick="App.go('home')"><i class="fa-solid fa-arrow-left"></i> Back</button></div></aside>`;
+  }
+};
+
+/* ═══ Admin ═══ */
 const Admin = {
-  get titles(){ return { dashboard:t('dashboard'), products:t('products'), orders:t('ordersTab'), users:t('users'), categories:t('categories'), coupons:t('coupons'), settings:t('settings') }; },
+  get titles(){ return { dashboard:t('dashboard'), products:t('products'), orders:t('ordersTab'), users:t('users'), reviews:t('reviews'), categories:t('categories'), coupons:t('coupons'), broadcast:t('broadcastNotif'), settings:t('settings') }; },
   switchTab(tab){ App._adminTab = tab; App.closeAllDrawers(); App.render(); },
   render(tab){
     try {
@@ -1815,8 +1700,10 @@ const Admin = {
         case 'products': return this.products();
         case 'orders': return this.orders();
         case 'users': return this.users();
+        case 'reviews': return this.allReviews();
         case 'categories': return this.categories();
         case 'coupons': return this.coupons();
+        case 'broadcast': return this.broadcastPage();
         case 'settings': return this.settings();
         default: return this.dashboard();
       }
@@ -1838,34 +1725,22 @@ const Admin = {
         <div class="stat-card" style="cursor:pointer" onclick="Admin.switchTab('orders'); App._orderFilter.status='pending';"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><p>${t('pendingOrders')}</p><h3>${counts.pending}</h3></div></div>
         <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div><div class="stat-info"><p>${t('lowStock')}</p><h3>${lowStock}</h3></div></div>
         <div class="stat-card"><div class="stat-icon info"><i class="fa-solid fa-user-check"></i></div><div class="stat-info"><p>${t('activeUsers')}</p><h3>${users.filter(u=>!u.blocked).length}</h3></div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="Admin.openBroadcastModal()"><div class="stat-icon pink"><i class="fa-solid fa-bullhorn"></i></div><div class="stat-info"><p>${t('broadcastNotif')}</p><h3>→</h3></div></div>
       </div>
       <div class="admin-card">
         <div class="admin-card-head"><h3><i class="fa-solid fa-receipt"></i> ${t('recentOrders')}</h3><button class="btn btn-outline btn-sm" onclick="Admin.switchTab('orders')">${LANG==='bn'?'সব':'All'}</button></div>
-        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>${t('orderId')}</th><th>${t('customer')||'Customer'}</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th></th></tr></thead><tbody>${orders.slice(0,6).map(o=>`<tr><td><b>${o.id}</b></td><td>${o.customer?.name||'—'}</td><td>${money(o.total)}</td><td><span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--surface-2)">${(o.paymentMethod||'cod').toUpperCase()}</span></td><td><span class="status-badge status-${o.status}">${Orders.statusLabel(o.status)}</span></td><td><div class="actions">${o.status==='pending'?`<button class="icon-btn-sm success" onclick="Admin.quickConfirm('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}<button class="icon-btn-sm info" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button><button class="icon-btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button></div></td></tr>`).join('')}</tbody></table></div>
+        <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>${t('orderId')}</th><th>Customer</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th></th></tr></thead><tbody>${orders.slice(0,6).map(o=>`<tr><td><b>${o.id}</b></td><td>${escapeHtml(o.customer?.name||'—')}</td><td>${money(o.total)}</td><td><span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--surface-2)">${(o.paymentMethod||'cod').toUpperCase()}</span></td><td><span class="status-badge status-${o.status}">${Orders.statusLabel(o.status)}</span></td><td><div class="actions">${o.status==='pending'?`<button class="icon-btn-sm success" onclick="Admin.quickConfirm('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}<button class="icon-btn-sm info" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button><button class="icon-btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button></div></td></tr>`).join('')}</tbody></table></div>
       </div>`;
   },
   products(){
     const q = App._pQuery||'';
     const list = DB.products.filter(p => !q || (p.name+(p.nameEn||'')).toLowerCase().includes(q.toLowerCase()));
-    return `<div class="admin-toolbar"><input placeholder="${t('productSearch')}" value="${q}" oninput="App._pQuery=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>Admin.refreshContent(),250)"><button class="btn btn-primary" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i> ${t('addProduct')}</button></div><div class="admin-card"><div class="admin-card-head"><h3>${t('totalProducts')} (${list.length})</h3></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th></th><th>${t('productName')}</th><th>${t('category')}</th><th>${t('price')}</th><th>${t('stock')}</th><th></th></tr></thead><tbody>${list.map(p=>`<tr><td><img class="thumb" src="${p.img}" onerror="this.src='https://via.placeholder.com/44'"></td><td><b>${p.name}</b></td><td><span class="chip">${p.cat}</span></td><td>${money(p.price)}</td><td>${p.stock<=0?`<span class="chip blocked">${t('outOfStock')}</span>`:`<span class="chip active-status">${p.stock}</span>`}</td><td><div class="actions"><button class="icon-btn-sm" onclick="Admin.openProductModal('${p.id}')"><i class="fa-solid fa-pen"></i></button><button class="icon-btn-sm danger" onclick="Admin.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+    return `<div class="admin-toolbar"><input placeholder="${t('productSearch')}" value="${q}" oninput="App._pQuery=this.value;clearTimeout(window._pq);window._pq=setTimeout(()=>Admin.refreshContent(),250)"><button class="btn btn-primary" onclick="Admin.openProductModal()"><i class="fa-solid fa-plus"></i> ${t('addProduct')}</button></div><div class="admin-card"><div class="admin-card-head"><h3>${t('totalProducts')} (${list.length})</h3></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th></th><th>${t('productName')}</th><th>${t('category')}</th><th>${t('price')}</th><th>${t('stock')}</th><th></th></tr></thead><tbody>${list.map(p=>`<tr><td><img class="thumb" src="${p.img}" onerror="this.src='https://via.placeholder.com/44'"></td><td><b>${escapeHtml(p.name)}</b></td><td><span class="chip">${escapeHtml(p.cat)}</span></td><td>${money(p.price)}</td><td>${p.stock<=0?`<span class="chip blocked">${t('outOfStock')}</span>`:`<span class="chip active-status">${p.stock}</span>`}</td><td><div class="actions"><button class="icon-btn-sm" onclick="Admin.openProductModal('${p.id}')"><i class="fa-solid fa-pen"></i></button><button class="icon-btn-sm danger" onclick="Admin.deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button></div></td></tr>`).join('')}</tbody></table></div></div>`;
   },
   openProductModal(id){
     const p = id ? DB.products.find(x=>x.id===id) : { name:'', nameEn:'', cat:'', price:'', oldPrice:'', discount:0, stock:'', img:'', desc:'', featured:false };
     const cats = DB.categories.length ? DB.categories : ['ইলেকট্রনিকস','গ্যাজেট','ফ্যাশন'];
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3>${id?t('editProduct'):t('addProduct')}</h3></div>
-      <div class="modal-body">
-        <div class="form-row"><div class="form-group"><label>${t('productName')} *</label><input id="pName" value="${p.name}"></div><div class="form-group"><label>English Name</label><input id="pNameEn" value="${p.nameEn||''}"></div></div>
-        <div class="form-row"><div class="form-group"><label>${t('category')}</label><select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${c}</option>`).join('')}</select></div><div class="form-group"><label>Category EN</label><input id="pCatEn" value="${p.catEn||''}"></div></div>
-        <div class="form-group"><label>${t('description')}</label><textarea id="pDesc" rows="3">${p.desc||''}</textarea></div>
-        <div class="form-group"><label>${t('images')}</label><div class="img-upload"><div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div><div class="upload-btn-wrap"><button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button><input type="file" id="imgFile" accept="image/*" style="display:none"></div></div><input type="hidden" id="pImg" value="${p.img||''}"></div>
-        <div class="form-row"><div class="form-group"><label>${t('price')} *</label><input id="pPrice" type="number" value="${p.price}"></div><div class="form-group"><label>${t('oldPrice')}</label><input id="pOld" type="number" value="${p.oldPrice||''}"></div></div>
-        <div class="form-row"><div class="form-group"><label>${t('discountPercent')}</label><input id="pDisc" type="number" value="${p.discount||0}"></div><div class="form-group"><label>${t('stock')}</label><input id="pStock" type="number" value="${p.stock}"></div></div>
-        <div class="form-group"><label style="display:flex;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto"><span>${t('featured_product')}</span></label></div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" id="pSaveBtn" onclick="Admin.saveProduct('${id||''}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button></div>
-    `);
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3>${id?t('editProduct'):t('addProduct')}</h3></div><div class="modal-body"><div class="form-row"><div class="form-group"><label>${t('productName')} *</label><input id="pName" value="${escapeHtml(p.name)}"></div><div class="form-group"><label>English Name</label><input id="pNameEn" value="${escapeHtml(p.nameEn||'')}"></div></div><div class="form-row"><div class="form-group"><label>${t('category')}</label><select id="pCat">${cats.map(c=>`<option ${p.cat===c?'selected':''}>${escapeHtml(c)}</option>`).join('')}</select></div><div class="form-group"><label>Category EN</label><input id="pCatEn" value="${escapeHtml(p.catEn||'')}"></div></div><div class="form-group"><label>${t('description')}</label><textarea id="pDesc" rows="3">${escapeHtml(p.desc||'')}</textarea></div><div class="form-group"><label>${t('images')}</label><div class="img-upload"><div class="img-preview" id="imgPreview">${p.img?`<img src="${p.img}">`:`<i class="fa-solid fa-image"></i>`}</div><div class="upload-btn-wrap"><button type="button" class="upload-btn" id="uploadBtn"><i class="fa-solid fa-cloud-arrow-up"></i> Upload</button><input type="file" id="imgFile" accept="image/*" style="display:none"></div></div><input type="hidden" id="pImg" value="${p.img||''}"></div><div class="form-row"><div class="form-group"><label>${t('price')} *</label><input id="pPrice" type="number" value="${p.price}"></div><div class="form-group"><label>${t('oldPrice')}</label><input id="pOld" type="number" value="${p.oldPrice||''}"></div></div><div class="form-row"><div class="form-group"><label>${t('discountPercent')}</label><input id="pDisc" type="number" value="${p.discount||0}"></div><div class="form-group"><label>${t('stock')}</label><input id="pStock" type="number" value="${p.stock}"></div></div><div class="form-group"><label style="display:flex;gap:10px;align-items:center;cursor:pointer"><input type="checkbox" id="pFeatured" ${p.featured?'checked':''} style="width:auto"><span>${t('featured_product')}</span></label></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" id="pSaveBtn" onclick="Admin.saveProduct('${id||''}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button></div>`);
     const btn = document.getElementById('uploadBtn'), file = document.getElementById('imgFile'), prev = document.getElementById('imgPreview'), hidden = document.getElementById('pImg');
     if(btn){ btn.onclick = ()=>file.click(); file.onchange = async ()=>{ const f=file.files[0]; if(!f) return; const r=new FileReader(); r.onload=e=>prev.innerHTML=`<img src="${e.target.result}">`; r.readAsDataURL(f); try{ const res=await ImageUpload.upload(f); hidden.value=res.url; prev.innerHTML=`<img src="${res.url}">`; Toast.show(t('imgUploadSuccess'),'success'); } catch(e){ Toast.show(t('imgUploadFailed'),'error'); } }; }
   },
@@ -1888,25 +1763,21 @@ const Admin = {
     if(f.from){ const from = new Date(f.from).getTime(); list = list.filter(o=>o.date>=from); }
     if(f.to){ const to = new Date(f.to).getTime()+86400000; list = list.filter(o=>o.date<=to); }
     const selected = App._selectedOrders;
-    const isBn = LANG==='bn';
     return `<div class="stat-grid">
         <div class="stat-card" style="cursor:pointer" onclick="App._orderFilter.status='pending';Admin.refreshContent()"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><div class="stat-info"><p>${Orders.statusLabel('pending')}</p><h3>${counts.pending}</h3></div></div>
         <div class="stat-card" style="cursor:pointer" onclick="App._orderFilter.status='confirmed';Admin.refreshContent()"><div class="stat-icon brand"><i class="fa-solid fa-check-circle"></i></div><div class="stat-info"><p>${Orders.statusLabel('confirmed')}</p><h3>${counts.confirmed}</h3></div></div>
         <div class="stat-card" style="cursor:pointer" onclick="App._orderFilter.status='shipped';Admin.refreshContent()"><div class="stat-icon info"><i class="fa-solid fa-truck"></i></div><div class="stat-info"><p>${Orders.statusLabel('shipped')}</p><h3>${counts.shipped}</h3></div></div>
         <div class="stat-card" style="cursor:pointer" onclick="App._orderFilter.status='delivered';Admin.refreshContent()"><div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div><div class="stat-info"><p>${Orders.statusLabel('delivered')}</p><h3>${counts.delivered}</h3></div></div>
       </div>
-      <div class="order-filter-panel">
-        <div class="order-filter-grid">
-          <div><label>${t('filterStatus')}</label><select onchange="App._orderFilter.status=this.value;Admin.refreshContent()"><option value="all" ${f.status==='all'?'selected':''}>${isBn?'সব':'All'}</option>${Orders.STATUS_ALL.map(s=>`<option value="${s}" ${f.status===s?'selected':''}>${Orders.statusLabel(s)} (${counts[s]||0})</option>`).join('')}</select></div>
-          <div><label>${t('filterPayment')}</label><select onchange="App._orderFilter.payment=this.value;Admin.refreshContent()"><option value="all">${isBn?'সব':'All'}</option><option value="cod" ${f.payment==='cod'?'selected':''}>COD</option><option value="bkash" ${f.payment==='bkash'?'selected':''}>bKash</option><option value="nagad" ${f.payment==='nagad'?'selected':''}>Nagad</option></select></div>
-          <div><label>${t('filterFrom')}</label><input type="date" value="${f.from}" onchange="App._orderFilter.from=this.value;Admin.refreshContent()"></div>
-          <div><label>${t('filterTo')}</label><input type="date" value="${f.to}" onchange="App._orderFilter.to=this.value;Admin.refreshContent()"></div>
-          <div><label>${t('filterSearch')}</label><input value="${f.search}" oninput="App._orderFilter.search=this.value;clearTimeout(window._os);window._os=setTimeout(()=>Admin.refreshContent(),300)"></div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-outline btn-sm" onclick="App._orderFilter={status:'all',payment:'all',search:'',from:'',to:''};Admin.refreshContent()"><i class="fa-solid fa-rotate-left"></i> ${t('filterReset')}</button><button class="btn btn-primary btn-sm" onclick="Admin.bulkPrint()"><i class="fa-solid fa-print"></i> ${t('bulkPrint')} (${list.length})</button></div>
-      </div>
-      ${selected.length ? `<div class="bulk-bar"><span><i class="fa-solid fa-check-square"></i> ${selected.length} ${t('bulkSelected')}</span><button class="btn btn-sm btn-success" onclick="Admin.bulkConfirm()"><i class="fa-solid fa-check"></i> ${t('bulkConfirm')}</button><button class="btn btn-sm btn-danger" onclick="Admin.bulkCancel()"><i class="fa-solid fa-ban"></i> ${t('bulkCancel')}</button><button class="btn btn-sm btn-outline" onclick="App._selectedOrders=[];Admin.refreshContent()">${t('cancel')}</button></div>` : ''}
-      <div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-list"></i> ${isBn?'অর্ডার লিস্ট':'Order List'} (${list.length})</h3></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th style="width:40px"><input type="checkbox" onchange="Admin.toggleAllOrders(this.checked, ${JSON.stringify(list.map(o=>o.id))})"></th><th>${t('orderId')}</th><th>Customer</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th>Actions</th></tr></thead><tbody>${list.length ? list.map(o=>`<tr style="${o.status==='pending'?'background:rgba(245,158,11,.05)':''}"><td><input type="checkbox" ${selected.includes(o.id)?'checked':''} onchange="Admin.toggleOrderSelect('${o.id}', this.checked)"></td><td><b style="font-family:var(--font-en)">${o.id}</b><br><small style="color:var(--text-dim);font-size:11px">${new Date(o.date).toLocaleDateString()}</small></td><td><b>${o.customer?.name||'—'}</b><br><small style="color:var(--text-dim);font-size:11px">${o.customer?.phone||''}</small></td><td><b>${money(o.total)}</b></td><td><span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--surface-2)">${(o.paymentMethod||'cod').toUpperCase()}</span></td><td><span class="status-badge status-${o.status}"><i class="fa-solid ${Orders.statusIcon(o.status)}"></i> ${Orders.statusLabel(o.status)}</span></td><td><div class="actions">${o.status==='pending'?`<button class="icon-btn-sm success" onclick="Admin.quickConfirm('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}<button class="icon-btn-sm info" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button><button class="icon-btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button><button class="icon-btn-sm" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer?.phone||''}')"><i class="fa-brands fa-whatsapp"></i></button>${!['delivered','cancelled','rejected'].includes(o.status)?`<button class="icon-btn-sm danger" onclick="Admin.quickCancel('${o.id}')"><i class="fa-solid fa-ban"></i></button>`:''}</div></td></tr>`).join('') : `<tr><td colspan="7" class="muted">${t('noData')}</td></tr>`}</tbody></table></div></div>`;
+      <div class="order-filter-panel"><div class="order-filter-grid">
+        <div><label>${t('filterStatus')}</label><select onchange="App._orderFilter.status=this.value;Admin.refreshContent()"><option value="all">All</option>${Orders.STATUS_ALL.map(s=>`<option value="${s}" ${f.status===s?'selected':''}>${Orders.statusLabel(s)} (${counts[s]||0})</option>`).join('')}</select></div>
+        <div><label>${t('filterPayment')}</label><select onchange="App._orderFilter.payment=this.value;Admin.refreshContent()"><option value="all">All</option><option value="cod" ${f.payment==='cod'?'selected':''}>COD</option><option value="bkash" ${f.payment==='bkash'?'selected':''}>bKash</option><option value="nagad" ${f.payment==='nagad'?'selected':''}>Nagad</option></select></div>
+        <div><label>${t('filterFrom')}</label><input type="date" value="${f.from}" onchange="App._orderFilter.from=this.value;Admin.refreshContent()"></div>
+        <div><label>${t('filterTo')}</label><input type="date" value="${f.to}" onchange="App._orderFilter.to=this.value;Admin.refreshContent()"></div>
+        <div><label>${t('filterSearch')}</label><input value="${f.search}" oninput="App._orderFilter.search=this.value;clearTimeout(window._os);window._os=setTimeout(()=>Admin.refreshContent(),300)"></div>
+      </div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-outline btn-sm" onclick="App._orderFilter={status:'all',payment:'all',search:'',from:'',to:''};Admin.refreshContent()"><i class="fa-solid fa-rotate-left"></i> ${t('filterReset')}</button><button class="btn btn-primary btn-sm" onclick="Admin.bulkPrint()"><i class="fa-solid fa-print"></i> ${t('bulkPrint')} (${list.length})</button></div></div>
+      ${selected.length ? `<div class="bulk-bar"><span>${selected.length} ${t('bulkSelected')}</span><button class="btn btn-sm btn-success" onclick="Admin.bulkConfirm()"><i class="fa-solid fa-check"></i> ${t('bulkConfirm')}</button><button class="btn btn-sm btn-danger" onclick="Admin.bulkCancel()"><i class="fa-solid fa-ban"></i> ${t('bulkCancel')}</button><button class="btn btn-sm btn-outline" onclick="App._selectedOrders=[];Admin.refreshContent()">${t('cancel')}</button></div>` : ''}
+      <div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-list"></i> Orders (${list.length})</h3></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th style="width:40px"><input type="checkbox" onchange="Admin.toggleAllOrders(this.checked, ${JSON.stringify(list.map(o=>o.id))})"></th><th>${t('orderId')}</th><th>Customer</th><th>${t('total')}</th><th>${t('paymentMethod')}</th><th>${t('orderStatus')}</th><th>Actions</th></tr></thead><tbody>${list.length ? list.map(o=>`<tr style="${o.status==='pending'?'background:rgba(245,158,11,.05)':''}"><td><input type="checkbox" ${selected.includes(o.id)?'checked':''} onchange="Admin.toggleOrderSelect('${o.id}', this.checked)"></td><td><b>${o.id}</b><br><small style="color:var(--text-dim);font-size:11px">${new Date(o.date).toLocaleDateString()}</small></td><td><b>${escapeHtml(o.customer?.name||'—')}</b><br><small style="color:var(--text-dim);font-size:11px">${escapeHtml(o.customer?.phone||'')}</small></td><td><b>${money(o.total)}</b></td><td><span style="padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;background:var(--surface-2)">${(o.paymentMethod||'cod').toUpperCase()}</span></td><td><span class="status-badge status-${o.status}"><i class="fa-solid ${Orders.statusIcon(o.status)}"></i> ${Orders.statusLabel(o.status)}</span></td><td><div class="actions">${o.status==='pending'?`<button class="icon-btn-sm success" onclick="Admin.quickConfirm('${o.id}')"><i class="fa-solid fa-check"></i></button>`:''}<button class="icon-btn-sm info" onclick="Admin.openOrderModal('${o.id}')"><i class="fa-solid fa-eye"></i></button><button class="icon-btn-sm" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i></button><button class="icon-btn-sm" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer?.phone||''}')"><i class="fa-brands fa-whatsapp"></i></button>${!['delivered','cancelled','rejected'].includes(o.status)?`<button class="icon-btn-sm danger" onclick="Admin.quickCancel('${o.id}')"><i class="fa-solid fa-ban"></i></button>`:''}</div></td></tr>`).join('') : `<tr><td colspan="7" class="muted">${t('noData')}</td></tr>`}</tbody></table></div></div>`;
   },
   openOrderModal(id){
     const o = DB.orders.find(x=>x.id===id); if(!o) return;
@@ -1914,43 +1785,33 @@ const Admin = {
     const flow = Orders.STATUS_FLOW;
     const idx = flow.indexOf(o.status);
     const isCancelled = ['cancelled','rejected'].includes(o.status);
-    Modal.open(`
-      <button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button>
-      <div class="modal-head"><h3><i class="fa-solid fa-receipt"></i> ${o.id}</h3></div>
-      <div class="modal-body">
-        ${!isCancelled ? `<div class="order-timeline" style="margin-bottom:20px">${flow.map((s,i)=>`<div class="timeline-step ${i<idx?'done':''} ${i===idx?'current':''}">${i<flow.length-1?'<div class="timeline-line"></div>':''}<div class="dot"><i class="fa-solid ${i<=idx?'fa-check':Orders.statusIcon(s)}"></i></div><div class="label">${Orders.statusLabel(s)}</div></div>`).join('')}</div>` : ''}
-        <div class="admin-card" style="padding:14px;margin-bottom:14px">
-          <h5 style="font-size:12px;font-weight:800;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">${t('changeStatus')}</h5>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${Orders.STATUS_ALL.map(s=>`<button style="padding:7px 13px;border-radius:999px;font-size:11.5px;font-weight:700;cursor:pointer;border:${o.status===s?'2px solid var(--brand)':'1px solid var(--border)'};background:${o.status===s?'var(--brand-50)':'var(--surface)'};color:${o.status===s?'var(--brand-dark)':'var(--text-dim)'}" onclick="Admin.setOrderStatus('${o.id}', '${s}')"><i class="fa-solid ${Orders.statusIcon(s)}"></i> ${Orders.statusLabel(s)}</button>`).join('')}</div>
-          <div class="form-group" style="margin:0"><label>${isBn?'কমেন্ট':'Comment'}</label><input id="aoComment" placeholder="${isBn?'কাস্টমারের জন্য কমেন্ট...':'Comment...'}"></div>
-        </div>
-        <div class="order-detail-grid">
-          <div class="order-detail-section"><h5><i class="fa-solid fa-user"></i> ${t('customerInfo')}</h5><div class="detail-row"><span>Name</span><span>${o.customer.name}</span></div><div class="detail-row"><span>Phone</span><span>${o.customer.phone}</span></div><div class="detail-row"><span>Address</span><span>${o.customer.address}</span></div></div>
-          <div class="order-detail-section"><h5><i class="fa-solid fa-credit-card"></i> ${t('paymentDetails')}</h5><div class="detail-row"><span>Method</span><span>${(o.paymentMethod||'cod').toUpperCase()}</span></div>${o.txnId?`<div class="detail-row"><span>Txn ID</span><span>${o.txnId}</span></div>`:''}</div>
-          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-money-bill"></i> ${t('amounts')}</h5><div class="form-row"><div class="form-group" style="margin:0"><label>${t('deliveryCharge')}</label><input type="number" id="aoDelivery" value="${o.deliveryCharge||0}"></div><div class="form-group" style="margin:0"><label>${t('discount')}</label><input type="number" id="aoDiscount" value="${o.discount||0}"></div></div><div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px"><button class="btn btn-outline btn-sm" onclick="Admin.recalcOrder('${o.id}')"><i class="fa-solid fa-calculator"></i> ${t('recalculate')}</button><span style="font-weight:800;font-size:16px;color:var(--brand)">${t('total')}: <span id="aoTotal">${money(o.total)}</span></span></div></div>
-          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-truck-fast"></i> Delivery</h5><div class="form-row"><div class="form-group" style="margin:0"><label>${t('courier')}</label><input id="aoCourier" value="${o.courier||''}"></div><div class="form-group" style="margin:0"><label>${t('trackingNumber')}</label><input id="aoTracking" value="${o.trackingNumber||''}"></div></div><div class="form-group" style="margin-top:10px"><label>${t('eta')}</label><input id="aoEta" value="${o.eta||''}"></div></div>
-          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-box"></i> ${t('orderItems')}</h5><div class="order-items-list">${(o.items||[]).map(it=>{const p=DB.products.find(x=>x.id===it.id);return `<div class="order-item-row"><img src="${p?p.img:''}" onerror="this.src='https://via.placeholder.com/48'"><div class="order-item-info"><h6>${it.name}</h6><p>${it.qty} × ${money(it.price)}</p></div><span class="order-item-price">${money(it.qty*it.price)}</span></div>`;}).join('')}</div></div>
-          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-lock"></i> ${t('internalNotes')}</h5>${(o.internalNotes||[]).length?`<div style="margin-bottom:10px">${(o.internalNotes||[]).slice().reverse().map(n=>`<div style="background:var(--surface);padding:10px 12px;border-radius:8px;margin-bottom:6px;border-left:3px solid var(--warning)"><p style="font-size:12.5px">${n.text}</p><small style="font-size:10.5px;color:var(--text-soft)">${new Date(n.time).toLocaleString()} • ${n.by||'Admin'}</small></div>`).join('')}</div>`:''}<div style="display:flex;gap:8px"><input id="aoNote" placeholder="${t('writeNote')}" style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg)"><button class="btn btn-primary btn-sm" onclick="Admin.addNote('${o.id}')"><i class="fa-solid fa-plus"></i></button></div></div>
-          <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-clock-rotate-left"></i> ${t('orderHistory')}</h5><ul class="order-history">${(o.history||[]).slice().reverse().map((h,i)=>`<li class="${i===0?'current':''}"><span class="h-dot"></span><h6>${Orders.statusLabel(h.status)}</h6><small>${new Date(h.time).toLocaleString()}${h.by?' • '+h.by:''}</small>${h.comment?`<div class="h-comment">${h.comment}</div>`:''}</li>`).join('')}</ul></div>
-        </div>
-      </div>
-      <div class="modal-foot"><button class="btn btn-pdf btn-block" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i> PDF</button><button class="btn btn-whatsapp btn-block" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button><button class="btn btn-primary btn-block" onclick="Admin.saveOrderChanges('${o.id}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button></div>
-    `, 'lg');
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-receipt"></i> ${o.id}</h3></div><div class="modal-body">
+      ${!isCancelled ? `<div class="order-timeline" style="margin-bottom:20px">${flow.map((s,i)=>`<div class="timeline-step ${i<idx?'done':''} ${i===idx?'current':''}">${i<flow.length-1?'<div class="timeline-line"></div>':''}<div class="dot"><i class="fa-solid ${i<=idx?'fa-check':Orders.statusIcon(s)}"></i></div><div class="label">${Orders.statusLabel(s)}</div></div>`).join('')}</div>` : ''}
+      <div class="admin-card" style="padding:14px;margin-bottom:14px"><h5 style="font-size:12px;font-weight:800;color:var(--text-dim);text-transform:uppercase;margin-bottom:10px">${t('changeStatus')}</h5><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">${Orders.STATUS_ALL.map(s=>`<button style="padding:7px 13px;border-radius:999px;font-size:11.5px;font-weight:700;cursor:pointer;border:${o.status===s?'2px solid var(--brand)':'1px solid var(--border)'};background:${o.status===s?'var(--brand-50)':'var(--surface)'};color:${o.status===s?'var(--brand-dark)':'var(--text-dim)'}" onclick="Admin.setOrderStatus('${o.id}', '${s}')"><i class="fa-solid ${Orders.statusIcon(s)}"></i> ${Orders.statusLabel(s)}</button>`).join('')}</div><div class="form-group" style="margin:0"><label>Comment</label><input id="aoComment" placeholder="..."></div></div>
+      <div class="order-detail-grid">
+        <div class="order-detail-section"><h5><i class="fa-solid fa-user"></i> ${t('customerInfo')}</h5><div class="detail-row"><span>Name</span><span>${escapeHtml(o.customer.name)}</span></div><div class="detail-row"><span>Phone</span><span>${escapeHtml(o.customer.phone)}</span></div><div class="detail-row"><span>Address</span><span>${escapeHtml(o.customer.address)}</span></div></div>
+        <div class="order-detail-section"><h5><i class="fa-solid fa-credit-card"></i> ${t('paymentDetails')}</h5><div class="detail-row"><span>Method</span><span>${(o.paymentMethod||'cod').toUpperCase()}</span></div>${o.txnId?`<div class="detail-row"><span>Txn</span><span>${escapeHtml(o.txnId)}</span></div>`:''}${o.screenshot?`<div style="margin-top:10px"><img src="${o.screenshot}" style="max-width:100%;border-radius:10px;cursor:pointer" onclick="window.open('${o.screenshot}','_blank')"></div>`:''}</div>
+        <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-money-bill"></i> ${t('amounts')}</h5><div class="form-row"><div class="form-group" style="margin:0"><label>${t('deliveryCharge')}</label><input type="number" id="aoDelivery" value="${o.deliveryCharge||0}"></div><div class="form-group" style="margin:0"><label>${t('discount')}</label><input type="number" id="aoDiscount" value="${o.discount||0}"></div></div><div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px"><button class="btn btn-outline btn-sm" onclick="Admin.recalcOrder('${o.id}')"><i class="fa-solid fa-calculator"></i> ${t('recalculate')}</button><span style="font-weight:800;font-size:16px;color:var(--brand)">${t('total')}: <span id="aoTotal">${money(o.total)}</span></span></div></div>
+        <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-truck-fast"></i> Delivery</h5><div class="form-row"><div class="form-group" style="margin:0"><label>${t('courier')}</label><input id="aoCourier" value="${escapeHtml(o.courier||'')}"></div><div class="form-group" style="margin:0"><label>${t('trackingNumber')}</label><input id="aoTracking" value="${escapeHtml(o.trackingNumber||'')}"></div></div><div class="form-group" style="margin-top:10px"><label>${t('eta')}</label><input id="aoEta" value="${escapeHtml(o.eta||'')}"></div></div>
+        <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-box"></i> ${t('orderItems')}</h5><div class="order-items-list">${(o.items||[]).map(it=>{const p=DB.products.find(x=>x.id===it.id);return `<div class="order-item-row"><img src="${p?p.img:''}" onerror="this.src='https://via.placeholder.com/48'"><div class="order-item-info"><h6>${escapeHtml(it.name)}</h6><p>${it.qty} × ${money(it.price)}</p></div><span class="order-item-price">${money(it.qty*it.price)}</span></div>`;}).join('')}</div></div>
+        <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-lock"></i> ${t('internalNotes')}</h5>${(o.internalNotes||[]).length?`<div style="margin-bottom:10px">${(o.internalNotes||[]).slice().reverse().map(n=>`<div style="background:var(--surface);padding:10px 12px;border-radius:8px;margin-bottom:6px;border-left:3px solid var(--warning)"><p style="font-size:12.5px">${escapeHtml(n.text)}</p><small style="font-size:10.5px;color:var(--text-soft)">${new Date(n.time).toLocaleString()} • ${n.by||'Admin'}</small></div>`).join('')}</div>`:''}<div style="display:flex;gap:8px"><input id="aoNote" placeholder="${t('writeNote')}" style="flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;background:var(--bg)"><button class="btn btn-primary btn-sm" onclick="Admin.addNote('${o.id}')"><i class="fa-solid fa-plus"></i></button></div></div>
+        <div class="order-detail-section" style="grid-column:1/-1"><h5><i class="fa-solid fa-clock-rotate-left"></i> ${t('orderHistory')}</h5><ul class="order-history">${(o.history||[]).slice().reverse().map((h,i)=>`<li class="${i===0?'current':''}"><span class="h-dot"></span><h6>${Orders.statusLabel(h.status)}</h6><small>${new Date(h.time).toLocaleString()}${h.by?' • '+h.by:''}</small>${h.comment?`<div class="h-comment">${escapeHtml(h.comment)}</div>`:''}</li>`).join('')}</ul></div>
+      </div></div>
+      <div class="modal-foot"><button class="btn btn-pdf btn-block" onclick="PDFInvoice.generate('${o.id}')"><i class="fa-solid fa-file-pdf"></i> PDF</button><button class="btn btn-whatsapp btn-block" onclick="WhatsApp.send(DB.orders.find(x=>x.id==='${o.id}'), '${o.customer.phone}')"><i class="fa-brands fa-whatsapp"></i> WhatsApp</button><button class="btn btn-primary btn-block" onclick="Admin.saveOrderChanges('${o.id}')"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button></div>`,'lg');
   },
   setOrderStatus(id, status){
     const defaults = { confirmed:t('confirmedByAdmin'), processing:t('processingStarted'), shipped:t('shippedByCourier'), out_for_delivery:t('outForDelivery'), delivered:t('deliveredSuccess'), cancelled:t('cancelledByAdmin'), rejected:t('rejectedByAdmin') };
     const comment = defaults[status] || '';
-    Modal.confirm(LANG==='bn'?`স্ট্যাটাস পরিবর্তন করে "${Orders.statusLabel(status)}"?`:`Change to "${Orders.statusLabel(status)}"?`, async ()=>{
+    Modal.confirm(LANG==='bn'?`"${Orders.statusLabel(status)}" করতে চান?`:`Change to "${Orders.statusLabel(status)}"?`, async ()=>{
       try {
         if(status === 'rejected') await Orders.reject(id, comment);
         else if(status === 'cancelled') await Orders.cancel(id, comment);
         else await Orders.updateStatus(id, status, comment);
-        Toast.show(t('saveSuccess'),'success');
-        Modal.close(); Admin.refreshContent();
+        Toast.show(t('saveSuccess'),'success'); Modal.close(); Admin.refreshContent();
       } catch(e){ Toast.show('Failed','error'); }
     });
   },
-  async quickConfirm(id){ try { await Orders.updateStatus(id, 'confirmed', t('confirmedByAdmin')); Toast.show('✅ '+Orders.statusLabel('confirmed'),'success'); Admin.refreshContent(); } catch(e){ Toast.show('Failed','error'); } },
+  async quickConfirm(id){ try { await Orders.updateStatus(id, 'confirmed', t('confirmedByAdmin')); Toast.show('✅ Confirmed','success'); Admin.refreshContent(); } catch(e){ Toast.show('Failed','error'); } },
   quickCancel(id){
     Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-ban"></i> ${t('cancelOrder')}</h3></div><div class="modal-body"><div class="form-group"><label>${t('cancelReason')}</label><textarea id="cancelReason" rows="3" placeholder="${t('writeReason')}"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-danger btn-block" onclick="Admin.confirmCancel('${id}')"><i class="fa-solid fa-ban"></i> ${t('confirmCancelAction')}</button></div>`);
   },
@@ -1962,14 +1823,14 @@ const Admin = {
   toggleAllOrders(checked, ids){ App._selectedOrders = checked ? [...ids] : []; Admin.refreshContent(); },
   async bulkConfirm(){
     const ids = App._selectedOrders || []; if(!ids.length) return;
-    Modal.confirm(LANG==='bn'?`${ids.length}টি অর্ডার কনফার্ম?`:`Confirm ${ids.length} orders?`, async ()=>{
-      try { for(const id of ids) await Orders.updateStatus(id,'confirmed',t('confirmedByAdmin')); Toast.show(`${ids.length} ✅`,'success'); App._selectedOrders=[]; Admin.refreshContent(); } catch(e){}
+    Modal.confirm(`${ids.length} confirm?`, async ()=>{
+      try { for(const id of ids) await Orders.updateStatus(id,'confirmed',t('confirmedByAdmin')); Toast.show('✅','success'); App._selectedOrders=[]; Admin.refreshContent(); } catch(e){}
     });
   },
   async bulkCancel(){
     const ids = App._selectedOrders || []; if(!ids.length) return;
-    Modal.confirm(LANG==='bn'?`${ids.length}টি অর্ডার বাতিল?`:`Cancel ${ids.length}?`, async ()=>{
-      try { for(const id of ids) await Orders.cancel(id, t('cancelledByAdmin')); Toast.show(`${ids.length} ❌`,'success'); App._selectedOrders=[]; Admin.refreshContent(); } catch(e){}
+    Modal.confirm(`${ids.length} cancel?`, async ()=>{
+      try { for(const id of ids) await Orders.cancel(id, t('cancelledByAdmin')); Toast.show('✅','success'); App._selectedOrders=[]; Admin.refreshContent(); } catch(e){}
     });
   },
   bulkPrint(){
@@ -1978,8 +1839,7 @@ const Admin = {
     if(f.status && f.status!=='all') list = list.filter(o=>o.status===f.status);
     if(!list.length) return Toast.show('No orders','warning');
     const w = window.open('', '_blank', 'width=900,height=1000');
-    const isBn = LANG==='bn';
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orders</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:${isBn?"'Hind Siliguri',":""}sans-serif;padding:20px;color:#0f1021}.h{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:20px}.h h1{font-size:22px}.b{background:#fff;border:1px solid #e5e8f0;border-radius:12px;padding:18px;margin-bottom:16px;page-break-inside:avoid}.bh{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:10px;margin-bottom:12px}.bh h3{font-size:16px;font-family:monospace}.info{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;font-size:13px}.info b{font-size:11px;color:#64748b;text-transform:uppercase;display:block;margin-bottom:2px}table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}th,td{padding:8px;text-align:left;border-bottom:1px solid #e5e8f0}th{background:#f8f9fd;font-size:10px;text-transform:uppercase}.t{text-align:right;margin-top:10px;font-size:14px;font-weight:800;color:#6366f1}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:800;background:#eef2ff;color:#6366f1}.bar{position:fixed;top:20px;right:20px}.bar button{padding:10px 18px;background:#6366f1;color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer}@media print{.bar{display:none}}</style></head><body><div class="bar"><button onclick="window.print()">🖨️ Print</button></div><div class="h"><h1>EcoShop Pro MAX — Orders</h1><p>${list.length} orders • ${new Date().toLocaleString()}</p></div>${list.map(o=>`<div class="b"><div class="bh"><h3>${o.id}</h3><span class="badge">${Orders.statusLabel(o.status)}</span></div><div class="info"><div><b>Customer</b>${o.customer.name}</div><div><b>Phone</b>${o.customer.phone||''}</div><div style="grid-column:1/-1"><b>Address</b>${o.customer.address}</div><div><b>Date</b>${new Date(o.date).toLocaleString()}</div><div><b>Payment</b>${(o.paymentMethod||'cod').toUpperCase()}</div></div><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${(o.items||[]).map(it=>`<tr><td>${it.name}</td><td>${it.qty}</td><td>৳${it.price}</td><td>৳${it.qty*it.price}</td></tr>`).join('')}</tbody></table><div class="t">Total: ৳${o.total}</div></div>`).join('')}</body></html>`);
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Orders</title><style>body{font-family:sans-serif;padding:20px;color:#0f1021}.h{background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;padding:18px;border-radius:12px;margin-bottom:20px}.b{background:#fff;border:1px solid #e5e8f0;border-radius:12px;padding:18px;margin-bottom:16px;page-break-inside:avoid}.bh{display:flex;justify-content:space-between;border-bottom:2px solid #e5e8f0;padding-bottom:10px;margin-bottom:12px}table{width:100%;border-collapse:collapse}th,td{padding:8px;text-align:left;border-bottom:1px solid #e5e8f0}th{background:#f8f9fd}.t{text-align:right;font-weight:800;color:#6366f1;margin-top:10px}@media print{.bar{display:none}}</style></head><body><div class="h"><h1>Orders (${list.length})</h1></div>${list.map(o=>`<div class="b"><div class="bh"><h3>${o.id}</h3><span>${Orders.statusLabel(o.status)}</span></div><p>${escapeHtml(o.customer.name)} • ${escapeHtml(o.customer.phone)} • ${escapeHtml(o.customer.address)}</p><table><thead><tr><th>Item</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead><tbody>${(o.items||[]).map(it=>`<tr><td>${escapeHtml(it.name)}</td><td>${it.qty}</td><td>৳${it.price}</td><td>৳${it.qty*it.price}</td></tr>`).join('')}</tbody></table><div class="t">Total: ৳${o.total}</div></div>`).join('')}</body></html>`);
     w.document.close();
   },
   recalcOrder(id){
@@ -2010,18 +1870,31 @@ const Admin = {
   users(){
     const q = (App._uQuery||'').toLowerCase();
     const list = DB.users.filter(u => !q || (u.name+u.email).toLowerCase().includes(q));
-    return `<div class="admin-toolbar"><input placeholder="${t('userSearch')}" value="${App._uQuery||''}" oninput="App._uQuery=this.value;clearTimeout(window._uq);window._uq=setTimeout(()=>Admin.refreshContent(),250)"></div><div class="admin-card"><div class="admin-card-head"><h3>${t('totalUsers')} (${list.length})</h3></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th></th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('role')}</th><th>${t('active')}</th><th></th></tr></thead><tbody>${list.map(u=>`<tr><td><img class="thumb" style="border-radius:50%" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U'"></td><td><b>${u.name}</b></td><td>${u.email}</td><td><span class="chip ${u.role==='admin'?'active-status':''}">${u.role}</span></td><td>${u.blocked?`<span class="chip blocked">${t('blocked')}</span>`:`<span class="chip active-status">${t('active')}</span>`}</td><td><div class="actions"><button class="icon-btn-sm ${u.blocked?'success':''}" onclick="Admin.toggleBlock('${u.id}')"><i class="fa-solid ${u.blocked?'fa-unlock':'fa-ban'}"></i></button>${u.role!=='admin'?`<button class="icon-btn-sm danger" onclick="Admin.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>`:''}</div></td></tr>`).join('')}</tbody></table></div></div>`;
+    return `<div class="admin-toolbar"><input placeholder="${t('userSearch')}" value="${App._uQuery||''}" oninput="App._uQuery=this.value;clearTimeout(window._uq);window._uq=setTimeout(()=>Admin.refreshContent(),250)"></div><div class="admin-card"><div class="admin-card-head"><h3>${t('totalUsers')} (${list.length})</h3></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th></th><th>${t('fullName')}</th><th>${t('email')}</th><th>${t('role')}</th><th>${t('active')}</th><th></th></tr></thead><tbody>${list.map(u=>`<tr><td><img class="thumb" style="border-radius:50%" src="${u.avatar}" onerror="this.src='https://ui-avatars.com/api/?name=U'"></td><td><b>${escapeHtml(u.name)}</b></td><td>${escapeHtml(u.email)}</td><td><span class="chip ${u.role==='admin'?'active-status':''}">${u.role}</span></td><td>${u.blocked?`<span class="chip blocked">${t('blocked')}</span>`:`<span class="chip active-status">${t('active')}</span>`}</td><td><div class="actions"><button class="icon-btn-sm ${u.blocked?'success':''}" onclick="Admin.toggleBlock('${u.id}')"><i class="fa-solid ${u.blocked?'fa-unlock':'fa-ban'}"></i></button>${u.role!=='admin'?`<button class="icon-btn-sm danger" onclick="Admin.deleteUser('${u.id}')"><i class="fa-solid fa-trash"></i></button>`:''}</div></td></tr>`).join('')}</tbody></table></div></div>`;
   },
   async toggleBlock(id){ const u = DB.users.find(x=>x.id===id); if(!u||u.role==='admin') return; try { await DB.updateUser(id, { blocked: !u.blocked }); Toast.show(t('saveSuccess'),'success'); } catch(e){} },
   deleteUser(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteUser(id); Toast.show(t('deleteSuccess'),'success'); } catch(e){} }); },
+  allReviews(){
+    const list = DB.reviews.sort((a,b)=>(b.date||0)-(a.date||0));
+    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-star"></i> ${t('productReviews')} (${list.length})</h3></div>${list.length ? list.map(r=>{
+      const p = DB.products.find(x=>x.id===r.productId);
+      const u = DB.users.find(x=>x.id===r.userId);
+      return `<div style="padding:14px;border-bottom:1px solid var(--border);display:flex;gap:12px">
+        <img src="${u?.avatar||'https://ui-avatars.com/api/?name=U'}" style="width:44px;height:44px;border-radius:50%;object-fit:cover" onerror="this.src='https://ui-avatars.com/api/?name=U'">
+        <div style="flex:1"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px"><b>${escapeHtml(r.userName||'User')}</b><span class="rating">${starHTML(r.rating,'13px')}</span></div><p style="font-size:13px;color:var(--text-dim);line-height:1.6">${escapeHtml(r.text)}</p><small style="font-size:11px;color:var(--text-soft)">${p ? `<i class="fa-solid fa-box"></i> ${escapeHtml(p.name)} • ` : ''}${timeAgo(r.date)}</small></div>
+        <button class="icon-btn-sm danger" onclick="Admin.deleteReview('${r.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div>`;
+    }).join('') : `<p class="muted">${t('noData')}</p>`}</div>`;
+  },
+  deleteReview(id){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await db.ref('reviews/'+id).remove(); Toast.show(t('deleteSuccess'),'success'); Admin.refreshContent(); } catch(e){} }); },
   categories(){
     const keys = Object.entries(DB.catRaw);
-    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-tags"></i> ${t('categories')}</h3></div><div class="admin-toolbar"><input id="newCat" placeholder="${t('categoryName')}"><button class="btn btn-primary" onclick="Admin.addCat()"><i class="fa-solid fa-plus"></i> ${t('addCategory')}</button></div><div class="chips-wrap">${keys.map(([k,v])=>`<div class="chip-large">${v}<button onclick="Admin.delCat('${k}')"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}</div></div>`;
+    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-tags"></i> ${t('categories')}</h3></div><div class="admin-toolbar"><input id="newCat" placeholder="${t('categoryName')}"><button class="btn btn-primary" onclick="Admin.addCat()"><i class="fa-solid fa-plus"></i> ${t('addCategory')}</button></div><div style="display:flex;gap:9px;flex-wrap:wrap">${keys.map(([k,v])=>`<div class="chip" style="padding:9px 15px;font-size:13px">${escapeHtml(v)}<button onclick="Admin.delCat('${k}')" style="border:none;background:none;color:var(--text-dim);margin-left:8px;cursor:pointer"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}</div></div>`;
   },
   async addCat(){ const v = document.getElementById('newCat').value.trim(); if(!v) return; try { await DB.saveCategory(v); Toast.show(t('saveSuccess'),'success'); } catch(e){} },
   delCat(key){ Modal.confirm(t('deleteConfirm'), async ()=>{ try { await DB.deleteCategory(key); } catch(e){} }); },
   coupons(){
-    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-ticket"></i> ${t('coupons')}</h3></div><div class="admin-toolbar"><input id="cCode" placeholder="${t('couponCode')}"><select id="cType"><option value="percent">${t('percentOff')}</option><option value="flat">${t('flatOff')}</option></select><input id="cVal" type="number" placeholder="${t('price')}"><button class="btn btn-primary" onclick="Admin.addCoupon()"><i class="fa-solid fa-plus"></i> ${t('addCoupon')}</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>${t('couponCode')}</th><th>Type</th><th>Value</th><th></th></tr></thead><tbody>${DB.coupons.map(c=>`<tr><td><b>${c.code}</b></td><td><span class="chip">${c.type}</span></td><td>${c.type==='percent'?c.value+'%':money(c.value)}</td><td><button class="icon-btn-sm danger" onclick="Admin.delCoupon('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
+    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-ticket"></i> ${t('coupons')}</h3></div><div class="admin-toolbar"><input id="cCode" placeholder="${t('couponCode')}"><select id="cType"><option value="percent">${t('percentOff')}</option><option value="flat">${t('flatOff')}</option></select><input id="cVal" type="number" placeholder="${t('price')}"><button class="btn btn-primary" onclick="Admin.addCoupon()"><i class="fa-solid fa-plus"></i> ${t('addCoupon')}</button></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>${t('couponCode')}</th><th>Type</th><th>Value</th><th></th></tr></thead><tbody>${DB.coupons.map(c=>`<tr><td><b>${escapeHtml(c.code)}</b></td><td><span class="chip">${c.type}</span></td><td>${c.type==='percent'?c.value+'%':money(c.value)}</td><td><button class="icon-btn-sm danger" onclick="Admin.delCoupon('${c.id}')"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('')}</tbody></table></div></div>`;
   },
   async addCoupon(){
     const code = document.getElementById('cCode').value.trim().toUpperCase();
@@ -2031,18 +1904,46 @@ const Admin = {
     try { await DB.saveCoupon({ code, type, value }); Toast.show(t('saveSuccess'),'success'); } catch(e){}
   },
   async delCoupon(id){ try { await DB.deleteCoupon(id); } catch(e){} },
+  broadcastPage(){
+    const totalUsers = DB.users.length;
+    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-bullhorn"></i> ${t('broadcastNotif')}</h3></div><p style="font-size:13px;color:var(--text-dim);margin-bottom:16px">${t('broadcastDesc')}</p><div class="form-group"><label>${t('broadcastTitle')} *</label><input id="broadcastTitle" placeholder="${LANG==='bn'?'যেমন: নতুন অফার!':'e.g. New Offer!'}"></div><div class="form-group"><label>${t('broadcastBody')} *</label><textarea id="broadcastBody" rows="4" placeholder="${LANG==='bn'?'মেসেজ লিখুন...':'Type message...'}"></textarea></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn btn-pink btn-lg" onclick="Admin.sendBroadcast()"><i class="fa-solid fa-paper-plane"></i> ${t('sendBroadcast')}</button><span style="font-size:13px;color:var(--text-dim)">${t('recipients')}: <b>${totalUsers}</b></span></div></div>`;
+  },
+  openBroadcastModal(){
+    Modal.open(`<button class="modal-close" onclick="Modal.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-bullhorn"></i> ${t('broadcastNotif')}</h3></div><div class="modal-body"><p style="font-size:13px;color:var(--text-dim);margin-bottom:14px">${t('broadcastDesc')}</p><div class="form-group"><label>${t('broadcastTitle')} *</label><input id="broadcastTitleModal" placeholder="${LANG==='bn'?'নতুন অফার!':'New Offer!'}"></div><div class="form-group"><label>${t('broadcastBody')} *</label><textarea id="broadcastBodyModal" rows="4" placeholder="${LANG==='bn'?'মেসেজ লিখুন...':'Type message...'}"></textarea></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="Modal.close()">${t('cancel')}</button><button class="btn btn-pink btn-block" onclick="Admin.sendBroadcastFromModal()"><i class="fa-solid fa-paper-plane"></i> ${t('sendBroadcast')}</button></div>`);
+  },
+  async sendBroadcast(){
+    const title = document.getElementById('broadcastTitle').value.trim();
+    const body = document.getElementById('broadcastBody').value.trim();
+    if(!title || !body) return Toast.show(t('fillAllFields'),'error');
+    try {
+      await DB.broadcastNotif(title, body);
+      Toast.show(t('broadcastSent'),'success',4000);
+      PushNotif.local(LANG==='bn'?'নতুন নোটিফিকেশন':'New notification', title);
+      Admin.refreshContent();
+    } catch(e){ Toast.show(t('broadcastFailed'),'error'); }
+  },
+  async sendBroadcastFromModal(){
+    const title = document.getElementById('broadcastTitleModal').value.trim();
+    const body = document.getElementById('broadcastBodyModal').value.trim();
+    if(!title || !body) return Toast.show(t('fillAllFields'),'error');
+    try {
+      await DB.broadcastNotif(title, body);
+      Modal.close();
+      Toast.show(t('broadcastSent'),'success',4000);
+    } catch(e){ Toast.show(t('broadcastFailed'),'error'); }
+  },
   settings(){
     const s = DB.settings;
-    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-gear"></i> ${t('settings')}</h3></div><div class="form-group"><label>${t('siteName')}</label><input id="stName" value="${s.siteName||''}"></div><div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${s.supportPhone||''}"></div><div class="form-group"><label>WhatsApp</label><input id="stWhatsapp" value="${s.whatsappNumber||''}"></div><div class="form-row"><div class="form-group"><label>${t('insideDhaka')} (৳)</label><input id="stShipIn" type="number" value="${s.shippingInsideDhaka||100}"></div><div class="form-group"><label>${t('outsideDhaka')} (৳)</label><input id="stShipOut" type="number" value="${s.shippingOutsideDhaka||120}"></div></div><div class="form-group"><label>${t('bkash')}</label><input id="stBkash" value="${s.bkashNumber||''}"></div><div class="form-group"><label>${t('nagad')}</label><input id="stNagad" value="${s.nagadNumber||''}"></div><div class="form-group"><label>${t('rocket')}</label><input id="stRocket" value="${s.rocketNumber||''}"></div><button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button></div>`;
+    return `<div class="admin-card"><div class="admin-card-head"><h3><i class="fa-solid fa-gear"></i> ${t('settings')}</h3></div><div class="form-group"><label>${t('siteName')}</label><input id="stName" value="${escapeHtml(s.siteName||'')}"></div><div class="form-group"><label>${t('supportPhone')}</label><input id="stPhone" value="${escapeHtml(s.supportPhone||'')}"></div><div class="form-group"><label>WhatsApp</label><input id="stWhatsapp" value="${escapeHtml(s.whatsappNumber||'')}"></div><div class="form-row"><div class="form-group"><label>${t('insideDhaka')} (৳)</label><input id="stShipIn" type="number" value="${s.shippingInsideDhaka||100}"></div><div class="form-group"><label>${t('outsideDhaka')} (৳)</label><input id="stShipOut" type="number" value="${s.shippingOutsideDhaka||120}"></div></div><div class="form-group"><label>${t('bkash')}</label><input id="stBkash" value="${escapeHtml(s.bkashNumber||'')}"></div><div class="form-group"><label>${t('nagad')}</label><input id="stNagad" value="${escapeHtml(s.nagadNumber||'')}"></div><div class="form-group"><label>${t('rocket')}</label><input id="stRocket" value="${escapeHtml(s.rocketNumber||'')}"></div><button class="btn btn-primary" onclick="Admin.saveSettings()"><i class="fa-solid fa-floppy-disk"></i> ${t('save')}</button></div>`;
   },
   async saveSettings(){
     const settings = { ...DB.settings, siteName:document.getElementById('stName').value.trim(), supportPhone:document.getElementById('stPhone').value.trim(), whatsappNumber:document.getElementById('stWhatsapp').value.trim(), shippingInsideDhaka:+document.getElementById('stShipIn').value||100, shippingOutsideDhaka:+document.getElementById('stShipOut').value||120, bkashNumber:document.getElementById('stBkash').value.trim(), nagadNumber:document.getElementById('stNagad').value.trim(), rocketNumber:document.getElementById('stRocket').value.trim() };
-    try { await DB.saveSettings(settings); Toast.show(t('settingsSaved'),'success'); } catch(e){ Toast.show('Failed','error'); }
+    try { await DB.saveSettings(settings); Toast.show(t('settingsSaved'),'success'); } catch(e){}
   },
   refreshContent(){ const el = document.getElementById('adminContent'); if(el) el.innerHTML = this.render(App._adminTab||'dashboard'); }
 };
 
-/* AuthUI */
+/* ═══ AuthUI ═══ */
 const AuthUI = {
   tab(which){
     App._authTab = which; App._otpStep = null; App._pendingReg = null; OTP.reset();
@@ -2051,35 +1952,14 @@ const AuthUI = {
     document.getElementById('authForm').innerHTML = which==='login' ? this.loginForm(App._authRedirect||'home') : this.regForm(App._authRedirect||'home');
   },
   loginForm(redirect='home'){
-    return `<form onsubmit="AuthUI.doLogin(event, '${redirect}')">
-      <div class="form-group"><label>${t('email')}</label><div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="authEmail" required placeholder="you@example.com" autocomplete="email"></div></div>
-      <div class="form-group"><label>${t('password')}</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="authPass" required placeholder="••••••" autocomplete="current-password"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('authPass', this)"><i class="fa-solid fa-eye"></i></button></div></div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button type="button" class="forgot-password-link" onclick="PasswordReset.open()"><i class="fa-solid fa-key"></i> ${t('forgotPassword')}</button></div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginSubmit">${t('login')} <i class="fa-solid fa-arrow-right"></i></button>
-    </form>`;
+    return `<form onsubmit="AuthUI.doLogin(event, '${redirect}')"><div class="form-group"><label>${t('email')}</label><div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="authEmail" required placeholder="you@example.com"></div></div><div class="form-group"><label>${t('password')}</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="authPass" required placeholder="••••••"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('authPass', this)"><i class="fa-solid fa-eye"></i></button></div></div><div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button type="button" class="forgot-password-link" onclick="PasswordReset.open()"><i class="fa-solid fa-key"></i> ${t('forgotPassword')}</button></div><button type="submit" class="btn btn-primary btn-block btn-lg" id="loginSubmit">${t('login')} <i class="fa-solid fa-arrow-right"></i></button></form>`;
   },
   regForm(redirect='home'){
     if(App._otpStep === 'verify' && OTP.currentEmail) return this.otpVerifyForm(redirect);
-    return `<form onsubmit="AuthUI.sendOTP(event, '${redirect}')" novalidate>
-      <div class="reg-steps"><div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">Info</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">OTP</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">Done</span></div></div>
-      <div class="form-group"><label>${t('fullName')} *</label><div class="input-wrap"><i class="fa-solid fa-user input-icon"></i><input id="regName" required></div></div>
-      <div class="form-group"><label>${t('email')} *</label><div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="regEmail" required oninput="AuthUI.onEmailInput(this.value)"></div><div class="form-hint" id="emailCheckHint"></div></div>
-      <div class="form-group"><label>${t('phone')}</label><div class="input-wrap"><i class="fa-solid fa-phone input-icon"></i><input id="regPhone" placeholder="017XXXXXXXX"></div></div>
-      <div class="form-group"><label>${t('password')} *</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="regPass" required minlength="6" oninput="AuthUI.checkPwd(this.value)"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('regPass', this)"><i class="fa-solid fa-eye"></i></button></div></div>
-      <div class="form-group"><label>${t('confirmPassword')} *</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="regPass2" required></div><div class="form-error" id="passError">${t('passwordMismatch')}</div></div>
-      <div class="form-group"><label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:12.5px"><input type="checkbox" id="regTerms" required style="width:auto;margin-top:3px"><span>${t('agreeTerms')}</span></label></div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg" id="regSendBtn"><i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}</button>
-    </form>`;
+    return `<form onsubmit="AuthUI.sendOTP(event, '${redirect}')" novalidate><div class="reg-steps"><div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">Info</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">OTP</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">Done</span></div></div><div class="form-group"><label>${t('fullName')} *</label><div class="input-wrap"><i class="fa-solid fa-user input-icon"></i><input id="regName" required></div></div><div class="form-group"><label>${t('email')} *</label><div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="regEmail" required oninput="AuthUI.onEmailInput(this.value)"></div><div class="form-hint" id="emailCheckHint"></div></div><div class="form-group"><label>${t('phone')}</label><div class="input-wrap"><i class="fa-solid fa-phone input-icon"></i><input id="regPhone" placeholder="017XXXXXXXX"></div></div><div class="form-group"><label>${t('password')} *</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="regPass" required minlength="6"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('regPass', this)"><i class="fa-solid fa-eye"></i></button></div></div><div class="form-group"><label>${t('confirmPassword')} *</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="regPass2" required></div><div class="form-error" id="passError">${t('passwordMismatch')}</div></div><div class="form-group"><label style="display:flex;gap:10px;align-items:flex-start;cursor:pointer;font-size:12.5px"><input type="checkbox" id="regTerms" required style="width:auto;margin-top:3px"><span>${t('agreeTerms')}</span></label></div><button type="submit" class="btn btn-primary btn-block btn-lg" id="regSendBtn"><i class="fa-solid fa-paper-plane"></i> ${t('sendOTP')}</button></form>`;
   },
   otpVerifyForm(redirect='home'){
-    return `<form onsubmit="AuthUI.verifyOTP(event, '${redirect}')" novalidate>
-      <div class="reg-steps"><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">Info</span></div><div class="reg-step-line done"></div><div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">OTP</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">Done</span></div></div>
-      <div class="otp-header"><div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div><h3>${t('verifyEmail')}</h3><p>${t('weSentCode')}<br><b>${OTP.maskEmail(OTP.currentEmail)}</b></p></div>
-      <div class="otp-inputs" id="otpInputs">${[0,1,2,3,4,5].map(i=>`<input type="text" inputmode="numeric" maxlength="1" data-idx="${i}" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">`).join('')}</div>
-      <div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg" id="otpVerifyBtn"><i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}</button>
-      <div class="otp-actions"><button type="button" class="btn-link" id="otpResendBtn" onclick="AuthUI.resendOTP()" disabled><i class="fa-solid fa-rotate-right"></i> <span id="otpResendText">${t('resendOTP')}</span></button><button type="button" class="btn-link" onclick="AuthUI.backToInfo()"><i class="fa-solid fa-arrow-left"></i> ${t('changeInfo')}</button></div>
-    </form>`;
+    return `<form onsubmit="AuthUI.verifyOTP(event, '${redirect}')" novalidate><div class="reg-steps"><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">Info</span></div><div class="reg-step-line done"></div><div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">OTP</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">Done</span></div></div><div class="otp-header"><div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div><h3>${t('verifyEmail')}</h3><p>${t('weSentCode')}<br><b>${OTP.maskEmail(OTP.currentEmail)}</b></p></div><div class="otp-inputs" id="otpInputs">${[0,1,2,3,4,5].map(i=>`<input type="text" inputmode="numeric" maxlength="1" data-idx="${i}" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">`).join('')}</div><div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div><button type="submit" class="btn btn-primary btn-block btn-lg" id="otpVerifyBtn"><i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}</button><div class="otp-actions"><button type="button" class="btn-link" id="otpResendBtn" onclick="AuthUI.resendOTP()" disabled><i class="fa-solid fa-rotate-right"></i> <span id="otpResendText">${t('resendOTP')}</span></button><button type="button" class="btn-link" onclick="AuthUI.backToInfo()"><i class="fa-solid fa-arrow-left"></i> ${t('changeInfo')}</button></div></form>`;
   },
   onEmailInput(email){
     const hint = document.getElementById('emailCheckHint'); if(!hint) return;
@@ -2108,7 +1988,7 @@ const AuthUI = {
     (Array.from(inputs).find(i=>!i.value) || inputs[inputs.length-1]).focus();
   },
   getOTPValue(){ return Array.from(document.querySelectorAll('.otp-inputs input')).map(i=>i.value).join(''); },
-  clearOTPInputs(){ document.querySelectorAll('.otp-inputs input').forEach(i => { i.value=''; i.classList.remove('filled','error'); }); },
+  clearOTPInputs(){ document.querySelectorAll('.otp-inputs input').forEach(i => { i.value=''; i.classList.remove('filled'); }); },
   async sendOTP(e, redirect){
     if(e) e.preventDefault();
     const name = document.getElementById('regName').value.trim();
@@ -2143,7 +2023,7 @@ const AuthUI = {
     if(e) e.preventDefault();
     const code = this.getOTPValue();
     if(code.length !== 6) return Toast.show(t('enterFullCode'),'warning');
-    const btn = document.getElementById('otpVerifyBtn'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i> ${t('otpVerifying')}`;
+    const btn = document.getElementById('otpVerifyBtn'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i>`;
     const r = await OTP.verify(code);
     if(!r.ok){ Toast.show(r.msg,'error'); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}`; return; }
     const pending = App._pendingReg;
@@ -2160,7 +2040,7 @@ const AuthUI = {
     const txt = document.getElementById('otpResendText'); txt.textContent = t('otpSending');
     OTP.attempts = 0;
     const r = await OTP.send(p.email, p.name);
-    if(!r.ok){ Toast.show('Failed: '+r.msg,'error'); btn.disabled = false; txt.textContent = t('resendOTP'); return; }
+    if(!r.ok){ Toast.show('Failed','error'); btn.disabled = false; txt.textContent = t('resendOTP'); return; }
     Toast.show(t('otpSent'),'success'); this.clearOTPInputs(); this.startResendCooldown(60);
   },
   backToInfo(){ App._otpStep = null; OTP.reset(); App.render(); },
@@ -2192,7 +2072,7 @@ const AuthUI = {
   }
 };
 
-/* Password Reset */
+/* ═══ Password Reset ═══ */
 const PasswordReset = {
   step: 1, email: null, otpCode: null, otpExpiresAt: 0, otpAttempts: 0, cooldownTimer: null, verified: false,
   open(){ this.reset(); this.step = 1; this.render(); },
@@ -2200,8 +2080,7 @@ const PasswordReset = {
   reset(){ this.step = 1; this.email = null; this.otpCode = null; this.otpExpiresAt = 0; this.otpAttempts = 0; this.verified = false; },
   render(){ this.step === 1 ? this.renderStep1() : this.step === 2 ? this.renderStep2() : this.renderStep3(); },
   renderStep1(){
-    Modal.open(`<button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-key"></i> ${t('resetPassword')}</h3></div><div class="modal-body"><div class="reg-steps"><div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">${t('stepEmail')}</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">${t('stepOtp')}</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div></div><p class="pr-desc">${t('resetPasswordDesc')}</p><div class="form-group"><label>${t('email')}</label><div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="prEmail" placeholder="you@example.com" autofocus></div><div class="form-hint" id="prEmailHint"></div></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" id="prSendBtn" onclick="PasswordReset.sendOTP()"><i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}</button></div>`);
-    setTimeout(()=>document.getElementById('prEmail')?.focus(),100);
+    Modal.open(`<button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-key"></i> ${t('resetPassword')}</h3></div><div class="modal-body"><div class="reg-steps"><div class="reg-step active"><span class="reg-step-num">1</span><span class="reg-step-label">${t('stepEmail')}</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">2</span><span class="reg-step-label">${t('stepOtp')}</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div></div><p style="font-size:13.5px;color:var(--text-dim);text-align:center;margin-bottom:18px">${t('resetPasswordDesc')}</p><div class="form-group"><label>${t('email')}</label><div class="input-wrap"><i class="fa-solid fa-envelope input-icon"></i><input type="email" id="prEmail" placeholder="you@example.com" autofocus></div><div class="form-hint" id="prEmailHint"></div></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" onclick="PasswordReset.sendOTP()"><i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}</button></div>`);
   },
   async sendOTP(){
     const email = Auth.normalizeEmail(document.getElementById('prEmail').value);
@@ -2209,23 +2088,20 @@ const PasswordReset = {
     if(!email) return Toast.show(t('invalidEmail'),'error');
     if(!DB.ready.users) return;
     const user = DB.users.find(u => Auth.normalizeEmail(u.email) === email);
-    if(!user){ if(hint){ hint.textContent = t('noAccountWithEmail'); hint.style.color='var(--danger)'; } return Toast.show(t('noAccountWithEmail'),'error'); }
+    if(!user){ if(hint){ hint.textContent = t('noAccountWithEmail'); hint.style.color='var(--danger)'; } return; }
     const code = OTP.generate();
     this.email = email; this.otpCode = code;
-    this.otpExpiresAt = Date.now() + 10*60*1000;
-    this.otpAttempts = 0; this.verified = false;
-    if(!OTP.init()) return Toast.show('EmailJS not loaded','error');
-    const btn = document.getElementById('prSendBtn'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i>`;
+    this.otpExpiresAt = Date.now() + 10*60*1000; this.otpAttempts = 0; this.verified = false;
+    if(!OTP.init()) return;
     try {
       await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, { to_email:this.email, email:this.email, reply_to:this.email, otp_code:code, code:code, user_name:user.name, site_name:'EcoShop Pro MAX' });
       Toast.show(t('otpSent'),'success');
       this.step = 2; this.render();
-      setTimeout(()=>{ document.querySelector('.otp-inputs input[data-idx="0"]')?.focus(); this.startCooldown(60); },250);
-    } catch(err){ Toast.show(t('otpFailed')+': '+(err?.text||err?.message||''),'error',6000); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> ${t('sendCode')}`; }
+      setTimeout(()=>{ document.querySelector('.otp-inputs input[data-idx="0"]')?.focus(); this.startCooldown(60); }, 250);
+    } catch(err){ Toast.show(t('otpFailed'),'error',6000); }
   },
   renderStep2(){
     Modal.open(`<button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-shield-halved"></i> ${t('verifyOTP')}</h3></div><div class="modal-body"><div class="reg-steps"><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepEmail')}</span></div><div class="reg-step-line done"></div><div class="reg-step active"><span class="reg-step-num">2</span><span class="reg-step-label">${t('stepOtp')}</span></div><div class="reg-step-line"></div><div class="reg-step"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div></div><div class="otp-header"><div class="otp-icon"><i class="fa-solid fa-envelope-circle-check"></i></div><h3>${t('verifyEmail')}</h3><p>${t('weSentCode')}<br><b>${OTP.maskEmail(this.email)}</b></p></div><div class="otp-inputs" id="otpInputs">${[0,1,2,3,4,5].map(i=>`<input type="text" inputmode="numeric" maxlength="1" data-idx="${i}" oninput="AuthUI.otpInput(this)" onkeydown="AuthUI.otpKey(event, this)" onpaste="AuthUI.otpPaste(event)">`).join('')}</div><div class="otp-timer"><i class="fa-solid fa-clock"></i><span>${t('otpValidTime')}</span></div></div><div class="modal-foot"><button class="btn btn-outline" style="flex:1" onclick="PasswordReset.back()"><i class="fa-solid fa-arrow-left"></i> ${t('back')}</button><button class="btn btn-outline" style="flex:1" id="prResendBtn" onclick="PasswordReset.resendOTP()" disabled>${t('resendOTP')}</button><button class="btn btn-primary" style="flex:1" onclick="PasswordReset.verify()"><i class="fa-solid fa-circle-check"></i> ${t('verifyOTP')}</button></div>`);
-    setTimeout(()=>document.querySelector('.otp-inputs input[data-idx="0"]')?.focus(),200);
   },
   verify(){
     const code = AuthUI.getOTPValue();
@@ -2245,16 +2121,15 @@ const PasswordReset = {
   async resendOTP(){
     if(!this.email) return this.back();
     const code = OTP.generate(); this.otpCode = code; this.otpExpiresAt = Date.now()+10*60*1000; this.otpAttempts = 0;
-    const btn = document.getElementById('prResendBtn'); btn.disabled = true; btn.textContent = t('otpSending');
     try {
       const user = DB.users.find(u => Auth.normalizeEmail(u.email) === this.email);
       await emailjs.send(EmailJSConfig.serviceId, EmailJSConfig.templateId, { to_email:this.email, email:this.email, reply_to:this.email, otp_code:code, code:code, user_name:user?.name||'User', site_name:'EcoShop Pro MAX' });
       Toast.show(t('otpSent'),'success'); AuthUI.clearOTPInputs(); this.startCooldown(60);
-    } catch(err){ Toast.show('Failed','error'); btn.disabled=false; btn.textContent = t('resendOTP'); }
+    } catch(err){ Toast.show('Failed','error'); }
   },
   back(){ this.step = 1; if(this.cooldownTimer) clearInterval(this.cooldownTimer); this.render(); },
   renderStep3(){
-    Modal.open(`<button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-lock"></i> ${t('newPassword2')}</h3></div><div class="modal-body"><div class="reg-steps"><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepEmail')}</span></div><div class="reg-step-line done"></div><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepOtp')}</span></div><div class="reg-step-line done"></div><div class="reg-step active"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div></div><div class="form-group"><label>${t('newPassword2')}</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="prNewPass" placeholder="••••••"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass', this)"><i class="fa-solid fa-eye"></i></button></div></div><div class="form-group"><label>${t('confirmPassword')}</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="prNewPass2" placeholder="••••••"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass2', this)"><i class="fa-solid fa-eye"></i></button></div><div class="form-error" id="prPassError">${t('passwordMismatch')}</div></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" id="prUpdateBtn" onclick="PasswordReset.update()"><i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}</button></div>`);
+    Modal.open(`<button class="modal-close" onclick="PasswordReset.close()"><i class="fa-solid fa-xmark"></i></button><div class="modal-head"><h3><i class="fa-solid fa-lock"></i> ${t('newPassword2')}</h3></div><div class="modal-body"><div class="reg-steps"><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepEmail')}</span></div><div class="reg-step-line done"></div><div class="reg-step done"><span class="reg-step-num"><i class="fa-solid fa-check"></i></span><span class="reg-step-label">${t('stepOtp')}</span></div><div class="reg-step-line done"></div><div class="reg-step active"><span class="reg-step-num">3</span><span class="reg-step-label">${t('stepNew')}</span></div></div><div class="form-group"><label>${t('newPassword2')}</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="prNewPass" placeholder="••••••"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass', this)"><i class="fa-solid fa-eye"></i></button></div></div><div class="form-group"><label>${t('confirmPassword')}</label><div class="input-wrap"><i class="fa-solid fa-lock input-icon"></i><input type="password" id="prNewPass2" placeholder="••••••"><button type="button" class="toggle-pass" onclick="AuthUI.togglePass('prNewPass2', this)"><i class="fa-solid fa-eye"></i></button></div><div class="form-error" id="prPassError">${t('passwordMismatch')}</div></div></div><div class="modal-foot"><button class="btn btn-outline btn-block" onclick="PasswordReset.close()">${t('cancel')}</button><button class="btn btn-primary btn-block" onclick="PasswordReset.update()"><i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}</button></div>`);
   },
   async update(){
     const p1 = document.getElementById('prNewPass').value;
@@ -2265,15 +2140,14 @@ const PasswordReset = {
     if(p1 !== p2){ err.classList.add('show'); return Toast.show(t('passwordMismatch'),'error'); }
     err.classList.remove('show');
     if(!this.verified) return Toast.show(t('verifyCodeFirst'),'error');
-    const btn = document.getElementById('prUpdateBtn'); btn.disabled = true; btn.innerHTML = `<i class="fa-solid fa-spinner"></i>`;
     try {
       const user = DB.users.find(u => Auth.normalizeEmail(u.email) === this.email);
       if(!user) throw new Error('User not found');
       await DB.updateUser(user.id, { password: p1 });
       const email = this.email;
-      Modal.open(`<div class="order-success"><div class="order-success-icon"><i class="fa-solid fa-check"></i></div><h3 style="font-size:19px;font-weight:800;margin-bottom:8px">${t('passwordUpdated')}</h3><p style="font-size:13.5px;color:var(--text-dim);margin-bottom:22px">${t('passwordUpdatedDesc')}</p><button class="btn btn-primary btn-block" onclick="PasswordReset.finish('${email}')">${t('loginNow')}</button></div>`, 'sm');
+      Modal.open(`<div class="order-success"><div class="order-success-icon"><i class="fa-solid fa-check"></i></div><h3 style="font-size:19px;font-weight:800;margin-bottom:8px">${t('passwordUpdated')}</h3><p style="font-size:13.5px;color:var(--text-dim);margin-bottom:22px">${t('passwordUpdatedDesc')}</p><button class="btn btn-primary btn-block" onclick="PasswordReset.finish('${email}')">${t('loginNow')}</button></div>`,'sm');
       this.reset();
-    } catch(e){ Toast.show(t('updateFailed'),'error'); btn.disabled = false; btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> ${t('updatePassword')}`; }
+    } catch(e){ Toast.show(t('updateFailed'),'error'); }
   },
   finish(email){
     Modal.close();
@@ -2284,7 +2158,7 @@ const PasswordReset = {
   }
 };
 
-/* Theme / Lang / Init */
+/* ═══ Theme/Lang ═══ */
 function applyTheme(mode){
   document.documentElement.setAttribute('data-theme', mode);
   localStorage.setItem('eco_theme', mode);
@@ -2304,8 +2178,9 @@ function setFbStatus(ok, text){
   const txt = document.getElementById('fbStatusText'); if(txt) txt.textContent = text;
 }
 
+/* ═══ Init ═══ */
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 EcoShop Pro MAX v12.0 starting...');
+  console.log('🚀 EcoShop Pro MAX v13.0 starting...');
   const savedTheme = localStorage.getItem('eco_theme');
   const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme:dark)').matches;
   applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
@@ -2315,6 +2190,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   OTP.init(); Chatbot.init();
 
+  /* Splash */
   let p = 0;
   const statuses = ['Firebase-এ সংযুক্ত হচ্ছে...','ডেটা সিঙ্ক হচ্ছে...','প্রায় শেষ...','স্বাগতম!'];
   const timer = setInterval(()=>{ p += 25; const b=document.getElementById('splashBar'); const s=document.getElementById('splashStatus'); if(b) b.style.width=p+'%'; if(s) s.textContent = statuses[Math.min(3, Math.floor(p/25)-1)] || statuses[0]; if(p>=100) clearInterval(timer); }, 350);
@@ -2328,7 +2204,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   PWA.registerSW(); PWA.initInstallPrompt(); PushNotif.init();
 
-  // Scroll
+  /* Offline detection — shows in SIDE MENU, not top of header */
+  window.addEventListener('online', ()=>{
+    const off = document.getElementById('pmOfflineStatus');
+    if(off) off.style.display = 'none';
+    Toast.show(LANG==='bn'?'✅ অনলাইনে':'✅ Online','success');
+  });
+  window.addEventListener('offline', ()=>{
+    const off = document.getElementById('pmOfflineStatus');
+    if(off) off.style.display = 'flex';
+    Toast.show(LANG==='bn'?'⚠️ অফলাইন মোড':'⚠️ Offline mode','warning');
+  });
+  if(!navigator.onLine){
+    const off = document.getElementById('pmOfflineStatus');
+    if(off) off.style.display = 'flex';
+  }
+
+  /* Scroll */
   window.addEventListener('scroll', () => {
     const nb = document.getElementById('navbar');
     if(nb){
@@ -2342,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { passive:true });
   document.getElementById('backToTop').onclick = ()=> window.scrollTo({ top:0, behavior:'smooth' });
 
-  // Cursor glow
+  /* Cursor */
   if(window.matchMedia('(hover:hover) and (pointer:fine)').matches){
     const glow = document.getElementById('cursorGlow');
     if(glow){
@@ -2352,82 +2244,224 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Nav links
+  /* Nav */
   document.querySelectorAll('[data-nav]').forEach(a => {
-    a.onclick = () => { const r = a.dataset.nav; if(r==='cart'){ App.openCart(); return; } App.go(r); };
+    a.onclick = () => {
+      const r = a.dataset.nav;
+      if(r==='cart'){ App.openCart(); return; }
+      if(r==='search'){ openMobileSearch(); return; }
+      App.go(r);
+    };
   });
   document.querySelectorAll('.nav-menu a').forEach(a => a.onclick = ()=> App.go(a.dataset.nav));
 
-  // Side menu open/close
+  /* Side menu */
   const openPM = ()=>{ document.getElementById('powerMenu').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
   const closePM = ()=>{ document.getElementById('powerMenu').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
   document.getElementById('menuToggle').onclick = openPM;
   document.getElementById('pmClose').onclick = closePM;
   App.closePM = closePM;
 
-  // Cart drawer
-  const openCart = ()=>{ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
-  const closeCart = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
-  document.getElementById('cartBtn').onclick = openCart;
-  document.getElementById('cartClose').onclick = closeCart;
-  document.getElementById('checkoutBtn').onclick = ()=>{ closeCart(); App.go('checkout'); };
+  /* Drawers */
+  document.getElementById('cartBtn').onclick = ()=>{ document.getElementById('cartDrawer').classList.add('active'); document.getElementById('backdrop').classList.add('active'); document.body.style.overflow='hidden'; };
+  document.getElementById('cartClose').onclick = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
+  document.getElementById('checkoutBtn').onclick = ()=>{ document.getElementById('cartDrawer').classList.remove('active'); App.go('checkout'); };
 
-  // Notif panel
-  const openNotif = ()=>{ document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); document.body.style.overflow='hidden'; };
-  const closeNotif = ()=>{ document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
-  document.getElementById('notifBtn').onclick = openNotif;
-  document.getElementById('notifClose').onclick = closeNotif;
+  document.getElementById('notifBtn').onclick = ()=>{ document.getElementById('notifPanel').classList.add('active'); document.getElementById('backdrop').classList.add('active'); Notifs.markAllRead(); document.body.style.overflow='hidden'; };
+  document.getElementById('notifClose').onclick = ()=>{ document.getElementById('notifPanel').classList.remove('active'); document.getElementById('backdrop').classList.remove('active'); document.body.style.overflow=''; };
 
-  // Backdrop closes all
   document.getElementById('backdrop').onclick = ()=> App.closeAllDrawers();
 
-  // Escape key closes drawers
   document.addEventListener('keydown', e => {
     if(e.key === 'Escape'){ App.closeAllDrawers(); Modal.close(); if(Chatbot.open) Chatbot.close(); }
+    if((e.ctrlKey || e.metaKey) && e.key === 'k'){ e.preventDefault(); document.getElementById('globalSearch')?.focus(); }
   });
 
-  // Login buttons
+  /* Login/logout */
   document.getElementById('loginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
   document.getElementById('pmLoginBtn').onclick = ()=>{ closePM(); App._authRedirect='home'; App._authTab='login'; App._otpStep=null; App._pendingReg=null; OTP.reset(); App.go('auth'); };
   document.getElementById('pmLogoutBtn').onclick = ()=>{ closePM(); Auth.logout(); };
 
-  // Avatar dropdown
+  /* Avatar */
   const av = document.getElementById('userAvatarBtn'); const dd = document.getElementById('userDropdown');
   av.onclick = e => { e.stopPropagation(); dd.classList.toggle('active'); };
   document.addEventListener('click', ()=> dd.classList.remove('active'));
 
-  // Theme/Lang
+  /* Theme/Lang */
   document.getElementById('themeBtn').onclick = ()=> applyTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');
   document.getElementById('langBtn').onclick = ()=> applyLang(LANG==='bn'?'en':'bn');
   document.querySelectorAll('[data-set-theme]').forEach(b => b.onclick = ()=> applyTheme(b.dataset.setTheme));
   document.querySelectorAll('[data-set-lang]').forEach(b => b.onclick = ()=> applyLang(b.dataset.setLang));
 
-  // Search
+  /* ═══ ADVANCED SEARCH ENGINE ═══ */
   const gs = document.getElementById('globalSearch');
+  const suggest = document.getElementById('searchSuggest');
   const sc = document.getElementById('searchClear');
+
+  function renderSuggest(query){
+    if(!query.trim()){ suggest.classList.remove('active'); return; }
+    const results = SearchEngine.search(query, { limit: 8 });
+    if(!results.length){
+      suggest.innerHTML = `<div class="suggest-empty"><i class="fa-solid fa-magnifying-glass"></i>${t('noSuggestions')}</div>`;
+    } else {
+      suggest.innerHTML = `<div class="suggest-section-label">${t('suggestions')} (${results.length})</div>
+        ${results.map(r => {
+          const p = r.product;
+          const matched = r.score >= 60;
+          return `<div class="suggest-item" onclick="App.go('product','${p.id}');SearchHide()">
+            <img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'">
+            <div class="suggest-info">
+              <h5>${escapeHtml(LANG==='bn'?p.name:(p.nameEn||p.name))}${matched?`<span class="suggest-match">TOP</span>`:''}</h5>
+              <p>${escapeHtml(LANG==='bn'?p.cat:(p.catEn||p.cat))}</p>
+            </div>
+            <div class="suggest-price">${money(p.price)}</div>
+          </div>`;
+        }).join('')}
+        <div class="suggest-item" style="border-top:1px solid var(--border);margin-top:6px;padding-top:12px" onclick="App._shopQ='${escapeHtml(query)}';App.go('shop');SearchHide()">
+          <div style="width:44px;height:44px;border-radius:10px;background:var(--brand-50);display:flex;align-items:center;justify-content:center;color:var(--brand)"><i class="fa-solid fa-arrow-right"></i></div>
+          <div class="suggest-info"><h5>${t('searchResults')}: "${escapeHtml(query)}"</h5><p>${results.length} items</p></div>
+        </div>`;
+    }
+    suggest.classList.add('active');
+  }
+
+  window.SearchHide = ()=> suggest.classList.remove('active');
+
   if(gs){
     gs.oninput = e => {
-      App._shopQ = e.target.value; App._shopCat='all';
-      if(sc) sc.style.display = e.target.value ? 'flex' : 'none';
-      if(App.route !== 'shop') App.go('shop'); else App.render();
+      const q = e.target.value;
+      App._shopQ = q;
+      if(sc) sc.style.display = q ? 'flex' : 'none';
+      clearTimeout(window._searchTimer);
+      window._searchTimer = setTimeout(()=> renderSuggest(q), 150);
+    };
+    gs.onfocus = ()=>{ if(gs.value.trim()) renderSuggest(gs.value); };
+    gs.onblur = ()=>{ setTimeout(()=>{ suggest.classList.remove('active'); }, 250); };
+  }
+  if(sc) sc.onclick = ()=>{ gs.value=''; App._shopQ=''; sc.style.display='none'; suggest.classList.remove('active'); App.render(); gs.focus(); };
+
+  /* Voice search (desktop) */
+  const voiceBtn = document.getElementById('voiceSearchBtn');
+  if(voiceBtn){
+    voiceBtn.onclick = ()=>{
+      voiceBtn.classList.add('listening');
+      const started = VoiceSearch.init((text)=>{
+        gs.value = text; App._shopQ = text;
+        renderSuggest(text);
+        voiceBtn.classList.remove('listening');
+      });
+      if(!started){
+        voiceBtn.classList.remove('listening');
+        Toast.show(LANG==='bn'?'ভয়েস সার্চ সাপোর্ট নেই':'Voice search not supported','warning');
+      }
+      setTimeout(()=> voiceBtn.classList.remove('listening'), 5000);
     };
   }
-  if(sc) sc.onclick = ()=>{ gs.value=''; App._shopQ=''; sc.style.display='none'; App.render(); gs.focus(); };
 
-  // Cmd+K
-  document.addEventListener('keydown', e => {
-    if((e.ctrlKey || e.metaKey) && e.key === 'k'){ e.preventDefault(); gs?.focus(); }
-  });
+  /* Image search (desktop) */
+  const imgBtn = document.getElementById('imageSearchBtn');
+  const imgInput = document.getElementById('imageSearchInput');
+  if(imgBtn && imgInput){
+    imgBtn.onclick = ()=> imgInput.click();
+    imgInput.onchange = async ()=>{
+      const f = imgInput.files[0]; if(!f) return;
+      Toast.show(t('searching'),'info');
+      const results = await SearchEngine.imageSearch(f);
+      if(results.length){
+        App._shopQ = ''; App._shopCat='all';
+        App.go('shop');
+        setTimeout(()=> Toast.show(`${results.length} ${LANG==='bn'?'পণ্য পাওয়া গেছে':'products found'}`,'success'), 200);
+      } else {
+        Toast.show(t('searchNoResults'),'warning');
+      }
+      imgInput.value = '';
+    };
+  }
 
-  // Swipe to close side menu
+  /* Mobile search modal */
+  const msm = document.getElementById('mobileSearchModal');
+  const msmInput = document.getElementById('mobileSearchInput');
+  const msmResults = document.getElementById('msmResults');
+
+  function openMobileSearch(){
+    msm.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    setTimeout(()=> msmInput?.focus(), 300);
+  }
+  function closeMobileSearch(){
+    msm.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('msmBack').onclick = closeMobileSearch;
+
+  function renderMobileResults(query){
+    if(!query.trim()){ msmResults.innerHTML = ''; return; }
+    const results = SearchEngine.search(query, { limit: 20 });
+    if(!results.length){
+      msmResults.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('searchNoResults')}</h3></div>`;
+      return;
+    }
+    msmResults.innerHTML = `<div class="suggest-section-label">${t('searchResults')} (${results.length})</div>
+      ${results.map(r => {
+        const p = r.product;
+        return `<div class="suggest-item" onclick="App.go('product','${p.id}');document.getElementById('mobileSearchModal').classList.remove('active');document.body.style.overflow='';">
+          <img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'">
+          <div class="suggest-info">
+            <h5>${escapeHtml(LANG==='bn'?p.name:(p.nameEn||p.name))}</h5>
+            <p>${escapeHtml(LANG==='bn'?p.cat:(p.catEn||p.cat))}</p>
+          </div>
+          <div class="suggest-price">${money(p.price)}</div>
+        </div>`;
+      }).join('')}`;
+  }
+
+  if(msmInput){
+    msmInput.oninput = e => { clearTimeout(window._msmTimer); window._msmTimer = setTimeout(()=> renderMobileResults(e.target.value), 150); };
+  }
+
+  /* Mobile voice */
+  const msmVoice = document.getElementById('msmVoiceSearch');
+  if(msmVoice){
+    msmVoice.onclick = ()=>{
+      msmVoice.classList.add('listening');
+      const started = VoiceSearch.init((text)=>{
+        msmInput.value = text;
+        renderMobileResults(text);
+        msmVoice.classList.remove('listening');
+      });
+      if(!started){
+        msmVoice.classList.remove('listening');
+        Toast.show(LANG==='bn'?'ভয়েস সার্চ সাপোর্ট নেই':'Voice search not supported','warning');
+      }
+      setTimeout(()=> msmVoice.classList.remove('listening'), 5000);
+    };
+  }
+
+  /* Mobile image */
+  const msmImg = document.getElementById('msmImageSearch');
+  const msmImgInput = document.getElementById('msmImageInput');
+  if(msmImg && msmImgInput){
+    msmImg.onclick = ()=> msmImgInput.click();
+    msmImgInput.onchange = async ()=>{
+      const f = msmImgInput.files[0]; if(!f) return;
+      Toast.show(t('searching'),'info');
+      const results = await SearchEngine.imageSearch(f);
+      if(results.length){
+        msmResults.innerHTML = `<div class="suggest-section-label">${t('searchResults')} (${results.length})</div>
+          ${results.map(r => { const p = r.product; return `<div class="suggest-item" onclick="App.go('product','${p.id}');closeMobileSearch()"><img src="${p.img}" onerror="this.src='https://via.placeholder.com/44'"><div class="suggest-info"><h5>${escapeHtml(p.name)}</h5><p>${escapeHtml(p.cat)}</p></div><div class="suggest-price">${money(p.price)}</div></div>`; }).join('')}`;
+      } else {
+        msmResults.innerHTML = `<div class="empty-state"><i class="fa-solid fa-magnifying-glass"></i><h3>${t('searchNoResults')}</h3></div>`;
+      }
+      msmImgInput.value = '';
+    };
+  }
+
+  /* Swipe to close side menu */
   let touchStartX = 0;
   const pm = document.getElementById('powerMenu');
   pm.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive:true });
-  pm.addEventListener('touchend', e => {
-    const dx = e.changedTouches[0].clientX - touchStartX;
-    if(dx < -80) closePM();
-  });
+  pm.addEventListener('touchend', e => { if(e.changedTouches[0].clientX - touchStartX < -80) closePM(); });
 
   App.render();
-  console.log('✅ App ready v12.0');
+  console.log('✅ App ready v1.0');
 });
